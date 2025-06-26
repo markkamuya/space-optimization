@@ -1,6 +1,6 @@
-# Space Optimization - Interactive Cartesian Plane
+# Space Optimization(In progress :)  )
 
-This project provides an interactive Cartesian plane implemented using HTML5 Canvas and JavaScript. It allows users to draw, edit, and manage lines and arrowed lines with pan and zoom capabilities.
+This project currently provides an interactive Cartesian plane implemented using HTML5 Canvas and JavaScript. It allows users to draw, edit, and manage lines and arrowed lines with pan and zoom capabilities.
 
 ## Features
 
