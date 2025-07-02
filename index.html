@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Interactive Cartesian Plane with Lines</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<div id="instructions">
+  <strong>Instructions:</strong><br>
+  - Use <b>Draw Line</b> button to draw lines.<br>
+  - Toggle <b>Arrow Lines</b> for arrows.<br>
+  - Right-click a line to delete it.<br>
+  - Drag endpoints or whole line to move it.<br>
+  - Pan by touch drag, or with right/middle mouse drag.<br>
+  - Zoom with mouse wheel.<br>
+  - Press Ctrl+Z to undo.
+</div>
+
+<div id="controls">
+  <button id="drawModeBtn">Draw Line</button>
+  <button id="arrowToggleBtn">Arrow Lines: OFF</button>
+  <label>Line Color: <input type="color" id="colorPicker" value="#008000"></label>
+  <button id="fullscreenBtn" title="Toggle Fullscreen" aria-label="Toggle Fullscreen">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8 3H5a2 2 0 0 0-2 2v3"/>
+      <path d="M16 3h3a2 2 0 0 1 2 2v3"/>
+      <path d="M8 21H5a2 2 0 0 1-2-2v-3"/>
+      <path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
+    </svg>
+  </button>
+
+  <!-- ADD THIS BUTTON FOR DRAWING TRIANGLE -->
+  <button id="drawTriangleBtn">Draw Triangle</button>
+</div>
+
+<canvas id="canvas" width="800" height="800"></canvas>
+<ul id="triangleContextMenu" style="
+  display: none; 
+  position: absolute; 
+  background: white; 
+  border: 1px solid #ccc; 
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+  list-style: none; 
+  padding: 0; 
+  margin: 0; 
+  z-index: 1000;
+  font-family: sans-serif;
+">
+  <li id="copyTriangle" style="padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #eee;">📋 Copy</li>
+  <li id="deleteTriangle" style="padding: 8px 12px; cursor: pointer;">🗑️ Delete</li>
+</ul>
+
+
+<!-- MODAL FOR TRIANGLE SIDES INPUT -->
+<div id="triangleModal" style="display:none; position:fixed; top:20%; left:50%; transform:translateX(-50%); background:#fff; border:1px solid #ccc; padding:20px; z-index:2000; width:300px; box-shadow:0 4px 10px rgba(0,0,0,0.2);">
+  <h3>Create Triangle</h3>
+  <label>
+    Method:
+    <select id="triangleMethod">
+      <option value="SSS">SSS (3 sides)</option>
+      <option value="SAS">SAS (2 sides + angle)</option>
+      <option value="AAS">AAS (2 angles + side)</option>
+    </select>
+  </label>
+  <div id="triangleInputs" style="margin-top:10px;"></div>
+  <div style="margin-top:10px; text-align:right;">
+    <button id="createTriangleBtn">Create</button>
+    <button id="cancelTriangleBtn">Cancel</button>
+  </div>
+</div>
+
+<div id="coordTooltip"></div>
+
+<div id="contextMenu">
+  <button id="deleteLineBtn">Delete Line</button>
+</div>
+
+<script src="canvas.js"></script>
+<script src="shapes.js"></script>
+
+</body>
+</html>

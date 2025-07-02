@@ -1,0 +1,148 @@
+body {
+  margin: 0;
+  background: #f0f0f0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: sans-serif;
+  height: 100vh;
+}
+
+#instructions {
+  background: #fff;
+  border: 1px solid #ccc;
+  padding: 10px 15px;
+  margin: 10px 0 0 0;
+  width: 800px;
+  box-sizing: border-box;
+  color: #333;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+#controls {
+  margin: 10px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+canvas {
+  border: 1px solid #333;
+  background: #fff;
+  touch-action: none;
+  cursor: grab;
+}
+
+button {
+  padding: 6px 12px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+button.active {
+  background: #4caf50;
+  color: white;
+}
+
+#coords {
+  font-family: monospace;
+  margin-top: 8px;
+}
+
+#contextMenu {
+  position: fixed;
+  background: white;
+  border: 1px solid #ccc;
+  display: none;
+  z-index: 1000;
+}
+
+#contextMenu button {
+  display: block;
+  width: 100%;
+  border: none;
+  background: none;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+#contextMenu button:hover {
+  background: #eee;
+}
+
+#fullscreenBtn {
+  background: none;
+  border: 1px solid #333;
+  padding: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+  margin-left: 8px;
+}
+
+#fullscreenBtn:hover {
+  background-color: #eee;
+}
+
+#fullscreenBtn svg {
+  pointer-events: none;
+}
+
+#coordTooltip {
+  position: absolute;
+  pointer-events: none;
+  font-size: 10px;
+  font-family: monospace;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid #ccc;
+  padding: 2px 5px;
+  border-radius: 3px;
+  color: #333;
+  display: none;
+  z-index: 10000;
+  white-space: nowrap;
+}
+
+
+
+#triangleInputModal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  border: 1px solid #ccc;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 2000;
+  display: none;
+}
+
+#triangleInputModal input {
+  margin: 5px 0;
+  width: 100px;
+}
+
+#triangleInputModal button {
+  margin-top: 10px;
+  padding: 5px 10px;
+  font-size: 14px;
+}
+
+.triangle-extend-cursor {
+  cursor: n-resize;
+}
+
+.triangle-rotate-cursor {
+  cursor: crosshair;
+}
+
+.triangle-move-cursor {
+  cursor: move;
+}
