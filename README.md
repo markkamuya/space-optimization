@@ -75,13 +75,4 @@ git init
 git remote add origin https://github.com/markkamuya/space-optimization.git
 git add .
 git commit -m "Initial commit"
-git push -u origin main ```bash
-
-## 🤓 Bonus Fun
-
-Casually made a **Necker Cube** in my triangle editor 😎  
-Turns out optical illusions are just one `rotate()` away from accidental brilliance.
-
-> Curious what a Necker Cube is?  
-> Learn more about this famous ambiguous figure here:
-> 🔗 [Necker Cube Optical Illusion on Wikipedia](https://en.wikipedia.org/wiki/Necker_cube)
+git push -u origin main
