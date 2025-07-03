@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css" rel="stylesheet">
   <title>Interactive Cartesian Plane with Lines</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -33,9 +34,19 @@
 
   <!-- ADD THIS BUTTON FOR DRAWING TRIANGLE -->
   <button id="drawTriangleBtn">Draw Triangle</button>
+  <label>Triangle Color: <input type="color" id="triangleColorPicker" value="#ff0000"></label>
 </div>
 
 <canvas id="canvas" width="800" height="800"></canvas>
+<div id="triangleError" style="color:#900; margin-top:10px;"></div>
+
+<div id="triangleError" class="hidden max-w-md mx-auto mt-4 bg-red-100 border border-red-400 text-red-800 px-6 py-4 rounded relative" role="alert">
+  <strong class="font-bold block mb-2">Invalid Triangle</strong>
+  <span id="triangleErrorDetails" class="block whitespace-pre-line mb-3"></span>
+  <a href="https://en.wikipedia.org/wiki/Triangle_inequality" target="_blank" class="underline text-blue-700 hover:text-blue-900">
+    Learn more about the Triangle Inequality Theorem
+  </a>
+</div>
 <ul id="triangleContextMenu" style="
   display: none; 
   position: absolute; 
@@ -48,7 +59,7 @@
   z-index: 1000;
   font-family: sans-serif;
 ">
-  <li id="copyTriangle" style="padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #eee;">📋 Copy</li>
+  <li id="copyTriangle" style="padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #eee;">📋 Copy & Paste</li>
   <li id="deleteTriangle" style="padding: 8px 12px; cursor: pointer;">🗑️ Delete</li>
 </ul>
 
