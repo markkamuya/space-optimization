@@ -68,6 +68,8 @@ Additional features:
 ## 🤓 Bonus Fun
 
 Casually made a **Necker Cube** in my triangle editor 😎  
+![App Screenshot](https://github.com/markkamuya/space-optimization/blob/main/Screenshot%202025-07-03%20024031.png?raw=true)
+
 Turns out optical illusions are just one `rotate()` away from accidental brilliance.
 
 > Curious what a Necker Cube is?  
