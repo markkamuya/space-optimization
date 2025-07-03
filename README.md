@@ -75,7 +75,7 @@ git init
 git remote add origin https://github.com/markkamuya/space-optimization.git
 git add .
 git commit -m "Initial commit"
-git push -u origin main
+git push -u origin main ```
 
 ## 🤓 Bonus Fun
 
