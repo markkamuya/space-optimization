@@ -1,6 +1,6 @@
 # Space Optimization *(In progress 🙂)*
 
-## Project Aim 
+## Project Aim
 This project aims to develop a space optimization program focused on efficiently arranging triangular objects within a defined space to maximize unused area. Given the complexity of this challenge, the initial scope is deliberately limited:
 
 - The container space is assumed to be an empty regular cuboid (or cube).
