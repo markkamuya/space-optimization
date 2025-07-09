@@ -22,6 +22,41 @@ let isPanning = false;
 let panStart = null;
 const UNDO_STACK = [];
 
+const button = document.getElementById('spaceOptBtn');
+const pixelsPerUnit = scale;
+const originX = offsetX;
+const originY = offsetY;
+
+let blurRect = null; // { x, y, width, height } in Cartesian units
+
+
+button.addEventListener('click', () => {
+    let widthUnits = prompt("Enter the width of the rectangle (in units):");
+    let heightUnits = prompt("Enter the height of the rectangle (in units):");
+
+    widthUnits = Number(widthUnits);
+    heightUnits = Number(heightUnits);
+
+    if (isNaN(widthUnits) || isNaN(heightUnits) || widthUnits <= 0 || heightUnits <= 0) {
+        alert("Width and height must be positive numbers.");
+        return;
+    }
+
+    // Convert units to pixels
+    const widthPx = widthUnits * pixelsPerUnit;
+    const heightPx = heightUnits * pixelsPerUnit;
+
+    // Calculate rectangle top-left in pixels relative to origin
+    // Assuming rectangle bottom-left corner is at origin (0,0) Cartesian
+    const x = originX; 
+    const y = originY - heightPx; // subtract height to go "up"
+
+    // Draw rectangle border on existing canvas
+    ctx.strokeStyle = 'blue'; // color for the border
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x, y, widthPx, heightPx);
+});
+
 class Line {
   constructor(x1, y1, x2, y2, color = '#008000') {
     this.x1 = x1; this.y1 = y1;
