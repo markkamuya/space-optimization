@@ -49,9 +49,22 @@ button.addEventListener('click', () => {
     const y = originY - heightPx; // subtract height to go "up"
 
     // Draw rectangle border on existing canvas
-    ctx.strokeStyle = 'blue'; // color for the border
-    ctx.lineWidth = 2;
-    ctx.strokeRect(x, y, widthPx, heightPx);
+    pushUndo(); // Save current state for undo
+
+const color = '#0000FF'; // blue
+const x1 = 0, y1 = 0;
+const x2 = widthUnits, y2 = 0;
+const x3 = widthUnits, y3 = heightUnits;
+const x4 = 0, y4 = heightUnits;
+
+// Create rectangle using 4 lines in Cartesian units
+lines.push(new Line(x1, y1, x2, y2, color));
+lines.push(new Line(x2, y2, x3, y3, color));
+lines.push(new Line(x3, y3, x4, y4, color));
+lines.push(new Line(x4, y4, x1, y1, color));
+
+redraw(); // Refresh canvas with new shapes
+
 });
 
 class Line {
