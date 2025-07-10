@@ -27,9 +27,6 @@ const pixelsPerUnit = scale;
 const originX = offsetX;
 const originY = offsetY;
 
-let blurRect = null; // { x, y, width, height } in Cartesian units
-
-
 button.addEventListener('click', () => {
     let widthUnits = prompt("Enter the width of the rectangle (in units):");
     let heightUnits = prompt("Enter the height of the rectangle (in units):");
