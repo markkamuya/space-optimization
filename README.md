@@ -1,68 +1,88 @@
-# Space Optimization *(In progress 🙂)*
-
-## Project Aim
-This project aims to develop a space optimization program focused on efficiently arranging triangular objects within a defined space to maximize unused area. Given the complexity of this challenge, the initial scope is deliberately limited:
-
-- The container space is assumed to be an empty regular cuboid (or cube).
-- Triangles have fixed side lengths and constant thickness.
-- For now, the problem is considered in 2D space only, focusing on flat triangles.
-
-> **Core Question**  
-> *How well can we arrange triangles in a space using the smallest possible area?*
+# 🧠 Triangular Space Optimization Editor  
+**Interactive Geometric Layout Tool for Constrained Packing of Triangles in 2D Space**
 
 ---
 
-## Current Implementation
-The project provides an interactive Cartesian plane using **HTML5 Canvas** and **JavaScript**, allowing users to draw, manipulate, and experiment with spatial arrangements of both lines and triangles.
+## 📘 Overview
 
-### 🔺 Triangle Features
-Create triangles using construction modes:
-- **SSS** (Side-Side-Side)
-- **SAS** (Side-Angle-Side)
-- **AAS** (Angle-Angle-Side)
-
-Additional features:
-- Built-in validation via the Triangle Inequality Theorem
-- Full interactivity:
-  - Move, Resize, Rotate
-  - Delete, Undo, Copy & Paste
-- Rotation handle stays fixed relative to one vertex for a professional UI feel
-- Triangles maintain vertex-level geometry updates and preserve construction logic
+This project addresses the complex geometric and algorithmic challenge of fitting fixed-size triangles inside a non-square, bounded rectangular region, minimizing unused space. Built as a prototype for manual configuration and future automated optimization, it leverages interactive construction logic with enforced geometric and spatial constraints.
 
 ---
 
-### ➖ Line & Canvas Interaction
-- Draw straight or arrowed lines on a Cartesian plane
-- Drag endpoints or full lines to reshape
-- Right-click to delete lines
-- Real-time coordinate tooltips
-- Pan and zoom the view
-- Undo with **Ctrl + Z**
-- Choose line colors with a color picker
-- Toggle fullscreen view
+## 🔧 Core Technologies
+
+- **HTML5 Canvas** for 2D rendering and real-time interactivity  
+- **JavaScript** for event-driven UI, geometric logic, and shape manipulation  
+- **CSS** for UI styling and layout  
+- **Custom geometry engines** for validation, containment checking, and interaction constraints
 
 ---
 
-## Usage
+## 🧮 Mathematical Foundations
 
-1. Click **Draw Line** or **Triangle Mode** to begin
-2. For triangles:
-   - Select **SSS**, **SAS**, or **AAS** mode
-   - Input side lengths or angles as needed
-   - Move or rotate shapes by dragging or using handles
-   - Resize triangles by dragging vertices
-3. Right-click to delete elements
-4. Use **Ctrl + Z** to undo and **Ctrl + C / Ctrl + V** for copy-paste
-5. Zoom with the mouse wheel
-6. Pan using right or middle mouse button
-7. Toggle fullscreen with the fullscreen button
+### Triangle Construction Modes
+
+- **SSS (Side-Side-Side)**: Construct a triangle given all three sides.  
+- **SAS (Side-Angle-Side)**: Construct a triangle using two sides and the included angle.  
+- **AAS (Angle-Angle-Side)**: Construct using two angles and one adjacent side.
+
+### Triangle Validity (Triangle Inequality Theorem)
+
+For a triangle ΔABC, the following must hold:
+
+\[
+a + b > c,\quad b + c > a,\quad c + a > b
+\]
+
+### Boundary Fitting Logic
+
+Bounding box is computed from triangle vertex coordinates. For valid placement inside the rectangular area, the triangle must satisfy:
+
+\[
+x_{\min} \geq x_{\text{rect\_left}},\quad x_{\max} \leq x_{\text{rect\_right}} \\
+y_{\min} \geq y_{\text{rect\_top}},\quad y_{\max} \leq y_{\text{rect\_bottom}}
+\]
 
 ---
 
-## Tech Stack
-- **HTML5 Canvas** – for drawing
-- **JavaScript** – for interactivity and geometry logic
-- **CSS** – for layout and interface styling
+## 🚧 Key Features
+
+### 🎨 Interactive Editor
+
+- Mouse-driven creation of triangles using **SSS**, **SAS**, or **AAS** construction logic  
+- Real-time vertex snapping and visual feedback during creation  
+- Clipboard support: **cut**, **copy**, **paste** triangles  
+- Undo/Redo stack via operation history  
+- Rotation handles locked to fixed triangle vertices for precision  
+- Pan/Zoom and fullscreen toggling for better spatial management  
+
+---
+
+### 📦 Space Optimization Mode (Manual Configuration)
+
+Activated via a dedicated UI pipeline to prepare valid manual input layouts for optimization.
+
+#### 1. Oblong Rectangle Validation
+
+- On entering space optimization mode, user is prompted to enter rectangle **width** and **height**  
+- A constraint is applied: `width ≠ height`  
+- An _oblong checker_ function validates and blocks square dimensions  
+- Enforces aspect diversity crucial to packing studies
+
+#### 2. Triangle Fit Enforcement
+
+- During space optimization mode:  
+  - All triangle construction actions perform a **fit-check** before committing to the canvas  
+  - Fit-check involves simulating triangle placement and checking bounding box collision with the rectangle  
+  - If the triangle exceeds the bounds, an alert is triggered and construction is aborted  
+
+#### 3. In-Bounds Constraint Enforcement
+
+Once a triangle is inside the bounding box:
+
+- **Dragging** is constrained so that no vertex can leave the rectangle  
+- **Resizing** and **rotation** operations are clamped using post-transformation bounding box validation  
+- Reflects real-world constraints like material sheet cutting, panel design, or layout editors  
 
 ---
 ## 🤓 Bonus Fun
