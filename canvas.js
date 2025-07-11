@@ -28,43 +28,21 @@ const originX = offsetX;
 const originY = offsetY;
 
 button.addEventListener('click', () => {
-    let widthUnits = prompt("Enter the width of the rectangle (in units):");
-    let heightUnits = prompt("Enter the height of the rectangle (in units):");
+  let widthUnits = prompt("Enter the width of the rectangle (in units):");
+  let heightUnits = prompt("Enter the height of the rectangle (in units):");
 
-    widthUnits = Number(widthUnits);
-    heightUnits = Number(heightUnits);
+  widthUnits = Number(widthUnits);
+  heightUnits = Number(heightUnits);
 
-    if (isNaN(widthUnits) || isNaN(heightUnits) || widthUnits <= 0 || heightUnits <= 0) {
-        alert("Width and height must be positive numbers.");
-        return;
-    }
+  if (isNaN(widthUnits) || isNaN(heightUnits) || widthUnits <= 0 || heightUnits <= 0) {
+    alert("Width and height must be positive numbers.");
+    return;
+  }
 
-    // Convert units to pixels
-    const widthPx = widthUnits * pixelsPerUnit;
-    const heightPx = heightUnits * pixelsPerUnit;
-
-    // Calculate rectangle top-left in pixels relative to origin
-    // Assuming rectangle bottom-left corner is at origin (0,0) Cartesian
-    const x = originX; 
-    const y = originY - heightPx; // subtract height to go "up"
-
-    // Draw rectangle border on existing canvas
-    pushUndo(); // Save current state for undo
-
-const color = '#0000FF'; // blue
-const x1 = 0, y1 = 0;
-const x2 = widthUnits, y2 = 0;
-const x3 = widthUnits, y3 = heightUnits;
-const x4 = 0, y4 = heightUnits;
-
-// Create rectangle using 4 lines in Cartesian units
-lines.push(new Line(x1, y1, x2, y2, color));
-lines.push(new Line(x2, y2, x3, y3, color));
-lines.push(new Line(x3, y3, x4, y4, color));
-lines.push(new Line(x4, y4, x1, y1, color));
-
-redraw(); // Refresh canvas with new shapes
-
+  const rect = new Rectangle(0, 0, widthUnits, heightUnits, '#0000FF'); // blue rectangle at origin
+  pushUndo();
+  lines.push(rect);
+  redraw();
 });
 
 class Line {
@@ -88,6 +66,30 @@ class Line {
     const c = new Line(this.x1, this.y1, this.x2, this.y2, this.color);
     c.isArrow = this.isArrow;
     return c;
+  }
+}
+
+class Rectangle {
+  constructor(x=0, y=0, width, height, color = '#0000FF') {
+    this.x = x; // bottom-left x
+    this.y = y; // bottom-left y
+    this.width = width;
+    this.height = height;
+    this.color = color;
+  }
+
+  draw(ctx, toCanvasCoords) {
+    const [cx, cy] = toCanvasCoords(this.x, this.y); // top-left
+    const widthPx = this.width * scale;
+    const heightPx = this.height * scale;
+
+    ctx.strokeStyle = this.color;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(cx, cy-heightPx, widthPx, heightPx); // y is inverted
+  }
+
+  clone() {
+    return new Rectangle(this.x, this.y, this.width, this.height, this.color);
   }
 }
 
@@ -130,7 +132,13 @@ function toCartesianCoords(cx, cy) {
 function redraw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawGrid();
-  for (const line of lines) line.draw(ctx, toCanvasCoords, line === selectedLine);
+  for (const item of lines) {
+    if (item instanceof Line || item instanceof ArrowLine) {
+      item.draw(ctx, toCanvasCoords, item === selectedLine);
+    } else if (item instanceof Rectangle) {
+      item.draw(ctx, toCanvasCoords);
+    }
+  }
   if (isDrawing && drawStart && tempMousePos) {
     const color = colorPicker.value;
     const tmp = isArrowMode ?
@@ -173,6 +181,8 @@ function findLineAt(x, y) {
   const tolerance = 0.15;
   for (let i = lines.length - 1; i >= 0; i--) {
     const l = lines[i];
+    if (!(l instanceof Line || l instanceof ArrowLine)) continue; // skip rectangles
+
     const dx = l.x2 - l.x1, dy = l.y2 - l.y1;
     const lenSq = dx * dx + dy * dy;
     let t = ((x - l.x1) * dx + (y - l.y1) * dy) / lenSq;
