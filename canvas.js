@@ -39,7 +39,7 @@ button.addEventListener('click', () => {
     return;
   }
 
-  const rect = new Rectangle(0, 0, widthUnits, heightUnits, '#0000FF'); // blue rectangle at origin
+  const rect = new Rectangle(0, 0, widthUnits, heightUnits, colorPicker.value);
   pushUndo();
   lines.push(rect);
   redraw();
@@ -77,16 +77,25 @@ class Rectangle {
     this.height = height;
     this.color = color;
   }
+  containsPoint(x, y) {
+  return (
+    x >= this.x &&
+    x <= this.x + this.width &&
+    y >= this.y &&
+    y <= this.y + this.height
+  );
+}
 
-  draw(ctx, toCanvasCoords) {
-    const [cx, cy] = toCanvasCoords(this.x, this.y); // top-left
-    const widthPx = this.width * scale;
-    const heightPx = this.height * scale;
 
-    ctx.strokeStyle = this.color;
-    ctx.lineWidth = 2;
-    ctx.strokeRect(cx, cy-heightPx, widthPx, heightPx); // y is inverted
-  }
+  draw(ctx, toCanvasCoords, highlight = false) {
+  const [cx, cy] = toCanvasCoords(this.x, this.y); // bottom-left corner
+  const widthPx = this.width * scale;
+  const heightPx = this.height * scale;
+
+  ctx.strokeStyle = highlight ? '#4CAF50' : this.color;
+  ctx.lineWidth = highlight ? 4 : 2;
+  ctx.strokeRect(cx, cy - heightPx, widthPx, heightPx);
+}
 
   clone() {
     return new Rectangle(this.x, this.y, this.width, this.height, this.color);
@@ -136,7 +145,7 @@ function redraw() {
     if (item instanceof Line || item instanceof ArrowLine) {
       item.draw(ctx, toCanvasCoords, item === selectedLine);
     } else if (item instanceof Rectangle) {
-      item.draw(ctx, toCanvasCoords);
+      item.draw(ctx, toCanvasCoords, item === selectedLine);
     }
   }
   if (isDrawing && drawStart && tempMousePos) {
@@ -208,7 +217,12 @@ function pushUndo() {
 
 function undo() {
   if (UNDO_STACK.length > 0) {
-    lines = UNDO_STACK.pop();
+    const lastState = UNDO_STACK.pop();
+    lines = lastState.map(l => {
+      if (typeof l.clone === 'function') return l.clone();
+      console.warn('Uncloneable object on undo:', l);
+      return l;
+    });
     selectedLine = null;
     redraw();
   }
@@ -225,17 +239,29 @@ canvas.addEventListener('mousedown', (evt) => {
   const [x, y] = toCartesianCoords(evt.offsetX, evt.offsetY);
   drawStart = { x, y };
   selectedLine = findLineAt(x, y);
-  if (selectedLine) {
-    dragInfo = {
-      type: isNearEndpoint(x, y, selectedLine) || 'move',
-      startX: x,
-      startY: y,
-      orig: selectedLine.clone()
-    };
-  } else if (drawModeBtn.classList.contains('active')) {
-    isDrawing = true;
-    tempMousePos = { x, y };
+
+// If no line was hit, check if a rectangle was clicked
+if (!selectedLine) {
+  for (let i = lines.length - 1; i >= 0; i--) {
+    const item = lines[i];
+    if (item instanceof Rectangle && item.containsPoint(x, y)) {
+      selectedLine = item;
+      break;
+    }
   }
+}
+
+if (selectedLine instanceof Line || selectedLine instanceof ArrowLine) {
+  dragInfo = {
+    type: isNearEndpoint(x, y, selectedLine) || 'move',
+    startX: x,
+    startY: y,
+    orig: selectedLine.clone()
+  };
+} else if (!selectedLine && drawModeBtn.classList.contains('active')) {
+  isDrawing = true;
+  tempMousePos = { x, y };
+}
   redraw();
 });
 const coordTooltip = document.getElementById('coordTooltip');
