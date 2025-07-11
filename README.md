@@ -30,18 +30,14 @@ This project addresses the complex geometric and algorithmic challenge of fittin
 
 For a triangle ΔABC, the following must hold:
 
-\[
-a + b > c,\quad b + c > a,\quad c + a > b
-\]
+a + b > c,  b + c > a,  c + a > b
 
 ### Boundary Fitting Logic
 
 Bounding box is computed from triangle vertex coordinates. For valid placement inside the rectangular area, the triangle must satisfy:
 
-\[
-x_{\min} \geq x_{\text{rect\_left}},\quad x_{\max} \leq x_{\text{rect\_right}} \\
-y_{\min} \geq y_{\text{rect\_top}},\quad y_{\max} \leq y_{\text{rect\_bottom}}
-\]
+x_min ≥ x_rect_left,   x_max ≤ x_rect_right  
+y_min ≥ y_rect_top,    y_max ≤ y_rect_bottom
 
 ---
 
