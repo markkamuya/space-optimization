@@ -171,6 +171,21 @@ class Triangle {
     ctx.arc(topX, topY - handleOffset, 6, 0, 2 * Math.PI);
     ctx.fill();
   }
+  containsPoint(x, y) {
+  const [x1, y1] = this.getRotatedPoints()[0];
+  const [x2, y2] = this.getRotatedPoints()[1];
+  const [x3, y3] = this.getRotatedPoints()[2];
+
+  function area(x1, y1, x2, y2, x3, y3) {
+    return Math.abs((x1*(y2 - y3) + x2*(y3 - y1) + x3*(y1 - y2)) / 2);
+  }
+
+  const A = area(x1, y1, x2, y2, x3, y3);
+  const A1 = area(x, y, x2, y2, x3, y3);
+  const A2 = area(x1, y1, x, y, x3, y3);
+  const A3 = area(x1, y1, x2, y2, x, y);
+  return Math.abs(A - (A1 + A2 + A3)) < 0.5;
+}
 }
 
 function getRotationHandleUnderMouse(x, y, triangle, toCanvasCoords) {
@@ -235,6 +250,12 @@ function redraw() {
 
 // === Triangle creation logic ===
 function drawTriangleOnCanvas(points) {
+  if (spaceOptimizationOn) {  // <-- your active state flag
+    if (!isTriangleInsideBounds(points, spaceOptRect)) {
+      alert('Error: Triangle is bigger than the rectangle bounds.');
+      return;
+    }
+  }
   pushUndo();
   triangles.push(new Triangle(points[0], points[1], points[2], colorPicker.value));
   redraw();
@@ -505,6 +526,11 @@ canvas.addEventListener('mousemove', (e) => {
   const angleStart = Math.atan2(dragStartMouse[1] - cy, dragStartMouse[0] - cx);
   const angleNow = Math.atan2(y - cy, x - cx);
   const deltaAngle = angleNow - angleStart;
+  const rotatedPoints = selectedTriangle.getRotatedPoints();
+  if (spaceOptimizationOn && !isTriangleInsideBounds(rotatedPoints, spaceOptRect)) {
+    // Don't update rotation beyond bounds
+    return;
+  }
   selectedTriangle.rotation = initialRotation + deltaAngle;
   redraw();
   return;
@@ -513,17 +539,36 @@ canvas.addEventListener('mousemove', (e) => {
   const dx = (x - dragStartMouse[0]) / scale;
   const dy = -(y - dragStartMouse[1]) / scale;
 
+  let newPoints;
+
   if (activeHandle !== null) {
-    selectedTriangle[`p${activeHandle + 1}`] = [
+    newPoints = [...triangleStartPoints];
+    newPoints[activeHandle] = [
       triangleStartPoints[activeHandle][0] + dx,
       triangleStartPoints[activeHandle][1] + dy
     ];
   } else {
-    selectedTriangle.p1 = [triangleStartPoints[0][0] + dx, triangleStartPoints[0][1] + dy];
-    selectedTriangle.p2 = [triangleStartPoints[1][0] + dx, triangleStartPoints[1][1] + dy];
-    selectedTriangle.p3 = [triangleStartPoints[2][0] + dx, triangleStartPoints[2][1] + dy];
+    newPoints = triangleStartPoints.map(p => [p[0] + dx, p[1] + dy]);
   }
 
+  if (spaceOptimizationOn) {
+    const tempTri = new Triangle(newPoints[0], newPoints[1], newPoints[2], selectedTriangle.color);
+    tempTri.rotation = selectedTriangle.rotation;
+
+    if (!isTriangleInsideBounds(tempTri.getRotatedPoints(), spaceOptRect)) {
+      return; // Block drag if rotated shape would go outside
+    }
+  }
+
+
+  // Update points if inside bounds
+  if (activeHandle !== null) {
+    selectedTriangle[`p${activeHandle + 1}`] = newPoints[activeHandle];
+  } else {
+    selectedTriangle.p1 = newPoints[0];
+    selectedTriangle.p2 = newPoints[1];
+    selectedTriangle.p3 = newPoints[2];
+  }
   redraw();
 });
 
@@ -540,12 +585,12 @@ canvas.addEventListener('mouseup', () => {
 
 const triangleColorPicker = document.getElementById('triangleColorPicker');
 
-// When you create a new triangle:
-function drawTriangleOnCanvas(points) {
-  pushUndo();
-  triangles.push(new Triangle(points[0], points[1], points[2], triangleColorPicker.value));
-  redraw();
-}
+// // When you create a new triangle:
+// function drawTriangleOnCanvas(points) {
+//   pushUndo();
+//   triangles.push(new Triangle(points[0], points[1], points[2], triangleColorPicker.value));
+//   redraw();
+// }
 triangleColorPicker.addEventListener('input', () => {
   if (selectedTriangle) {
     pushUndo();
@@ -553,3 +598,9 @@ triangleColorPicker.addEventListener('input', () => {
     redraw();
   }
 });
+function isTriangleInsideBounds(points, rect) {
+  return points.every(([x, y]) => 
+    x >= rect.x && x <= rect.x + rect.width &&
+    y >= rect.y && y <= rect.y + rect.height
+  );
+}

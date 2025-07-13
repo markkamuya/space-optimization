@@ -27,6 +27,10 @@ const pixelsPerUnit = scale;
 const originX = offsetX;
 const originY = offsetY;
 
+const errorContainer = document.getElementById('errorContainer');
+let spaceOptRect = null; // store current rectangle for space optimization mode
+let spaceOptimizationOn = false;
+
 button.addEventListener('click', () => {
   let widthUnits = prompt("Enter the width of the rectangle (in units):");
   let heightUnits = prompt("Enter the height of the rectangle (in units):");
@@ -34,12 +38,80 @@ button.addEventListener('click', () => {
   widthUnits = Number(widthUnits);
   heightUnits = Number(heightUnits);
 
-  if (isNaN(widthUnits) || isNaN(heightUnits) || widthUnits <= 0 || heightUnits <= 0) {
-    alert("Width and height must be positive numbers.");
-    return;
-  }
+  let messages = [];
+
+if (isNaN(widthUnits)) {
+  messages.push(`Width (${widthUnits}) ∉ ℝ (not a real number).`);
+} else if (!isFinite(widthUnits)) {
+  messages.push(`Width (${widthUnits}) ∉ ℝ (not finite).`);
+} else if (!(widthUnits > 0)) {
+  messages.push(`Width (${widthUnits}) ≤ 0 (not positive).`);
+}
+
+if (isNaN(heightUnits)) {
+  messages.push(`Height (${heightUnits}) ∉ ℝ (not a real number).`);
+} else if (!isFinite(heightUnits)) {
+  messages.push(`Height (${heightUnits}) ∉ ℝ (not finite).`);
+} else if (!(heightUnits > 0)) {
+  messages.push(`Height (${heightUnits}) ≤ 0 (not positive).`);
+}
+
+if (messages.length > 0) {
+  alert("Invalid input: Width and height must be finite, positive real numbers representing physical lengths.\n" + messages.join("\n"));
+  return;
+}
+  if (widthUnits === heightUnits) {
+  // Show styled error popup instead of alert
+  errorContainer.innerHTML = `
+    <div style="
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.3);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    ">
+      <div style="
+        position: relative;
+        max-width: 400px;
+        margin: 1em;
+        padding: 1em 1em 1em 1em;
+        background: #fee;
+        border: 1px solid #f00;
+        color: #900;
+        border-radius: 6px;
+        box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+      ">
+        <button id="closeErrorBtn" style="
+          position: absolute;
+          top: 8px;
+          right: 8px;
+          background: transparent;
+          border: none;
+          color: #900;
+          font-size: 28px;
+          font-weight: bold;
+          cursor: pointer;
+        " aria-label="Close error popup">&times;</button>
+        <strong>Invalid Rectangle</strong>
+        <p>The rectangle must be oblong, a non-square rectangle where width ≠ height.</p>
+        <a href="https://en.wikipedia.org/wiki/Oblong" target="_blank" style="color:#0066cc; text-decoration:underline;">Learn more about oblongs</a>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('closeErrorBtn').addEventListener('click', () => {
+    errorContainer.innerHTML = '';
+  });
+  return; // stop further execution
+}
 
   const rect = new Rectangle(0, 0, widthUnits, heightUnits, colorPicker.value);
+  spaceOptRect = rect;
+  spaceOptimizationOn = true;
+  button.style.backgroundColor = '#4CAF50';  // green
+  button.style.color = '#fff';
   pushUndo();
   lines.push(rect);
   redraw();
@@ -141,11 +213,20 @@ function toCartesianCoords(cx, cy) {
 function redraw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawGrid();
+  
   for (const item of lines) {
     if (item instanceof Line || item instanceof ArrowLine) {
       item.draw(ctx, toCanvasCoords, item === selectedLine);
     } else if (item instanceof Rectangle) {
       item.draw(ctx, toCanvasCoords, item === selectedLine);
+    }
+  }
+  // 3. 🔺 Draw triangles last — they appear on top!
+  if (typeof triangles !== 'undefined') {
+    for (const tri of triangles) {
+      if (typeof tri.draw === 'function') {
+        tri.draw(ctx, toCanvasCoords);
+      }
     }
   }
   if (isDrawing && drawStart && tempMousePos) {
@@ -239,6 +320,16 @@ canvas.addEventListener('mousedown', (evt) => {
   const [x, y] = toCartesianCoords(evt.offsetX, evt.offsetY);
   drawStart = { x, y };
   selectedLine = findLineAt(x, y);
+  // 🔺 Check triangles first for higher interactivity "z-index"
+  if (typeof triangles !== 'undefined') {
+    for (let i = triangles.length - 1; i >= 0; i--) {
+      const tri = triangles[i];
+      if (typeof tri.containsPoint === 'function' && tri.containsPoint(x, y)) {
+        selectedLine = tri; // reuse selectedLine variable
+        break;
+      }
+    }
+  }
 
 // If no line was hit, check if a rectangle was clicked
 if (!selectedLine) {
