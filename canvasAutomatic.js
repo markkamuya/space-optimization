@@ -213,15 +213,30 @@ function toCartesianCoordsAutomatic(cx, cy) {
 function redrawAutomatic() {
   ctxAutomatic.clearRect(0, 0, canvasAutomatic.width, canvasAutomatic.height);
   drawGridAutomatic();
-  
+
+  // Debug: Show coordinate system info
+  console.log("--- Redraw Debug ---");
+  console.log(`Canvas size: ${canvasAutomatic.width}x${canvasAutomatic.height}`);
+  console.log(`Offset: (${offsetXAutomatic}, ${offsetYAutomatic})`);
+  console.log(`Scale: ${scaleAutomatic}`);
+
+  // Draw all elements
   for (const item of linesAutomatic) {
     if (item instanceof LineAutomatic || item instanceof ArrowLineAutomatic) {
       item.draw(ctxAutomatic, toCanvasCoordsAutomatic, item === selectedLineAutomatic);
     } else if (item instanceof RectangleAutomatic) {
       item.draw(ctxAutomatic, toCanvasCoordsAutomatic, item === selectedLineAutomatic);
+    } else if (item instanceof TriangleAutomatic) {
+      console.log("Drawing triangle at:", 
+        `(${item.x1},${item.y1})`, 
+        `(${item.x2},${item.y2})`, 
+        `(${item.x3},${item.y3})`
+      );
+      item.draw(ctxAutomatic, toCanvasCoordsAutomatic);
     }
   }
-  
+
+  // Draw temporary construction line
   if (isDrawingAutomatic && drawStartAutomatic && tempMousePosAutomatic) {
     const color = colorPickerAutomatic.value;
     const tmp = isArrowModeAutomatic ?
@@ -229,6 +244,13 @@ function redrawAutomatic() {
       new LineAutomatic(drawStartAutomatic.x, drawStartAutomatic.y, tempMousePosAutomatic.x, tempMousePosAutomatic.y, color);
     tmp.draw(ctxAutomatic, toCanvasCoordsAutomatic, true);
   }
+
+  // Debug: Draw origin point
+  ctxAutomatic.fillStyle = 'red';
+  ctxAutomatic.beginPath();
+  const [originX, originY] = toCanvasCoordsAutomatic(0, 0);
+  ctxAutomatic.arc(originX, originY, 5, 0, Math.PI*2);
+  ctxAutomatic.fill();
 }
 
 function drawGridAutomatic() {
