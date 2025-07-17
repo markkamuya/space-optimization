@@ -167,7 +167,12 @@ function packTrianglesInRectangle(triangle) {
   if (triangle.isRight) {
     console.log("Optimizing right triangle packing...");
     optimizeRightTrianglePacking(triangle);
-  } else {
+  } 
+    else if (isIsoscelesTriangle(triangle)) {
+        console.log("Optimizing isosceles triangle packing...");
+        packIsoscelesTriangleInRectangle(triangle);
+    } 
+    else {
     console.log("Using generic triangle packing...");
     genericTrianglePacking(triangle);
   }
@@ -324,6 +329,119 @@ function genericTrianglePacking(triangle) {
   pushUndoAutomatic();
   redrawAutomatic();
   console.log(`Packed ${rows * cols} generic triangles`);
+}
+
+function isIsoscelesTriangle(triangle) {
+  const [a, b, c] = triangle.sides;
+  // Check if any two sides are equal within a small epsilon
+  const epsilon = 0.001;
+  return (
+    Math.abs(a - b) < epsilon ||
+    Math.abs(b - c) < epsilon ||
+    Math.abs(a - c) < epsilon
+  );
+}
+
+function packIsoscelesTriangleInRectangle(triangle) {
+  if (!spaceOptRectAutomatic || !triangle?.sides || triangle.sides.length !== 3) return;
+
+  const rectWidth = spaceOptRectAutomatic.width;
+  const rectHeight = spaceOptRectAutomatic.height;
+
+  const sides = triangle.sides.slice().sort((a, b) => a - b);
+  let equalSide, baseSide;
+
+  // Validate isosceles
+  if (Math.abs(sides[0] - sides[1]) < 0.001) {
+    equalSide = sides[0];
+    baseSide = sides[2];
+  } else if (Math.abs(sides[1] - sides[2]) < 0.001) {
+    equalSide = sides[1];
+    baseSide = sides[0];
+  } else {
+    alert("Not an isosceles triangle");
+    return;
+  }
+
+  const height = Math.sqrt(equalSide ** 2 - (baseSide / 2) ** 2);
+
+   // Check if triangle is too large to fit in rectangle
+  if (baseSide > rectWidth || height > rectHeight) {
+    alert(`Triangle is too large to fit in the rectangle (${rectWidth}×${rectHeight}).`);
+    return;
+  }
+
+  // Clear previous triangles
+  linesAutomatic = linesAutomatic.filter(item => !(item instanceof TriangleAutomatic));
+  const color = document.getElementById('triangleColorPickerAutomatic').value;
+  let totalTriangles = 0;
+
+  const xStep = baseSide / 2;
+  const yStep = height;
+
+  const rows = Math.floor(rectHeight / yStep);
+  const cols = Math.ceil(rectWidth / xStep);
+
+  function drawTriangle(x, y, pointingUp) {
+    const points = pointingUp
+      ? [[x, y + height], [x + baseSide, y + height], [x + baseSide / 2, y]]
+      : [[x, y], [x + baseSide, y], [x + baseSide / 2, y + height]];
+
+    linesAutomatic.push(new TriangleAutomatic(
+      ...points[0], ...points[1], ...points[2], color
+    ));
+    totalTriangles++;
+  }
+
+  function drawRotatedTriangle(cx, cy, pointingLeft) {
+    const points = pointingLeft
+      ? [[cx, cy], [cx, cy + baseSide], [cx + height, cy + baseSide / 2]]  // ◀
+      : [[cx, cy], [cx, cy + baseSide], [cx - height, cy + baseSide / 2]]; // ▶
+
+    // Check bounds
+    const xs = points.map(p => p[0]);
+    const ys = points.map(p => p[1]);
+    if (
+      Math.min(...xs) >= 0 && Math.max(...xs) <= rectWidth &&
+      Math.min(...ys) >= 0 && Math.max(...ys) <= rectHeight
+    ) {
+      linesAutomatic.push(new TriangleAutomatic(
+        ...points[0], ...points[1], ...points[2], color
+      ));
+      totalTriangles++;
+    }
+  }
+
+  // ➤ Main Grid Packing
+  for (let row = 0; row < rows; row++) {
+    const y = row * yStep;
+    const rowStartsUp = row % 2 === 0;
+
+    for (let col = 0; col < cols; col++) {
+      const x = col * xStep;
+      if (x + baseSide > rectWidth) continue;
+
+      const pointingUp = (col % 2 === 0) ? rowStartsUp : !rowStartsUp;
+      drawTriangle(x, y, pointingUp);
+    }
+  }
+
+  // ➤ Left & Right Edge Wedge Fillers
+  for (let row = 0; row < rows - 1; row++) {
+    const y = row * yStep;
+
+    // Try placing on LEFT side (tip pointing right)
+    drawRotatedTriangle(0, y, false);
+
+    // Try placing on RIGHT side (tip pointing left)
+    drawRotatedTriangle(rectWidth, y, true);
+  }
+
+  pushUndoAutomatic();
+  redrawAutomatic();
+
+  console.log(`Packed ${totalTriangles} triangles (including side wedges)`);
+  alert(`Packed ${totalTriangles} triangles in ${rectWidth}×${rectHeight}`);
 }
 
 // Triangle Class
