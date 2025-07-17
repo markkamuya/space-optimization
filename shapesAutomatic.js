@@ -176,138 +176,115 @@ function packTrianglesInRectangle(triangle) {
 function optimizeRightTrianglePacking(triangle) {
   const rectWidth = spaceOptRectAutomatic.width;
   const rectHeight = spaceOptRectAutomatic.height;
-  const [a, b, c] = triangle.sides; // Sorted, a ≤ b ≤ c
-  
-  // Strategy 1: Basic grid packing
-  const basicGridCount = Math.floor(rectWidth / b) * Math.floor(rectHeight / a);
-  
-  // Strategy 2: Rotated 90 degrees
-  const rotatedGridCount = Math.floor(rectWidth / a) * Math.floor(rectHeight / b);
-  
-  // Strategy 3: Pairwise mirrored packing (forms rectangles)
-  const pairwiseCount = 2 * Math.floor(rectWidth / (a + b)) * Math.floor(rectHeight / b);
-  
-  // Strategy 4: Mixed orientation packing
-  const mixedCount = (Math.floor(rectHeight / (a + b)) * Math.floor(rectWidth / b)) +
-                    (Math.floor(rectWidth / (a + b)) * Math.floor(rectHeight / b));
-  
-  // Find best strategy
-  const bestCount = Math.max(basicGridCount, rotatedGridCount, pairwiseCount, mixedCount);
-  
-  // Clear existing triangles
-  linesAutomatic = linesAutomatic.filter(item => !(item instanceof TriangleAutomatic));
-  
-  // Implement best strategy
-  if (bestCount === basicGridCount) {
-    packBasicRightTriangles(a, b, false);
-  } else if (bestCount === rotatedGridCount) {
-    packBasicRightTriangles(b, a, true);
-  } else if (bestCount === pairwiseCount) {
-    packPairwiseRightTriangles(a, b);
-  } else {
-    packMixedRightTriangles(a, b);
+
+  const sides = triangle.sides?.slice().sort((a, b) => a - b); // a ≤ b ≤ c
+  if (!sides || sides.length !== 3) {
+    alert("Invalid triangle.");
+    return;
   }
-  
+
+  const [a, b, c] = sides;
+  if (Math.abs(a ** 2 + b ** 2 - c ** 2) > 0.01) {
+    alert("This is not a right triangle.");
+    return;
+  }
+
+  linesAutomatic = linesAutomatic.filter(item => !(item instanceof TriangleAutomatic));
+  const color = document.getElementById('triangleColorPickerAutomatic').value;
+
+  let totalTriangles = 0;
+
+  function isInBounds(tri) {
+    return tri.every(([x, y]) => x >= 0 && y >= 0 && x <= rectWidth && y <= rectHeight);
+  }
+
+  function drawPair(x, y, width, height) {
+    const A = [x, y];
+    const B = [x + width, y];
+    const C = [x, y + height];
+    const T1 = [A, B, C];
+
+    if (!isInBounds(T1)) return false;
+    linesAutomatic.push(new TriangleAutomatic(...A, ...B, ...C, color, false));
+    totalTriangles++;
+
+    const A2 = [x + width, y + height];
+    const B2 = [x, y + height];
+    const C2 = [x + width, y];
+    const T2 = [A2, B2, C2];
+
+    if (!isInBounds(T2)) return false;
+    linesAutomatic.push(new TriangleAutomatic(...A2, ...B2, ...C2, color, true));
+    totalTriangles++;
+    return true;
+  }
+
+  function drawSingle(x, y, width, height, mirrored = false) {
+    const tri = mirrored
+      ? [
+          [x + width, y + height],
+          [x, y + height],
+          [x + width, y]
+        ]
+      : [
+          [x, y],
+          [x + width, y],
+          [x, y + height]
+        ];
+    if (!isInBounds(tri)) return false;
+    linesAutomatic.push(new TriangleAutomatic(...tri[0], ...tri[1], ...tri[2], color, mirrored));
+    totalTriangles++;
+    return true;
+  }
+
+  // Strategy 1: Pack with (a × b) blocks
+  let fullCols1 = Math.floor(rectWidth / a);
+  let fullRows1 = Math.floor(rectHeight / b);
+  let area1 = fullCols1 * fullRows1 * 2;
+
+  // Strategy 2: Pack with (b × a) blocks (rotated)
+  let fullCols2 = Math.floor(rectWidth / b);
+  let fullRows2 = Math.floor(rectHeight / a);
+  let area2 = fullCols2 * fullRows2 * 2;
+
+  const useFirst = area1 >= area2;
+  const primaryW = useFirst ? a : b;
+  const primaryH = useFirst ? b : a;
+  const fullCols = useFirst ? fullCols1 : fullCols2;
+  const fullRows = useFirst ? fullRows1 : fullRows2;
+
+  // Fill full grid of mirrored triangle pairs
+  for (let y = 0; y < fullRows * primaryH; y += primaryH) {
+    for (let x = 0; x < fullCols * primaryW; x += primaryW) {
+      drawPair(x, y, primaryW, primaryH);
+    }
+  }
+
+  const usedW = fullCols * primaryW;
+  const usedH = fullRows * primaryH;
+  const remW = rectWidth - usedW;
+  const remH = rectHeight - usedH;
+
+  // Try to fill leftover vertical strip on the right
+  const tryRotW = primaryW === a ? b : a;
+  const tryRotH = primaryH === b ? a : b;
+  if (remW >= tryRotW) {
+    for (let y = 0; y + tryRotH <= rectHeight; y += tryRotH) {
+      drawPair(usedW, y, tryRotW, tryRotH);
+    }
+  }
+
+  // Try to fill leftover horizontal strip on the bottom
+  if (remH >= tryRotH) {
+    for (let x = 0; x + tryRotW <= rectWidth; x += tryRotW) {
+      drawPair(x, usedH, tryRotW, tryRotH);
+    }
+  }
+
   pushUndoAutomatic();
   redrawAutomatic();
-  console.log(`Packed ${bestCount} right triangles`);
-}
-
-function packBasicRightTriangles(shortLeg, longLeg, rotated) {
-  const cols = Math.floor(spaceOptRectAutomatic.width / (rotated ? shortLeg : longLeg));
-  const rows = Math.floor(spaceOptRectAutomatic.height / (rotated ? longLeg : shortLeg));
-  
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      const x = spaceOptRectAutomatic.x + col * (rotated ? shortLeg : longLeg);
-      const y = spaceOptRectAutomatic.y + row * (rotated ? longLeg : shortLeg);
-      
-      if (rotated) {
-        linesAutomatic.push(new TriangleAutomatic(
-          x, y,
-          x, y + shortLeg,
-          x + longLeg, y,
-          document.getElementById('triangleColorPickerAutomatic').value
-        ));
-      } else {
-        linesAutomatic.push(new TriangleAutomatic(
-          x, y,
-          x + longLeg, y,
-          x, y + shortLeg,
-          document.getElementById('triangleColorPickerAutomatic').value
-        ));
-      }
-    }
-  }
-}
-
-function packPairwiseRightTriangles(shortLeg, longLeg) {
-  const pairWidth = shortLeg + longLeg;
-  const cols = Math.floor(spaceOptRectAutomatic.width / pairWidth);
-  const rows = Math.floor(spaceOptRectAutomatic.height / longLeg);
-  
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      const x = spaceOptRectAutomatic.x + col * pairWidth;
-      const y = spaceOptRectAutomatic.y + row * longLeg;
-      
-      // First triangle
-      linesAutomatic.push(new TriangleAutomatic(
-        x, y,
-        x + longLeg, y,
-        x, y + shortLeg,
-        document.getElementById('triangleColorPickerAutomatic').value
-      ));
-      
-      // Mirrored triangle
-      linesAutomatic.push(new TriangleAutomatic(
-        x + longLeg, y,
-        x + pairWidth, y,
-        x + longLeg, y + shortLeg,
-        document.getElementById('triangleColorPickerAutomatic').value
-      ));
-    }
-  }
-}
-
-function packMixedRightTriangles(shortLeg, longLeg) {
-  // Vertical stripe of horizontal triangles
-  const vertCols = Math.floor(spaceOptRectAutomatic.width / longLeg);
-  const vertRows = Math.floor(spaceOptRectAutomatic.height / (shortLeg + longLeg));
-  
-  // Horizontal stripe of vertical triangles
-  const horizRows = Math.floor(spaceOptRectAutomatic.height / longLeg);
-  const horizCols = Math.floor(spaceOptRectAutomatic.width / (shortLeg + longLeg));
-  
-  // Pack vertical stripe
-  for (let row = 0; row < vertRows; row++) {
-    for (let col = 0; col < vertCols; col++) {
-      const x = spaceOptRectAutomatic.x + col * longLeg;
-      const y = spaceOptRectAutomatic.y + row * (shortLeg + longLeg);
-      
-      linesAutomatic.push(new TriangleAutomatic(
-        x, y,
-        x + longLeg, y,
-        x, y + shortLeg,
-        document.getElementById('triangleColorPickerAutomatic').value
-      ));
-    }
-  }
-  
-  // Pack horizontal stripe
-  for (let row = 0; row < horizRows; row++) {
-    for (let col = 0; col < horizCols; col++) {
-      const x = spaceOptRectAutomatic.x + col * (shortLeg + longLeg);
-      const y = spaceOptRectAutomatic.y + row * longLeg;
-      
-      linesAutomatic.push(new TriangleAutomatic(
-        x, y,
-        x, y + longLeg,
-        x + shortLeg, y,
-        document.getElementById('triangleColorPickerAutomatic').value
-      ));
-    }
-  }
+  console.log(`Packed ${totalTriangles} triangles`);
+  alert(`Packed ${totalTriangles} triangles (${rectWidth}×${rectHeight}) using mirrored hypotenuse-pairing`);
 }
 
 function genericTrianglePacking(triangle) {
