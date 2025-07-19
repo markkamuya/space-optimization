@@ -1,20 +1,22 @@
-# 🧠 Triangular Space Optimization Editor  
-**Interactive Geometric Layout Tool for Constrained Packing of Triangles in 2D Space**
+# 🧮 Triangle Packing Toolkit  
+**Geometric Construction and Optimal Packing of Triangles within Rectangular Boundaries**
 
 ---
 
 ## 📘 Overview
 
-This project addresses the complex geometric and algorithmic challenge of fitting fixed-size triangles inside a non-square, bounded rectangular region, minimizing unused space. Built as a prototype for manual configuration and future automated optimization, it leverages interactive construction logic with enforced geometric and spatial constraints.
+This project tackles the mathematical and algorithmic challenge of constructing and fitting triangles inside a fixed rectangular region with minimal wasted space. It supports manual geometric construction modes (SSS, SAS, ASA/AAS) and offers an automated packing mode optimized for specific triangle types (right, equilateral, isosceles, scalene).
+
+Built with interactive HTML5 Canvas rendering, it enables precise control, real-time validation, and efficient spatial arrangement of triangles in 2D.
 
 ---
 
 ## 🔧 Core Technologies
 
-- **HTML5 Canvas** for 2D rendering and real-time interactivity  
-- **JavaScript** for event-driven UI, geometric logic, and shape manipulation  
-- **CSS** for UI styling and layout  
-- **Custom geometry engines** for validation, containment checking, and interaction constraints
+- **HTML5 Canvas API** for dynamic 2D rendering and user interactions  
+- **Vanilla JavaScript** for geometric computations, UI logic, and event handling  
+- **CSS3** for clean UI styling and responsive layout  
+- Custom-built **triangle construction and packing algorithms** based on classical Euclidean geometry and computational optimization  
 
 ---
 
@@ -22,63 +24,109 @@ This project addresses the complex geometric and algorithmic challenge of fittin
 
 ### Triangle Construction Modes
 
-- **SSS (Side-Side-Side)**: Construct a triangle given all three sides.  
-- **SAS (Side-Angle-Side)**: Construct a triangle using two sides and the included angle.  
-- **AAS (Angle-Angle-Side)**: Construct using two angles and one adjacent side.
+- **SSS (Side-Side-Side)**: Constructs triangles given three side lengths satisfying the triangle inequality.  
+- **SAS (Side-Angle-Side)**: Constructs triangles from two sides and their included angle.  
+- **ASA / AAS (Angle-Side-Angle / Angle-Angle-Side)**: Constructs triangles based on two angles and one adjacent side.
 
-### Triangle Validity (Triangle Inequality Theorem)
+### Triangle Validity Constraints
 
-For a triangle ΔABC, the following must hold:
+For triangle ΔABC with sides a, b, c:
 
-a + b > c,  b + c > a,  c + a > b
+\[
+a + b > c,\quad b + c > a,\quad c + a > b
+\]
 
-### Boundary Fitting Logic
+This inequality ensures a valid, non-degenerate triangle.
 
-Bounding box is computed from triangle vertex coordinates. For valid placement inside the rectangular area, the triangle must satisfy:
+### Boundary Fitting Conditions
 
-x_min ≥ x_rect_left,   x_max ≤ x_rect_right  
-y_min ≥ y_rect_top,    y_max ≤ y_rect_bottom
+Given rectangle bounds defined by:
+
+\[
+x_{\text{min}} \leq x \leq x_{\text{max}}, \quad y_{\text{min}} \leq y \leq y_{\text{max}}
+\]
+
+The triangle’s vertices \( (x_i, y_i) \) must satisfy:
+
+\[
+x_{\min} \leq x_i \leq x_{\max}, \quad y_{\min} \leq y_i \leq y_{\max} \quad \forall i \in \{1,2,3\}
+\]
 
 ---
 
 ## 🚧 Key Features
 
-### 🎨 Interactive Editor
+### 🎨 Interactive Manual Editor
 
-- Mouse-driven creation of triangles using **SSS**, **SAS**, or **AAS** construction logic  
-- Real-time vertex snapping and visual feedback during creation  
-- Clipboard support: **cut**, **copy**, **paste** triangles  
-- Undo/Redo stack via operation history  
-- Rotation handles locked to fixed triangle vertices for precision  
-- Pan/Zoom and fullscreen toggling for better spatial management  
+- Construct triangles interactively via **SSS**, **SAS**, or **ASA/AAS** input forms  
+- Real-time validation of triangle inequalities and angle constraints  
+- Vertex manipulation with drag-and-drop on canvas  
+- Undo and redo operations for iterative editing  
+- Snap-to-grid and boundary constraints to enforce rectangle containment
+
+### 🤖 Automated Packing Engine
+
+- Supports optimized packing strategies tailored to triangle types:
+
+  - **Right Triangles:** Grid-aligned mirrored pairs with rotated residual placement  
+  - **Equilateral Triangles:** Hexagonal staggered tiling for maximal density  
+  - **Isosceles Triangles:** Up/down stacking with height adjustments via Pythagorean theorem  
+  - **Scalene Triangles:** Basic row-wise bounding box placement without rotation optimization
+
+- User-specified rectangular packing area with real-time layout rendering  
+- Color-coded triangles with opacity for visual clarity  
+- Undo/redo stack maintained during packing for exploration
 
 ---
 
-### 📦 Space Optimization Mode (Manual Configuration)
+## 📐 Algorithmic Highlights
 
-Activated via a dedicated UI pipeline to prepare valid manual input layouts for optimization.
+- **Triangle Classification:** Using side length comparisons and angle calculations (Law of Cosines)  
+- **Coordinate Computation:** Vertex positions derived via trigonometric relations for all construction modes  
+- **Packing Layout:** Calculates maximum rows and columns fitting within rectangle dimensions based on triangle height and base  
+- **Collision and Boundary Checks:** Ensures no triangle overlaps or escapes the packing boundary  
 
-#### 1. Oblong Rectangle Validation
+---
 
-- On entering space optimization mode, user is prompted to enter rectangle **width** and **height**  
-- A constraint is applied: `width ≠ height`  
-- An _oblong checker_ function validates and blocks square dimensions  
-- Enforces aspect diversity crucial to packing studies
+## 🖼️ Rendering and UI
 
-#### 2. Triangle Fit Enforcement
+- HTML Canvas 2D context renders triangles with fill and stroke for distinction  
+- Interactive vertex points represented as draggable circles  
+- Responsive canvas resizing with coordinate scaling  
+- Modal input forms for entering geometric parameters
 
-- During space optimization mode:  
-  - All triangle construction actions perform a **fit-check** before committing to the canvas  
-  - Fit-check involves simulating triangle placement and checking bounding box collision with the rectangle  
-  - If the triangle exceeds the bounds, an alert is triggered and construction is aborted  
+---
 
-#### 3. In-Bounds Constraint Enforcement
+## 🛠️ Development and Usage
 
-Once a triangle is inside the bounding box:
+Clone and open `index.html` in any modern browser.
 
-- **Dragging** is constrained so that no vertex can leave the rectangle  
-- **Resizing** and **rotation** operations are clamped using post-transformation bounding box validation  
-- Reflects real-world constraints like material sheet cutting, panel design, or layout editors  
+- Use the **Manual Mode** tab to draw and edit triangles with detailed geometric inputs.  
+- Switch to **Automatic Mode** to input triangle parameters and rectangle dimensions, then pack triangles automatically.
+
+---
+
+## ⚙️ Planned Enhancements
+
+- Implement rotation optimization for scalene triangle packing  
+- Add export options (SVG, PNG, DXF) for external use  
+- Integrate multi-type triangle mixed packing algorithms  
+- Enhance UI with pan, zoom, and layer management  
+
+---
+
+## 📜 License
+
+This project is licensed under the MIT License.
+
+---
+
+## ✍️ Author
+
+Crafted with mathematical rigor and geometric elegance by [Your Name].  
+Powered by JavaScript and the foundational principles of Euclidean geometry.
+
+--- 
 
 ---
 ## 🤓 Bonus Fun
@@ -92,13 +140,3 @@ Turns out optical illusions are just one `rotate()` away from accidental brillia
 > Learn more about this famous ambiguous figure here:
 > 🔗 [Necker Cube Optical Illusion on Wikipedia](https://en.wikipedia.org/wiki/Necker_cube)
 ---
-## Development
-
-To connect your local repo to GitHub, run:
-
-```bash
-git init
-git remote add origin https://github.com/markkamuya/space-optimization.git
-git add .
-git commit -m "Initial commit"
-git push -u origin main
