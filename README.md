@@ -33,7 +33,7 @@ Built with interactive HTML5 Canvas rendering, it enables precise control, real-
 For triangle ΔABC with sides a, b, c:
 
 \[
-a + b > c,\quad b + c > a,\quad c + a > b
+a + b > c, b + c > a, c + a > b
 \]
 
 This inequality ensures a valid, non-degenerate triangle.
