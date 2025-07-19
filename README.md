@@ -135,7 +135,6 @@ Turns out optical illusions are just one `rotate()` away from accidental brillia
 
 ## ✍️ Author
 
-Crafted with mathematical rigor and geometric elegance by [Your Name].  
-Powered by JavaScript and the foundational principles of Euclidean geometry.
+Crafted with mathematical rigor and geometric elegance by Mark Kamuya.
 
 --- 
