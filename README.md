@@ -42,15 +42,12 @@ This inequality ensures a valid, non-degenerate triangle.
 
 Given rectangle bounds defined by:
 
-\[
-x_{\text{min}} \leq x \leq x_{\text{max}}, \quad y_{\text{min}} \leq y \leq y_{\text{max}}
-\]
+x_min ≤ x ≤ x_max, y_min ≤ y ≤ y_max
 
-The triangle’s vertices \( (x_i, y_i) \) must satisfy:
 
-\[
-x_{\min} \leq x_i \leq x_{\max}, \quad y_{\min} \leq y_i \leq y_{\max} \quad \forall i \in \{1,2,3\}
-\]
+The triangle’s vertices (x_i, y_i) satisfy:
+
+x_min ≤ x_i ≤ x_max, y_min ≤ y_i ≤ y_max for all i in {1, 2, 3}.
 
 ---
 
