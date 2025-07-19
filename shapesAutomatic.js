@@ -167,8 +167,9 @@ function packTrianglesInRectangle(triangle) {
   if (triangle.isRight) {
     console.log("Optimizing right triangle packing...");
     optimizeRightTrianglePacking(triangle);
-  } 
-    else if (isIsoscelesTriangle(triangle)) {
+  } else if (isEquilateralTriangle(triangle)) {
+  packEquilateralTriangleInRectangle(triangle);
+    } else if (isIsoscelesTriangle(triangle)) {
         console.log("Optimizing isosceles triangle packing...");
         packIsoscelesTriangleInRectangle(triangle);
     } 
@@ -293,42 +294,89 @@ function optimizeRightTrianglePacking(triangle) {
 }
 
 function genericTrianglePacking(triangle) {
-  const triPoints = triangle.points;
-  const minX = Math.min(...triPoints.map(p => p[0]));
-  const maxX = Math.max(...triPoints.map(p => p[0]));
-  const minY = Math.min(...triPoints.map(p => p[1]));
-  const maxY = Math.max(...triPoints.map(p => p[1]));
-  
-  const triWidth = maxX - minX;
-  const triHeight = maxY - minY;
+  if (!spaceOptRectAutomatic || !triangle?.sides || triangle.sides.length !== 3) return;
 
-  const cols = Math.floor(spaceOptRectAutomatic.width / triWidth);
-  const rows = Math.floor(spaceOptRectAutomatic.height / triHeight);
+  const rectWidth = spaceOptRectAutomatic.width;
+  const rectHeight = spaceOptRectAutomatic.height;
+
+  const [a, b, c] = triangle.sides.slice();
+
+  // Validate scalene: all sides must be different
+  if (
+    Math.abs(a - b) < 0.001 ||
+    Math.abs(b - c) < 0.001 ||
+    Math.abs(a - c) < 0.001
+  ) {
+    alert("Not a scalene triangle (all sides must be different)");
+    return;
+  }
+
+  // Use side 'c' as base
+  const base = c;
+  const side1 = a;
+  const side2 = b;
+
+  // Use Heron's formula to calculate height
+  const s = (a + b + c) / 2;
+  const area = Math.sqrt(s * (s - a) * (s - b) * (s - c));
+  const height = (2 * area) / base;
+
+  if (base > rectWidth || height > rectHeight) {
+    alert(`Triangle too big to fit in the rectangle (${rectWidth}×${rectHeight})`);
+    return;
+  }
 
   linesAutomatic = linesAutomatic.filter(item => !(item instanceof TriangleAutomatic));
+  const color = document.getElementById('triangleColorPickerAutomatic').value;
+  let totalTriangles = 0;
 
+  const xStep = base / 2;
+  const yStep = height;
+
+  const rows = Math.floor(rectHeight / yStep);
+  const cols = Math.ceil(rectWidth / xStep);
+
+  // Check if all points fit inside the rectangle
+  function fitsInside(points) {
+    const eps = 1e-6;
+    return points.every(([x, y]) =>
+      x >= -eps && x <= rectWidth + eps &&
+      y >= -eps && y <= rectHeight + eps
+    );
+  }
+
+  function drawTriangle(x, y, pointingUp) {
+    const points = pointingUp
+      ? [[x, y + height], [x + base, y + height], [x + base / 2, y]]
+      : [[x, y], [x + base, y], [x + base / 2, y + height]];
+
+    if (fitsInside(points)) {
+      linesAutomatic.push(new TriangleAutomatic(
+        ...points[0], ...points[1], ...points[2], color
+      ));
+      totalTriangles++;
+    }
+  }
+
+  // Main grid packing
   for (let row = 0; row < rows; row++) {
+    const y = row * yStep;
+    const rowStartsUp = row % 2 === 0;
+
     for (let col = 0; col < cols; col++) {
-      const xOffset = spaceOptRectAutomatic.x + col * triWidth;
-      const yOffset = spaceOptRectAutomatic.y + row * triHeight;
-      
-      const newTriangle = new TriangleAutomatic(
-        xOffset + triPoints[0][0] - minX, 
-        yOffset + triPoints[0][1] - minY,
-        xOffset + triPoints[1][0] - minX,
-        yOffset + triPoints[1][1] - minY,
-        xOffset + triPoints[2][0] - minX,
-        yOffset + triPoints[2][1] - minY,
-        document.getElementById('triangleColorPickerAutomatic').value
-      );
-      
-      linesAutomatic.push(newTriangle);
+      const x = col * xStep;
+      if (x + base > rectWidth) continue;
+
+      const pointingUp = (col % 2 === 0) ? rowStartsUp : !rowStartsUp;
+      drawTriangle(x, y, pointingUp);
     }
   }
 
   pushUndoAutomatic();
   redrawAutomatic();
-  console.log(`Packed ${rows * cols} generic triangles`);
+
+  console.log(`Packed ${totalTriangles} scalene triangles`);
+  alert(`Packed ${totalTriangles} scalene triangles in ${rectWidth}×${rectHeight}`);
 }
 
 function isIsoscelesTriangle(triangle) {
@@ -351,7 +399,7 @@ function packIsoscelesTriangleInRectangle(triangle) {
   const sides = triangle.sides.slice().sort((a, b) => a - b);
   let equalSide, baseSide;
 
-  // Validate isosceles
+  //Validate isosceles
   if (Math.abs(sides[0] - sides[1]) < 0.001) {
     equalSide = sides[0];
     baseSide = sides[2];
@@ -443,6 +491,84 @@ function packIsoscelesTriangleInRectangle(triangle) {
   console.log(`Packed ${totalTriangles} triangles (including side wedges)`);
   alert(`Packed ${totalTriangles} triangles in ${rectWidth}×${rectHeight}`);
 }
+
+function isEquilateralTriangle(triangle) {
+  const [a, b, c] = triangle.sides;
+  const epsilon = 0.001;
+  return Math.abs(a - b) < epsilon && Math.abs(b - c) < epsilon;
+}
+
+function packEquilateralTriangleInRectangle(triangle) {
+  if (!spaceOptRectAutomatic) return;
+
+  const rectWidth = spaceOptRectAutomatic.width;
+  const rectHeight = spaceOptRectAutomatic.height;
+
+  const s = triangle.sides[0]; // side length
+  const h = Math.sqrt(3) / 2 * s;
+
+  if (s > rectWidth || h > rectHeight) {
+    alert(`Triangle too big to fit in the rectangle (${rectWidth}×${rectHeight})`);
+    return;
+  }
+
+  // Clear previous triangles
+  linesAutomatic = linesAutomatic.filter(item => !(item instanceof TriangleAutomatic));
+  const color = document.getElementById('triangleColorPickerAutomatic').value;
+  let totalTriangles = 0;
+
+  const xStep = s / 2;
+  const yStep = h;
+
+  const rows = Math.floor(rectHeight / yStep);
+  const cols = Math.ceil(rectWidth / xStep);
+
+  // Helper to check if all triangle points fit inside rectangle
+  function fitsInside(points) {
+    const eps = 1e-6;
+    return points.every(([x, y]) =>
+      x >= -eps && x <= rectWidth + eps && y >= -eps && y <= rectHeight + eps
+    );
+  }
+
+  function drawTriangle(x, y, pointingUp) {
+    // Equilateral triangles:
+    // pointingUp: base at bottom y+h, tip at y
+    // pointingDown: base at y, tip at y+h
+    const points = pointingUp
+      ? [[x, y + h], [x + s, y + h], [x + s / 2, y]]
+      : [[x, y], [x + s, y], [x + s / 2, y + h]];
+
+    if (fitsInside(points)) {
+      linesAutomatic.push(new TriangleAutomatic(
+        ...points[0], ...points[1], ...points[2], color
+      ));
+      totalTriangles++;
+    }
+  }
+
+  // Main grid packing
+  for (let row = 0; row < rows; row++) {
+    const y = row * yStep;
+    const rowStartsUp = row % 2 === 0;
+
+    for (let col = 0; col < cols; col++) {
+      const x = col * xStep;
+      if (x + s > rectWidth) continue;
+
+      // Alternate pointingUp/pointingDown similar to isosceles pattern
+      const pointingUp = (col % 2 === 0) ? rowStartsUp : !rowStartsUp;
+      drawTriangle(x, y, pointingUp);
+    }
+  }
+
+  pushUndoAutomatic();
+  redrawAutomatic();
+
+  console.log(`Packed ${totalTriangles} equilateral triangles`);
+  alert(`Packed ${totalTriangles} equilateral triangles in ${rectWidth}×${rectHeight}`);
+}
+
 
 // Triangle Class
 class TriangleAutomatic {
