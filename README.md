@@ -118,14 +118,6 @@ Clone and open `index.html` in any modern browser.
 
 This project is licensed under the MIT License.
 
----
-
-## ✍️ Author
-
-Crafted with mathematical rigor and geometric elegance by [Your Name].  
-Powered by JavaScript and the foundational principles of Euclidean geometry.
-
---- 
 
 ---
 ## 🤓 Bonus Fun
@@ -139,3 +131,11 @@ Turns out optical illusions are just one `rotate()` away from accidental brillia
 > Learn more about this famous ambiguous figure here:
 > 🔗 [Necker Cube Optical Illusion on Wikipedia](https://en.wikipedia.org/wiki/Necker_cube)
 ---
+---
+
+## ✍️ Author
+
+Crafted with mathematical rigor and geometric elegance by [Your Name].  
+Powered by JavaScript and the foundational principles of Euclidean geometry.
+
+--- 
