@@ -42,7 +42,9 @@ This inequality ensures a valid, non-degenerate triangle.
 
 Given rectangle bounds defined by:
 
+
 x_min ≤ x ≤ x_max, y_min ≤ y ≤ y_max
+
 
 
 The triangle’s vertices (x_i, y_i) satisfy:
