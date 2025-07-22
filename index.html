@@ -199,6 +199,35 @@
 
   <!-- MODAL FOR TRIANGLE SIDES INPUT -->
   <div id="triangleModalAutomatic" style="display:none; position:fixed; top:20%; left:50%; transform:translateX(-50%); background:#fff; border:1px solid #ccc; padding:20px; z-index:2000; width:300px; box-shadow:0 4px 10px rgba(0,0,0,0.2);">
+    <!-- Triangle Type Choice Modal -->
+<div id="triangleTypeModal" style="display:none; position:fixed; top:25%; left:50%; transform:translateX(-50%); background:#fff; border:1px solid #ccc; padding:20px; z-index:3000; width:320px; box-shadow:0 4px 10px rgba(0,0,0,0.2);">
+  <h3>Triangle Type</h3>
+  <p>Are your triangles homogeneous or heterogeneous?</p>
+  <div style="display:flex; justify-content:space-between; margin-top:15px;">
+    <button id="homogeneousBtn" class="px-4 py-2 bg-blue-500 text-white rounded">Homogeneous</button>
+    <button id="heterogeneousBtn" class="px-4 py-2 bg-green-500 text-white rounded">Heterogeneous</button>
+  </div>
+</div>
+
+<!-- Heterogeneous Triangle Count Input -->
+<div id="heteroTriangleCountModal" style="display:none; position:fixed; top:25%; left:50%; transform:translateX(-50%); background:#fff; border:1px solid #ccc; padding:20px; z-index:3000; width:300px; box-shadow:0 4px 10px rgba(0,0,0,0.2);">
+  <h3>How many triangles?</h3>
+  <input type="number" id="heteroTriangleCountInput" min="1" class="border px-2 py-1 w-full" />
+  <div style="text-align:right; margin-top:10px;">
+    <button id="confirmTriangleCount" class="bg-blue-500 text-white px-4 py-2 rounded">Next</button>
+    <button id="cancelTriangleCount" class="ml-2 text-gray-600 px-4 py-2">Cancel</button>
+  </div>
+</div>
+
+<!-- Dynamic Triangle Entry Modal -->
+<div id="heteroTriangleEntryModal" style="display:none; position:fixed; top:10%; left:50%; transform:translateX(-50%); background:#fff; border:1px solid #ccc; padding:20px; z-index:3000; width:400px; max-height:80vh; overflow-y:auto; box-shadow:0 4px 10px rgba(0,0,0,0.2);">
+  <h3>Enter Triangle Details</h3>
+  <div id="heteroTriangleInputsContainer"></div>
+  <div style="text-align:right; margin-top:10px;">
+    <button id="createHeteroTriangles" class="bg-green-600 text-white px-4 py-2 rounded">Create</button>
+    <button id="cancelHeteroTriangles" class="ml-2 text-gray-600 px-4 py-2">Cancel</button>
+  </div>
+</div>
     <h3>Create Triangle</h3>
     <label>
       Method:
@@ -290,6 +319,115 @@
     });
   });
 </script>
+<script>
+document.getElementById("spaceOptBtnAutomatic").addEventListener("click", () => {
+  document.getElementById("triangleTypeModal").style.display = "block";
+});
+
+// Handle triangle type choice
+document.getElementById("homogeneousBtn").addEventListener("click", () => {
+  document.getElementById("triangleTypeModal").style.display = "none";
+  alert("Proceeding with homogeneous triangle logic.");
+  // 👇 Insert or trigger your existing homogeneous logic here
+});
+
+document.getElementById("heterogeneousBtn").addEventListener("click", () => {
+  document.getElementById("triangleTypeModal").style.display = "none";
+  document.getElementById("heteroTriangleCountModal").style.display = "block";
+});
+
+// Cancel count modal
+document.getElementById("cancelTriangleCount").addEventListener("click", () => {
+  document.getElementById("heteroTriangleCountModal").style.display = "none";
+});
+
+// Confirm triangle count input
+document.getElementById("confirmTriangleCount").addEventListener("click", () => {
+  const count = parseInt(document.getElementById("heteroTriangleCountInput").value);
+  const container = document.getElementById("heteroTriangleInputsContainer");
+  container.innerHTML = ""; // Clear old inputs
+
+  if (count > 0) {
+    for (let i = 0; i < count; i++) {
+      const group = document.createElement("div");
+      group.className = "mb-4 border-b pb-4";
+      group.innerHTML = `
+        <label class="block font-bold">Triangle ${i + 1}</label>
+        <select class="methodSelector mb-2 w-full border p-1">
+          <option value="SSS">SSS (3 sides)</option>
+          <option value="SAS">SAS (2 sides + angle)</option>
+          <option value="AAS">AAS (2 angles + side)</option>
+        </select>
+        <div class="inputFields space-y-1"></div>
+      `;
+      container.appendChild(group);
+    }
+
+    document.querySelectorAll(".methodSelector").forEach(selector => {
+      selector.addEventListener("change", e => {
+        const inputFields = e.target.parentElement.querySelector(".inputFields");
+        inputFields.innerHTML = "";
+        switch (e.target.value) {
+          case "SSS":
+            inputFields.innerHTML = `
+              <input placeholder="Side a" class="w-full border p-1" />
+              <input placeholder="Side b" class="w-full border p-1" />
+              <input placeholder="Side c" class="w-full border p-1" />
+            `;
+            break;
+          case "SAS":
+            inputFields.innerHTML = `
+              <input placeholder="Side a" class="w-full border p-1" />
+              <input placeholder="Angle (deg)" class="w-full border p-1" />
+              <input placeholder="Side b" class="w-full border p-1" />
+            `;
+            break;
+          case "AAS":
+            inputFields.innerHTML = `
+              <input placeholder="Angle A (deg)" class="w-full border p-1" />
+              <input placeholder="Angle B (deg)" class="w-full border p-1" />
+              <input placeholder="Side c" class="w-full border p-1" />
+            `;
+            break;
+        }
+      });
+      selector.dispatchEvent(new Event("change")); // initialize
+    });
+
+    document.getElementById("heteroTriangleCountModal").style.display = "none";
+    document.getElementById("heteroTriangleEntryModal").style.display = "block";
+  }
+});
+
+// Cancel triangle entry
+document.getElementById("cancelHeteroTriangles").addEventListener("click", () => {
+  document.getElementById("heteroTriangleEntryModal").style.display = "none";
+});
+
+// Collect triangle data on "Create"
+document.getElementById("createHeteroTriangles").addEventListener("click", () => {
+  const triangles = [];
+  document.querySelectorAll("#heteroTriangleInputsContainer > div").forEach(group => {
+    const method = group.querySelector(".methodSelector").value;
+    const inputs = [...group.querySelectorAll(".inputFields input")].map(i => i.value.trim());
+    triangles.push({ method, values: inputs });
+  });
+
+  console.log("Entered Triangles:", triangles);
+
+  // 👇 Now pass this to your geometry engine or visualization logic
+  // alert("Collected triangle definitions. You can now build them or optimize layout.");
+  simulateAnnealingPacking(triangles).then(result => {
+  // display or use the result in your UI
+  console.log("Packing result:", result);
+  showPackingResult(result);
+});
+
+
+  document.getElementById("heteroTriangleEntryModal").style.display = "none";
+});
+</script>
+
 
 
 </body>

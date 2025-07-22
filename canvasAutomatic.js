@@ -586,3 +586,143 @@ window.addEventListener('resize', () => {
     redrawAutomatic();
   }
 });
+function rotatePoint(px, py, angle) {
+  const cosA = Math.cos(angle);
+  const sinA = Math.sin(angle);
+  return {
+    x: px * cosA - py * sinA,
+    y: px * sinA + py * cosA,
+  };
+}
+
+function transformTriangle(baseTriangle, x, y, angle) {
+  return baseTriangle.map(p => {
+    const r = rotatePoint(p.x, p.y, angle);
+    return { x: r.x + x, y: r.y + y };
+  });
+}
+
+function doPolygonsOverlap(polyA, polyB) {
+  function project(polygon, axis) {
+    const dots = polygon.map(p => p.x * axis.x + p.y * axis.y);
+    return { min: Math.min(...dots), max: Math.max(...dots) };
+  }
+
+  function getAxes(polygon) {
+    const axes = [];
+    for (let i = 0; i < polygon.length; i++) {
+      const p1 = polygon[i];
+      const p2 = polygon[(i + 1) % polygon.length];
+      const edge = { x: p2.x - p1.x, y: p2.y - p1.y };
+      const normal = { x: -edge.y, y: edge.x };
+      const length = Math.hypot(normal.x, normal.y);
+      axes.push({ x: normal.x / length, y: normal.y / length });
+    }
+    return axes;
+  }
+
+  const axes = [...getAxes(polyA), ...getAxes(polyB)];
+  for (const axis of axes) {
+    const projA = project(polyA, axis);
+    const projB = project(polyB, axis);
+    if (projA.max < projB.min || projB.max < projA.min) {
+      return false; // Found a separating axis — no overlap
+    }
+  }
+  return true; // Overlap detected on all axes
+}
+
+async function runSimulatedAnnealing(triangleDefs, rectWidth, rectHeight) {
+  const triangles = triangleDefs.map(t => generateTriangleFromDefinition(t));
+  let state = triangles.map(() => ({
+    x: Math.random() * rectWidth,
+    y: Math.random() * rectHeight,
+    angle: Math.random() * 2 * Math.PI,
+  }));
+
+  let temperature = 1.0;
+  const cooling = 0.98;
+  const T_MIN = 1e-3;
+
+  function clamp(value, min, max) {
+    return Math.min(Math.max(value, min), max);
+  }
+
+  function getCost(state) {
+    const transformedTriangles = [];
+
+    for (let i = 0; i < triangles.length; i++) {
+      const tri = transformTriangle(triangles[i], state[i].x, state[i].y, state[i].angle);
+
+      // Bounds check: if any vertex is outside the rectangle, heavy penalty
+      for (const p of tri) {
+        if (p.x < 0 || p.x > rectWidth || p.y < 0 || p.y > rectHeight) {
+          return 1e9;
+        }
+      }
+
+      transformedTriangles.push(tri);
+    }
+
+    // Overlap check between all pairs
+    for (let i = 0; i < transformedTriangles.length; i++) {
+      for (let j = i + 1; j < transformedTriangles.length; j++) {
+        if (doPolygonsOverlap(transformedTriangles[i], transformedTriangles[j])) {
+          return 1e9;
+        }
+      }
+    }
+
+    // Calculate bounding box of all triangles to minimize packing area
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const tri of transformedTriangles) {
+      for (const p of tri) {
+        minX = Math.min(minX, p.x);
+        minY = Math.min(minY, p.y);
+        maxX = Math.max(maxX, p.x);
+        maxY = Math.max(maxY, p.y);
+      }
+    }
+
+    const usedWidth = maxX - minX;
+    const usedHeight = maxY - minY;
+    return usedWidth * usedHeight;
+  }
+
+  function perturb(state) {
+    const next = JSON.parse(JSON.stringify(state));
+    const idx = Math.floor(Math.random() * next.length);
+
+    // Add random perturbation and clamp to valid bounds
+    next[idx].x = clamp(next[idx].x + (Math.random() - 0.5) * 20, 0, rectWidth);
+    next[idx].y = clamp(next[idx].y + (Math.random() - 0.5) * 20, 0, rectHeight);
+    next[idx].angle = (next[idx].angle + (Math.random() - 0.5) * 0.2) % (2 * Math.PI);
+    if (next[idx].angle < 0) next[idx].angle += 2 * Math.PI;
+
+    return next;
+  }
+
+  let best = [...state];
+  let bestCost = getCost(state);
+
+  while (temperature > T_MIN) {
+    for (let i = 0; i < 100; i++) {
+      const next = perturb(state);
+      const currentCost = getCost(state);
+      const nextCost = getCost(next);
+      const delta = nextCost - currentCost;
+
+      if (delta < 0 || Math.random() < Math.exp(-delta / temperature)) {
+        state = next;
+        if (nextCost < bestCost) {
+          best = [...next];
+          bestCost = nextCost;
+        }
+      }
+    }
+    temperature *= cooling;
+    await new Promise(resolve => setTimeout(resolve, 10)); // keeps UI responsive if rendering in browser
+  }
+
+  return { triangles, state: best };
+}
