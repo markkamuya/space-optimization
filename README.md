@@ -28,7 +28,7 @@ the open-problem board.
 
 <p align="center">
   <a href="https://triangle-packing-atlas.vercel.app/">
-    <img src="docs/assets/atlas-demo.gif" alt="Triangle Packing Atlas walkthrough showing the interactive phase map, verified records, and open challenges" width="640">
+    <img src="docs/assets/atlas-demo.gif?v=2" alt="Triangle Packing Atlas walkthrough showing the interactive phase map, verified records, pattern comparisons, research roadmap, and open challenges" width="640">
   </a>
 </p>
 
