@@ -1,10 +1,12 @@
-# Forma — Triangle Packing Lab
+# Triangle Packing Atlas
 
-Forma is an interactive computational-geometry laboratory for packing
-heterogeneous triangles into rectangular sheets. It makes heuristic
-optimization inspectable: every experiment has a seed, a deterministic
-baseline, independent validity metrics, convergence history, and
-scale-preserving exports.
+Triangle Packing Atlas is an open, reproducible record of triangle-packing
+constructions, computational results, and unresolved problems. It combines an
+independent geometry verifier, versioned data standard, reference
+constructions, benchmark corpus, solver laboratory, and interactive viewer.
+
+The existing Forma interface is the prototype viewer. The Atlas dataset and
+verifier are now the source of truth.
 
 ## Why it is different
 
@@ -39,23 +41,32 @@ Open the local address printed by Vite.
 npm test
 npm run build
 npm run benchmark
+npm run atlas:benchmark
+npm run atlas:verify -- atlas/right/right-grid-2x1.json
 ```
 
 ## Project map
 
 ```text
 src/
+  atlas/        verification, evidence states, fingerprints
+  constructions/ exact and reference mathematical generators
   core/         problem definitions, seeded random generator, exports
   geometry/     constructions, transforms, predicates, intersection
   rendering/    canvas packing and convergence rendering
   solvers/      independent scoring, compact baseline, multi-start search
 test/           geometry, problem, and solver regression tests
 benchmarks/     reproducible solver fixtures
+atlas/          version-controlled verified packing records
+schemas/        versioned JSON data contracts
 docs/           architecture and contribution guidance
 ```
 
 See [ROADMAP.md](ROADMAP.md) for the six product milestones and
 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the design.
+
+Foundation status is documented in
+[docs/FOUNDATION_MILESTONES.md](docs/FOUNDATION_MILESTONES.md).
 
 ## Constraint model
 

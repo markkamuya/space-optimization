@@ -1,0 +1,28 @@
+{
+  "format": "triangle-packing-benchmarks/v1",
+  "cases": [
+    {
+      "id": "control-right-grid-4x3",
+      "family": "right",
+      "kind": "known_optimum",
+      "construction": "right-triangle-rectangular-pairs",
+      "parameters": { "columns": 4, "rows": 3, "cellWidth": 1, "cellHeight": 1 },
+      "expected": { "valid": true, "utilization": 1 }
+    },
+    {
+      "id": "equilateral-square-10",
+      "family": "equilateral",
+      "kind": "reference_construction",
+      "construction": "equilateral-alternating-rows",
+      "parameters": { "width": 10, "height": 10, "side": 1, "maxPieces": 300 },
+      "expected": { "valid": true, "minimumUtilization": 0.75 }
+    },
+    {
+      "id": "mixed-workshop-30x20",
+      "family": "heterogeneous",
+      "kind": "open_computational",
+      "solver": "compact-baseline",
+      "expected": { "valid": true, "minimumUtilization": 0.9 }
+    }
+  ]
+}

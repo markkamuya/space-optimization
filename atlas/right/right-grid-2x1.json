@@ -1,0 +1,44 @@
+{
+  "format": "triangle-packing-atlas/v1",
+  "id": "right-grid-2x1",
+  "problem": {
+    "name": "Two unit squares split into right triangles",
+    "width": 2,
+    "height": 1,
+    "margin": 0,
+    "kerf": 0,
+    "allowRotation": true,
+    "allowReflection": false,
+    "fillSheet": false,
+    "maxPieces": 4,
+    "seed": "exact-right-grid",
+    "triangles": [
+      { "id": "R1", "sides": [1.4142135623730951, 1, 1], "color": "#f97316" },
+      { "id": "R2", "sides": [1.4142135623730951, 1, 1], "color": "#38bdf8" },
+      { "id": "R3", "sides": [1.4142135623730951, 1, 1], "color": "#f97316" },
+      { "id": "R4", "sides": [1.4142135623730951, 1, 1], "color": "#38bdf8" }
+    ]
+  },
+  "solution": {
+    "construction": "right-triangle-rectangular-pairs",
+    "placements": [
+      { "x": 1, "y": 0, "angle": 1.5707963267948966, "reflect": false },
+      { "x": 0, "y": 1, "angle": -1.5707963267948966, "reflect": false },
+      { "x": 2, "y": 0, "angle": 1.5707963267948966, "reflect": false },
+      { "x": 1, "y": 1, "angle": -1.5707963267948966, "reflect": false }
+    ]
+  },
+  "evidence": {
+    "status": "proven_optimal",
+    "proof": {
+      "type": "area_bound",
+      "statement": "Each pair exactly covers a unit square and the two cells cover the rectangle."
+    }
+  },
+  "provenance": {
+    "generator": "right-triangle-rectangular-pairs",
+    "version": "1.0.0",
+    "contributor": "Triangle Packing Atlas",
+    "createdAt": "2026-07-26T00:00:00.000Z"
+  }
+}

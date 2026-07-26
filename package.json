@@ -1,6 +1,6 @@
 {
-  "name": "triangle-packing-toolkit",
-  "version": "0.1.0",
+  "name": "triangle-packing-atlas",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,6 +9,8 @@
     "preview": "vite preview",
     "test": "node --test",
     "benchmark": "node benchmarks/run.js",
+    "atlas:verify": "node cli/verify.js",
+    "atlas:benchmark": "node benchmarks/atlas.js",
     "check": "npm test && npm run build"
   },
   "devDependencies": {

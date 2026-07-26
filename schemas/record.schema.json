@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trianglepackingatlas.org/schemas/record.v1.json",
+  "title": "Triangle Packing Atlas Record",
+  "type": "object",
+  "required": ["format", "id", "problem", "solution", "evidence", "provenance"],
+  "properties": {
+    "format": { "const": "triangle-packing-atlas/v1" },
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]+$" },
+    "problem": { "$ref": "problem.schema.json" },
+    "solution": {
+      "type": "object",
+      "required": ["placements", "construction"],
+      "properties": {
+        "construction": { "type": "string" },
+        "placements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["x", "y", "angle"],
+            "properties": {
+              "x": { "type": "number" },
+              "y": { "type": "number" },
+              "angle": { "type": "number" },
+              "reflect": { "type": "boolean" }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "evidence": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "enum": [
+            "proven_optimal",
+            "published",
+            "verified_construction",
+            "best_computational",
+            "candidate",
+            "open",
+            "disputed"
+          ]
+        },
+        "proof": { "type": "object" },
+        "citation": { "type": "string" },
+        "notes": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["generator", "createdAt"],
+      "properties": {
+        "generator": { "type": "string" },
+        "version": { "type": "string" },
+        "seed": { "type": "string" },
+        "runtimeMs": { "type": "number", "minimum": 0 },
+        "contributor": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
