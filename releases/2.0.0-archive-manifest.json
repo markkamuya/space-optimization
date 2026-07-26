@@ -28,8 +28,8 @@
     },
     {
       "path": "public/community-challenges-v2.json",
-      "bytes": 11715,
-      "sha256": "523a61d771f6c1fbc6307caf9239518f0053267b6350ee7601eb9f7bb3ee4eaf"
+      "bytes": 12666,
+      "sha256": "2606ade3e5d68e0c23685390c81d0110e2b39aab0800b224e6cee945de250053"
     },
     {
       "path": "schemas/canonical-release.schema.json",

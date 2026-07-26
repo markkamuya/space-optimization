@@ -27,6 +27,7 @@
       ],
       "starterCommand": "npm run atlas:experiment -- --record s358065-r3",
       "submissionGuide": "docs/SUBMISSION_WALKTHROUGH.md",
+      "issueUrl": "https://github.com/markkamuya/space-optimization/issues/1",
       "status": "open"
     },
     {
@@ -52,6 +53,7 @@
       ],
       "starterCommand": "npm run atlas:experiment -- --record s358065-r2p85",
       "submissionGuide": "docs/SUBMISSION_WALKTHROUGH.md",
+      "issueUrl": "https://github.com/markkamuya/space-optimization/issues/3",
       "status": "open"
     },
     {
@@ -77,6 +79,7 @@
       ],
       "starterCommand": "npm run atlas:experiment -- --record iso-a35-r3",
       "submissionGuide": "docs/SUBMISSION_WALKTHROUGH.md",
+      "issueUrl": "https://github.com/markkamuya/space-optimization/issues/2",
       "status": "open"
     },
     {
@@ -102,6 +105,7 @@
       ],
       "starterCommand": "npm run atlas:experiment -- --record s358065-r2p7",
       "submissionGuide": "docs/SUBMISSION_WALKTHROUGH.md",
+      "issueUrl": "https://github.com/markkamuya/space-optimization/issues/4",
       "status": "open"
     },
     {
@@ -127,6 +131,7 @@
       ],
       "starterCommand": "npm run atlas:experiment -- --record iso-a35-r2p85",
       "submissionGuide": "docs/SUBMISSION_WALKTHROUGH.md",
+      "issueUrl": "https://github.com/markkamuya/space-optimization/issues/6",
       "status": "open"
     },
     {
@@ -152,6 +157,7 @@
       ],
       "starterCommand": "npm run atlas:experiment -- --record s406575-r3",
       "submissionGuide": "docs/SUBMISSION_WALKTHROUGH.md",
+      "issueUrl": "https://github.com/markkamuya/space-optimization/issues/5",
       "status": "open"
     },
     {
@@ -177,6 +183,7 @@
       ],
       "starterCommand": "npm run atlas:experiment -- --record s358065-r2p55",
       "submissionGuide": "docs/SUBMISSION_WALKTHROUGH.md",
+      "issueUrl": "https://github.com/markkamuya/space-optimization/issues/7",
       "status": "open"
     },
     {
@@ -202,6 +209,7 @@
       ],
       "starterCommand": "npm run atlas:experiment -- --record iso-a35-r2p7",
       "submissionGuide": "docs/SUBMISSION_WALKTHROUGH.md",
+      "issueUrl": "https://github.com/markkamuya/space-optimization/issues/8",
       "status": "open"
     },
     {
@@ -227,6 +235,7 @@
       ],
       "starterCommand": "npm run atlas:experiment -- --record iso-a40-r3",
       "submissionGuide": "docs/SUBMISSION_WALKTHROUGH.md",
+      "issueUrl": "https://github.com/markkamuya/space-optimization/issues/9",
       "status": "open"
     },
     {
@@ -252,6 +261,7 @@
       ],
       "starterCommand": "npm run atlas:experiment -- --record s406575-r2p85",
       "submissionGuide": "docs/SUBMISSION_WALKTHROUGH.md",
+      "issueUrl": "https://github.com/markkamuya/space-optimization/issues/10",
       "status": "open"
     },
     {
@@ -277,6 +287,7 @@
       ],
       "starterCommand": "npm run atlas:experiment -- --record s358065-r2p4",
       "submissionGuide": "docs/SUBMISSION_WALKTHROUGH.md",
+      "issueUrl": "https://github.com/markkamuya/space-optimization/issues/11",
       "status": "open"
     },
     {
@@ -302,6 +313,7 @@
       ],
       "starterCommand": "npm run atlas:experiment -- --record iso-a35-r2p55",
       "submissionGuide": "docs/SUBMISSION_WALKTHROUGH.md",
+      "issueUrl": "https://github.com/markkamuya/space-optimization/issues/12",
       "status": "open"
     }
   ],

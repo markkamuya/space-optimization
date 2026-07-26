@@ -406,7 +406,7 @@ async function loadV1Context() {
       $('#challenge-grid').replaceChildren();
       challenges.challenges.forEach(challenge => {
         const article = document.createElement('article');
-        article.innerHTML = `<span>${challenge.challengeId}</span><small>${challenge.status} · verified task</small><h3>${challenge.title}</h3><p>${challenge.objective}</p><b>${percent(challenge.baseline.utilization)} → ${percent(challenge.baseline.upperBound)} upper bound</b>`;
+        article.innerHTML = `<span>${challenge.challengeId}</span><small>${challenge.status} · verified task</small><h3>${challenge.title}</h3><p>${challenge.objective}</p><b>${percent(challenge.baseline.utilization)} → ${percent(challenge.baseline.upperBound)} upper bound</b><a href="${challenge.issueUrl}" target="_blank" rel="noreferrer">Work on GitHub ↗</a>`;
         $('#challenge-grid').append(article);
       });
       $('#open-count').textContent = String(challenges.challenges.length).padStart(2, '0');

@@ -143,6 +143,7 @@ dt { color:var(--muted); } dd { margin:0; font-weight:700; text-align:right; }
 .challenge-grid h3 { margin-top:55px; font-size:20px; }
 .challenge-grid p { color:#aab5af; font-size:11px; line-height:1.65; }
 .challenge-grid article>b { display:block; margin-top:25px; font:9px "DM Mono"; }
+.challenge-grid article>a { display:inline-block; margin-top:16px; color:var(--mint); font:9px "DM Mono"; text-transform:uppercase; }
 .challenge-download { margin:25px 6vw 0; display:flex; justify-content:flex-end; }
 .challenge-download a { color:var(--mint); font:9px "DM Mono"; text-transform:uppercase; }
 .contribute-section { padding:100px 6vw; display:grid; grid-template-columns:.8fr 1fr .8fr; gap:6vw; border-bottom:1px solid var(--ink); }
