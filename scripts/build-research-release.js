@@ -28,6 +28,13 @@ const payload = `${JSON.stringify(portableRelease)}\n`;
 const checksum = createHash('sha256').update(payload).digest('hex');
 await writeFile(new URL('atlas-research-v2.json', publicDirectory), payload);
 await writeFile(new URL('atlas-research-v2.sha256', publicDirectory), `${checksum}  atlas-research-v2.json\n`);
+await writeFile(new URL('build-environment.json', publicDirectory), `${JSON.stringify({
+  generatedAt: new Date().toISOString(),
+  nodeVersion: process.version,
+  platform: process.platform,
+  architecture: process.arch,
+  datasetSha256: checksum
+}, null, 2)}\n`);
 await writeFile(new URL('2.0.0.json', releaseDirectory), `${JSON.stringify({
   format: 'triangle-packing-atlas-release-manifest/v2',
   version: RESEARCH_RELEASE.version,

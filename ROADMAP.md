@@ -87,3 +87,21 @@ partnerships remain ongoing by nature.
 
 **Status:** implemented as release `2.0.0`. DOI metadata and deposit package are
 ready; an actual DOI requires an authorized archival-provider deposit.
+
+## Milestones 16–21 — v1 release gate
+
+16. **Independent replication:** a dependency-free Python implementation
+    rebuilds and verifies all 304 records and reproduces every fingerprint.
+17. **Competitive optimization:** seven-strategy tournament contract, boundary
+    repair, deterministic budgets, environments, checkpoints, and resume policy.
+18. **Mathematical evidence:** versioned proof certificates, exact-tiling
+    machine check, rigorous count bounds, and mandatory human proof review.
+19. **Literature-backed Atlas:** primary-source registry with claim-level scope
+    and explicit exclusions for adjacent problems.
+20. **Community beta:** end-to-end acceptance tests for new, duplicate, invalid,
+    and proof-review submissions plus public failure-stage reporting.
+21. **v1 publication:** checksummed `1.0.0-rc.1` archive, visible release gates,
+    citation metadata, and final-tag policy.
+
+**Status:** all internal gates pass. `v1.0.0` remains correctly blocked until a
+real external contribution is processed and an authorized archive mints a DOI.

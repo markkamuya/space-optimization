@@ -1,0 +1,22 @@
+{
+  "format": "triangle-packing-solver-tournament/v1",
+  "id": "v1-release-tournament",
+  "dataset": "public/atlas-research-v2.json",
+  "objective": ["validity", "pieceCount", "utilization", "optimalityGap"],
+  "strategies": [
+    "horizontal-lattice",
+    "vertical-lattice",
+    "diagonal-lattice",
+    "discrete-orientation-constraint",
+    "boundary-local-search",
+    "deterministic-evolutionary-orientation",
+    "boundary-gap-insertion"
+  ],
+  "sharedBudget": {
+    "deterministic": true,
+    "checkpointEvery": 25,
+    "maximumPieces": 300
+  },
+  "checkpointSchema": "schemas/experiment-checkpoint.schema.json",
+  "resumePolicy": "A checkpoint is resumable only when dataset, solver, problem, and environment fingerprints match."
+}

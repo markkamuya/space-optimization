@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trianglepackingatlas.org/schemas/experiment-checkpoint.v1.json",
+  "title": "Resumable Atlas Experiment Checkpoint",
+  "type": "object",
+  "required": ["format", "experimentId", "problemId", "solver", "datasetHash", "completedIterations", "bestRecord"],
+  "properties": {
+    "format": { "const": "triangle-packing-experiment-checkpoint/v1" },
+    "experimentId": { "type": "string" },
+    "problemId": { "type": "string" },
+    "solver": { "type": "string" },
+    "datasetHash": { "type": "string" },
+    "environmentFingerprint": { "type": "string" },
+    "completedIterations": { "type": "integer", "minimum": 0 },
+    "bestRecord": { "type": "object" }
+  }
+}

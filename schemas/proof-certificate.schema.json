@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trianglepackingatlas.org/schemas/proof-certificate.v1.json",
+  "title": "Triangle Packing Proof Certificate",
+  "type": "object",
+  "required": ["format", "recordId", "type", "claims", "review"],
+  "properties": {
+    "format": { "const": "triangle-packing-proof-certificate/v1" },
+    "recordId": { "type": "string" },
+    "type": { "enum": ["exact_tiling", "area_count"] },
+    "lowerBound": { "type": "number", "minimum": 0, "maximum": 1 },
+    "upperBound": { "type": "number", "minimum": 0, "maximum": 1 },
+    "maximumCount": { "type": "integer", "minimum": 0 },
+    "claims": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "review": {
+      "type": "object",
+      "required": ["status", "humanReviewRequired"]
+    }
+  }
+}

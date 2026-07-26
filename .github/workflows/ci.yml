@@ -26,3 +26,6 @@ jobs:
       - run: npm run atlas:release
       - run: npm run atlas:research
       - run: npm run atlas:submission -- atlas/submissions/template.json
+      - run: npm run atlas:cross-verify
+      - run: npm run atlas:certificate -- proofs/right-grid-2x1.json atlas/right/right-grid-2x1.json
+      - run: npm run atlas:beta

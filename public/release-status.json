@@ -1,0 +1,36 @@
+{
+  "format": "triangle-packing-atlas-v1-release-candidate/v1",
+  "version": "1.0.0-rc.1",
+  "date": "2026-07-26",
+  "dataset": "public/atlas-research-v2.json",
+  "datasetSha256": "782f9c5a2be0dd048ed0431b6dd582bd2b9444343e5a55104ed0a7ffe9932e70",
+  "records": 304,
+  "status": "release_candidate",
+  "gates": [
+    {
+      "id": "javascript-verifier",
+      "status": "passed"
+    },
+    {
+      "id": "independent-python-verifier",
+      "status": "passed"
+    },
+    {
+      "id": "proof-certificate-control",
+      "status": "passed"
+    },
+    {
+      "id": "community-automation-beta",
+      "status": "passed"
+    },
+    {
+      "id": "real-external-contribution",
+      "status": "pending_external"
+    },
+    {
+      "id": "archival-doi",
+      "status": "pending_external"
+    }
+  ],
+  "policy": "v1.0.0 may be tagged only after every gate passes; pending external gates cannot be waived by automation."
+}

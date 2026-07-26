@@ -1,0 +1,16 @@
+{
+  "format": "triangle-packing-proof-certificate/v1",
+  "recordId": "right-grid-2x1",
+  "type": "exact_tiling",
+  "lowerBound": 1,
+  "upperBound": 1,
+  "claims": [
+    "All four placements lie in the 2 by 1 container.",
+    "Triangle interiors are disjoint.",
+    "The sum of triangle areas equals the container area."
+  ],
+  "review": {
+    "status": "machine_checked",
+    "humanReviewRequired": true
+  }
+}

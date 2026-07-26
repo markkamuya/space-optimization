@@ -49,6 +49,10 @@ npm run atlas:release
 npm run atlas:research
 npm run atlas:submission -- atlas/path/to/candidate.json
 npm run atlas:archive
+npm run atlas:cross-verify
+npm run atlas:certificate -- proofs/right-grid-2x1.json atlas/right/right-grid-2x1.json
+npm run atlas:beta
+npm run atlas:v1-rc
 ```
 
 ## Project map
@@ -83,6 +87,11 @@ Research release 2 contains 304 independently verified records, deterministic
 portfolio traces, rigorous area/count bounds, computed phase classifications,
 and a checksummed DOI-ready snapshot. See
 [docs/METHODOLOGY_V2.md](docs/METHODOLOGY_V2.md).
+
+The current publication is `1.0.0-rc.1`. All internal gates pass, including
+independent Python replay of every record. Final `v1.0.0` is deliberately
+blocked on a real external contribution and an archival-provider DOI deposit;
+automation does not mark those human/external events complete.
 
 ## Constraint model
 

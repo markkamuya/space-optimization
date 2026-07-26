@@ -1,0 +1,41 @@
+{
+  "format": "triangle-packing-literature-registry/v1",
+  "reviewedAt": "2026-07-26T00:00:00.000Z",
+  "entries": [
+    {
+      "id": "januszewski-zielonka-2025",
+      "title": "Perfectly Packing an Equilateral Triangle by Equilateral Triangles of Sidelengths n^(-1/2-epsilon)",
+      "authors": ["Janusz Januszewski", "Łukasz Zielonka"],
+      "year": 2025,
+      "doi": "10.1007/s00454-024-00654-w",
+      "primarySource": "https://link.springer.com/article/10.1007/s00454-024-00654-w",
+      "scope": "Equilateral triangles packed into an equilateral-triangle container.",
+      "atlasRelation": "direct-shape-different-container",
+      "claimImportStatus": "context_only",
+      "notes": "Not imported as a rectangular-container record."
+    },
+    {
+      "id": "atkinson-jiao-torquato-2014",
+      "title": "Maximally dense packings of two-dimensional convex and concave noncircular particles",
+      "authors": ["Steven Atkinson", "Yang Jiao", "Salvatore Torquato"],
+      "year": 2014,
+      "primarySource": "https://arxiv.org/abs/1405.0245",
+      "scope": "Adaptive shrinking-cell searches for periodic packings of noncircular particles.",
+      "atlasRelation": "methodological",
+      "claimImportStatus": "method_reference",
+      "notes": "Supports solver-method comparison, not a finite rectangular triangle record."
+    },
+    {
+      "id": "januszewski-liu-su-2022",
+      "title": "Parallel Packing Squares into a Triangle",
+      "authors": ["Janusz Januszewski", "Xueqing Liu", "Zhenbing Su", "Łukasz Zielonka"],
+      "year": 2022,
+      "doi": "10.1007/s00025-021-01589-x",
+      "primarySource": "https://link.springer.com/article/10.1007/s00025-021-01589-x",
+      "scope": "Parallel square packing inside triangular containers.",
+      "atlasRelation": "inverse-container-context",
+      "claimImportStatus": "context_only",
+      "notes": "Relevant boundary-packing theory with the shapes and containers reversed."
+    }
+  ]
+}

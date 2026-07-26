@@ -63,10 +63,9 @@ function makeRecord({ id, family, shape, ratio, sides, color }) {
         deterministic: true
       },
       environment: {
-        runtime: 'node',
-        nodeVersion: process.version,
-        platform: process.platform,
-        architecture: process.arch,
+        runtime: 'node >=22',
+        platform: 'portable-reference',
+        architecture: 'portable-reference',
         algorithmVersion: 'lattice-portfolio/v2'
       }
     },

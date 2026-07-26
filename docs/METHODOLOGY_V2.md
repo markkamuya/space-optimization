@@ -15,7 +15,10 @@ and a deterministic evolutionary orientation search under a shared budget. The
 largest independently valid piece set is retained. The constraint solver is
 exact only for its declared discrete orientation domain, not for continuous
 packing space. Solver traces include orientation, iterations, piece count,
-density, runtime environment, algorithm version, and deterministic seed.
+density, declared portable runtime, algorithm version, and deterministic seed.
+Machine-specific build metadata is emitted separately in
+`public/build-environment.json`, outside the immutable dataset payload, so the
+dataset checksum remains stable across supported platforms.
 
 This is a reproducible baseline portfolio—not a claim that the best lattice is
 the globally best packing.

@@ -1,0 +1,38 @@
+{
+  "format": "triangle-packing-community-beta/v1",
+  "type": "simulated_acceptance_test",
+  "externalContributors": 0,
+  "externalGateSatisfied": false,
+  "scenarios": [
+    {
+      "id": "new-problem",
+      "disposition": "new_problem",
+      "expected": "new_problem",
+      "passed": true,
+      "failureStage": null
+    },
+    {
+      "id": "duplicate",
+      "disposition": "reject_duplicate",
+      "expected": "reject_duplicate",
+      "passed": true,
+      "failureStage": "comparison"
+    },
+    {
+      "id": "invalid-overlap",
+      "disposition": "reject_invalid",
+      "expected": "reject_invalid",
+      "passed": true,
+      "failureStage": "geometry"
+    },
+    {
+      "id": "proof-human-review",
+      "disposition": "new_problem",
+      "expected": "new_problem",
+      "passed": true,
+      "failureStage": "human_review"
+    }
+  ],
+  "passed": true,
+  "note": "Automation is validated; real external participation remains a v1 release gate."
+}

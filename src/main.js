@@ -292,6 +292,28 @@ async function loadResearchRelease() {
   }
 }
 
+async function loadV1Context() {
+  try {
+    const [statusResponse, literatureResponse] = await Promise.all([
+      fetch('/release-status.json'),
+      fetch('/literature/registry.json')
+    ]);
+    const status = statusResponse.ok ? await statusResponse.json() : null;
+    const literature = literatureResponse.ok ? await literatureResponse.json() : null;
+    if (status) {
+      $('#release-gates').innerHTML = status.gates.map(gate => `
+        <div><dt>${gate.id.replaceAll('-', ' ')}</dt><dd class="${gate.status}">${gate.status.replaceAll('_', ' ')}</dd></div>`).join('');
+    }
+    if (literature) {
+      $('#literature-grid').innerHTML = literature.entries.map(entry => `
+        <article><span>${entry.year} · ${entry.atlasRelation.replaceAll('-', ' ')}</span><h3>${entry.title}</h3><p>${entry.scope}</p>
+          <b>${entry.claimImportStatus.replaceAll('_', ' ')}</b><a href="${entry.primarySource}" target="_blank" rel="noreferrer">Primary source ↗</a></article>`).join('');
+    }
+  } catch {
+    $('#release-gates').innerHTML = '<div><dt>Release status</dt><dd>metadata unavailable</dd></div>';
+  }
+}
+
 $('#angle').addEventListener('input', updatePhase);
 $('#ratio').addEventListener('input', updatePhase);
 $('#record-dialog .dialog-close').addEventListener('click', () => $('#record-dialog').close());
@@ -307,6 +329,7 @@ renderRecords();
 renderChallenges();
 setupComparison();
 loadResearchRelease();
+loadV1Context();
 
 document.querySelectorAll('[data-family-card]').forEach(card => {
   card.tabIndex = 0;
