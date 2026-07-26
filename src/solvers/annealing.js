@@ -1,61 +1,50 @@
 import { createRandom } from '../core/random.js';
-import { evaluate } from './scoring.js';
+import { packOrder } from './compact.js';
 import { solveGreedy } from './greedy.js';
 
-function copyState(state) {
-  return state.map(item => ({ ...item }));
+function shuffledOrder(length, random) {
+  const order = Array.from({ length }, (_, index) => index);
+  for (let index = order.length - 1; index > 0; index -= 1) {
+    const swap = Math.floor(random() * (index + 1));
+    [order[index], order[swap]] = [order[swap], order[index]];
+  }
+  return order;
 }
 
+// Kept under the original export name for API compatibility. The implementation
+// is now a valid-only, multi-start constructive search rather than annealing.
 export async function solveAnnealing(problem, options = {}) {
   const started = performance.now();
-  const iterations = Number(options.iterations ?? 12000);
+  const requested = Number(options.iterations ?? 120);
+  const iterations = Math.max(1, Math.min(300, requested));
   const random = createRandom(options.seed ?? problem.seed);
   const baseline = options.initial ?? solveGreedy(problem);
-  let current = copyState(baseline.state);
-  let currentMetrics = evaluate(problem, current);
-  let best = copyState(current);
-  let bestMetrics = currentMetrics;
-  const history = [{ iteration: 0, score: bestMetrics.score }];
-  const translationScale = Math.max(problem.width, problem.height) * 0.12;
+  let best = baseline;
+  const history = [{ iteration: 0, score: best.metrics.score }];
 
   for (let iteration = 1; iteration <= iterations; iteration += 1) {
     if (options.signal?.aborted) throw new DOMException('Solver cancelled', 'AbortError');
-    const progress = iteration / iterations;
-    const temperature = Math.max(0.001, 1 - progress);
-    const next = copyState(current);
-    const index = Math.floor(random() * next.length);
-    if (problem.allowRotation && random() < 0.35) {
-      next[index].angle += (random() - 0.5) * Math.PI * temperature;
-    } else if (problem.allowReflection && random() < 0.08) {
-      next[index].reflect = !next[index].reflect;
-    } else {
-      next[index].x += (random() - 0.5) * translationScale * temperature;
-      next[index].y += (random() - 0.5) * translationScale * temperature;
+    const order = shuffledOrder(problem.triangles.length, random);
+    const phase = random();
+    const packed = packOrder(problem, order, { phase });
+    if (packed?.metrics.valid && packed.metrics.score < best.metrics.score) {
+      best = { ...packed, solver: 'multi-start' };
     }
 
-    const nextMetrics = evaluate(problem, next);
-    const delta = nextMetrics.score - currentMetrics.score;
-    const scale = Math.max(1, currentMetrics.score);
-    if (delta <= 0 || random() < Math.exp(-delta / (scale * temperature * 0.05))) {
-      current = next;
-      currentMetrics = nextMetrics;
-    }
-    if (nextMetrics.score < bestMetrics.score) {
-      best = copyState(next);
-      bestMetrics = nextMetrics;
-    }
-
-    if (iteration % Math.max(1, Math.floor(iterations / 100)) === 0) {
-      history.push({ iteration, score: bestMetrics.score });
-      options.onProgress?.({ iteration, iterations, state: best, metrics: bestMetrics });
-      await new Promise(resolve => setTimeout(resolve, 0));
-    }
+    history.push({ iteration, score: best.metrics.score });
+    options.onProgress?.({
+      iteration,
+      iterations,
+      state: best.state,
+      metrics: best.metrics
+    });
+    await new Promise(resolve => setTimeout(resolve, 0));
   }
 
   return {
-    solver: 'annealing',
-    state: best,
-    metrics: bestMetrics,
+    solver: 'multi-start',
+    state: best.state,
+    metrics: best.metrics,
     iterations,
     elapsedMs: performance.now() - started,
     history,

@@ -26,7 +26,7 @@ for (const fixture of fixtures) {
   const problem = normalizeProblem(fixture.problem);
   const started = performance.now();
   const baseline = solveGreedy(problem);
-  const result = await solveAnnealing(problem, { iterations: 2000, initial: baseline });
+  const result = await solveAnnealing(problem, { iterations: 20, initial: baseline });
   const improvement = (baseline.metrics.score - result.metrics.score) /
     Math.max(1, baseline.metrics.score) * 100;
   console.log(JSON.stringify({

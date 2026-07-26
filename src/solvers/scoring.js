@@ -49,9 +49,18 @@ export function evaluate(problem, state) {
   const boundingArea = (packingBounds.maxX - packingBounds.minX) *
     (packingBounds.maxY - packingBounds.minY);
   const triangleArea = placed.reduce((sum, item) => sum + area(item.placed), 0);
+  const envelopeUtilization = triangleArea / Math.max(boundingArea, 1e-9);
   const usableArea = (problem.width - problem.margin * 2) * (problem.height - problem.margin * 2);
   const valid = overlap <= 1e-7 && overflow <= 1e-7 && spacingViolation <= 1e-7;
-  const score = overlap * 100000 + overflow * 100000 + spacingViolation * 10000 + boundingArea;
+  const packingWidth = packingBounds.maxX - packingBounds.minX;
+  const packingHeight = packingBounds.maxY - packingBounds.minY;
+  const targetRatio = (problem.width - problem.margin * 2) /
+    (problem.height - problem.margin * 2);
+  const aspectPenalty = Math.abs(Math.log(
+    packingWidth / Math.max(packingHeight, 1e-9) / targetRatio
+  ));
+  const score = overlap * 100000 + overflow * 100000 + spacingViolation * 10000 +
+    boundingArea * (1 + aspectPenalty * 0.3) + (packingWidth + packingHeight) * 0.05;
 
   return {
     score,
@@ -62,6 +71,8 @@ export function evaluate(problem, state) {
     boundingArea,
     triangleArea,
     utilization: triangleArea / usableArea,
+    envelopeUtilization,
+    aspectPenalty,
     packingBounds
   };
 }

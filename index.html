@@ -86,7 +86,7 @@
           </div>
           <div class="field-grid">
             <label class="field"><span>Seed</span><input id="seed" value="stellar-01"></label>
-            <label class="field"><span>Iterations</span><input id="iterations" type="number" min="100" max="100000" step="100" value="12000"></label>
+            <label class="field"><span>Search starts</span><input id="iterations" type="number" min="1" max="300" step="1" value="60"></label>
           </div>
           <div class="action-row">
             <button id="run" class="primary-button" type="button">Run comparison <span>→</span></button>
@@ -111,7 +111,7 @@
           <div class="canvas-grid">
             <article class="result-card">
               <div class="card-heading">
-                <div><span>A</span><h3>Greedy baseline</h3></div>
+                <div><span>A</span><h3>Compact baseline</h3></div>
                 <strong id="greedy-valid">—</strong>
               </div>
               <canvas id="greedy-canvas" width="900" height="600" aria-label="Greedy triangle packing result"></canvas>
@@ -119,7 +119,7 @@
             </article>
             <article class="result-card featured">
               <div class="card-heading">
-                <div><span>B</span><h3>Annealed result</h3></div>
+                <div><span>B</span><h3>Multi-start best</h3></div>
                 <strong id="annealing-valid">—</strong>
               </div>
               <canvas id="annealing-canvas" width="900" height="600" aria-label="Optimized triangle packing result"></canvas>
@@ -153,8 +153,8 @@
         </div>
         <div class="method-grid">
           <article><b>01</b><h3>Construct</h3><p>Every piece is validated from three side lengths. Impossible and degenerate triangles are rejected before a run begins.</p></article>
-          <article><b>02</b><h3>Place</h3><p>A deterministic greedy scan creates a reproducible baseline, including rotation when enabled.</p></article>
-          <article><b>03</b><h3>Refine</h3><p>Seeded simulated annealing explores translations and rotations against continuous overlap and boundary penalties.</p></article>
+          <article><b>02</b><h3>Place</h3><p>A compact bottom-left constructor tests edge, corner, and vertex contacts across valid orientations.</p></article>
+          <article><b>03</b><h3>Refine</h3><p>Seeded multi-start search changes piece order and orientation phase, keeping only independently verified layouts.</p></article>
           <article><b>04</b><h3>Verify</h3><p>Validity, utilization, overlap area, runtime, and convergence remain visible. “Best found” is never mislabeled as a proven optimum.</p></article>
         </div>
       </section>

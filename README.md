@@ -11,8 +11,8 @@ scale-preserving exports.
 - Validated SSS, SAS, and AAS construction primitives
 - Epsilon-aware collision semantics where edge contact is permitted
 - Exact triangle intersection area and explicit kerf constraints
-- Deterministic greedy baseline
-- Seeded simulated annealing with live progress and cancellation
+- Deterministic compact bottom-left baseline
+- Seeded multi-start refinement with live progress and cancellation
 - Side-by-side results and convergence visualization
 - Utilization, overlap, boundary, spacing, runtime, and score metrics
 - JSON import plus SVG, DXF, and JSON export
@@ -46,7 +46,7 @@ src/
   core/         problem definitions, seeded random generator, exports
   geometry/     constructions, transforms, predicates, intersection
   rendering/    canvas packing and convergence rendering
-  solvers/      independent scoring, greedy baseline, annealing
+  solvers/      independent scoring, compact baseline, multi-start search
 test/           geometry, problem, and solver regression tests
 benchmarks/     reproducible solver fixtures
 docs/           architecture and contribution guidance

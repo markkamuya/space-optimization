@@ -10,7 +10,7 @@ Problem definition
 Geometry kernel ──────► independent scoring
        │                        ▲
        ▼                        │
-Greedy baseline ──────► simulated annealing
+Compact baseline ─────► multi-start refinement
        │                        │
        └──────────┬─────────────┘
                   ▼
@@ -45,9 +45,11 @@ overlap area × 100,000
 + occupied bounding area
 ```
 
-The greedy solver provides a deterministic baseline. Seeded simulated annealing
-starts from that baseline and retains the best-known state, so it cannot return
-a lower-quality score than its starting solution.
+The baseline sorts larger pieces first and uses a bottom-left candidate search
+over edge, corner, and vertex contacts. Seeded multi-start refinement varies
+piece order and orientation phase. It accepts only independently valid layouts
+and retains the best-known state, so it cannot return a lower-quality score
+than its starting solution.
 
 ## Rendering and export
 

@@ -72,8 +72,8 @@ function readProblem() {
 function metricMarkup(result) {
   if (!result) return '';
   return [
-    ['Utilization', `${(result.metrics.utilization * 100).toFixed(1)}%`],
-    ['Bounding area', result.metrics.boundingArea.toFixed(2)],
+    ['Envelope fill', `${(result.metrics.envelopeUtilization * 100).toFixed(1)}%`],
+    ['Sheet usage', `${(result.metrics.utilization * 100).toFixed(1)}%`],
     ['Runtime', `${result.elapsedMs.toFixed(0)} ms`]
   ].map(([label, value]) => `<div class="metric"><span>${label}</span><b>${value}</b></div>`).join('');
 }
@@ -113,7 +113,7 @@ async function runStudy() {
   renderAll();
 
   try {
-    elements.status.textContent = 'Exploring seeded rotations and placements…';
+    elements.status.textContent = 'Trying compact piece orders and orientation phases…';
     optimizedResult = await solveAnnealing(currentProblem, {
       iterations: Number(elements.iterations.value),
       signal: controller.signal,
