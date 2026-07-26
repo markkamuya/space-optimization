@@ -1,117 +1,190 @@
+<div align="center">
+
 # Triangle Packing Atlas
 
-Triangle Packing Atlas is an open, reproducible record of triangle-packing
-constructions, computational results, and unresolved problems. It combines an
-independent geometry verifier, versioned data standard, reference
-constructions, benchmark corpus, solver laboratory, and interactive viewer.
+**A living, reproducible map of triangle-packing knowledge.**
 
-The hosted interface is Atlas-first: it exposes a phase map, family slices,
-verified record pages, pattern comparisons, boundary-waste analysis, historical
-timelines, open problems, and a contribution path. The verifier and release
-dataset remain the source of truth.
+Verified constructions, best-known computational records, rigorous controls,
+and explicitly unsolved regions—explorable across triangle shape and container geometry.
 
-## Why it is different
+[Explore the live atlas](https://triangle-packing-atlas.vercel.app/) ·
+[Download the research dataset](https://triangle-packing-atlas.vercel.app/atlas-research-v2.json) ·
+[Read the methodology](docs/METHODOLOGY_V2.md) ·
+[Contribute a packing](docs/SUBMISSION_WALKTHROUGH.md)
 
-- Validated SSS, SAS, and AAS construction primitives
-- Epsilon-aware collision semantics where edge contact is permitted
-- Exact triangle intersection area and explicit kerf constraints
-- Deterministic compact bottom-left baseline
-- Seeded multi-start refinement with live progress and cancellation
-- Repeatable-type fill mode that maximizes covered sheet area
-- Residual-gap pass for rotated pieces along borders and exposed pockets
-- Side-by-side results and convergence visualization
-- Utilization, overlap, boundary, spacing, runtime, and score metrics
-- JSON import plus SVG, DXF, and JSON export
-- Responsive, keyboard-accessible interface
-- Automated tests, benchmarks, and continuous integration
+[![CI](https://github.com/markkamuya/space-optimization/actions/workflows/ci.yml/badge.svg)](https://github.com/markkamuya/space-optimization/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/badge/release-1.0.0--rc.1-1b2723)](https://github.com/markkamuya/space-optimization/releases/tag/v1.0.0-rc.1)
+[![Records](https://img.shields.io/badge/research_records-304-dfff55)](https://triangle-packing-atlas.vercel.app/atlas-research-v2.json)
+[![Dataset license](https://img.shields.io/badge/dataset-CC_BY_4.0-f17b50)](CITATION.cff)
 
-The optimizer reports a **best-known heuristic layout**, not a proven global
-optimum.
+</div>
 
-## Run locally
+## See the atlas in action
+
+The signature view lets you change triangle geometry and rectangle aspect ratio
+and watch the dominant observed packing pattern change. The walkthrough below
+was recorded from the deployed application and also visits verified records and
+the open-problem board.
+
+<p align="center">
+  <a href="https://triangle-packing-atlas.vercel.app/">
+    <img src="docs/assets/atlas-demo.gif" alt="Triangle Packing Atlas walkthrough showing the interactive phase map, verified records, and open challenges" width="640">
+  </a>
+</p>
+
+> The atlas distinguishes a valid construction from a proof of optimality.
+> A high-density layout is not presented as optimal unless it meets a rigorous,
+> reviewable upper bound.
+
+## What the project provides
+
+| Layer | Purpose |
+| --- | --- |
+| **Interactive atlas** | Explore phase maps, triangle families, packing layouts, comparisons, boundary waste, timelines, and open problems. |
+| **Versioned dataset** | Preserve coordinates, normalized inputs, provenance, evidence state, fingerprints, and reproducible solver traces. |
+| **Independent verification** | Replay every published record with separate JavaScript and Python geometry implementations. |
+| **Packing laboratory** | Generate deterministic baselines, multi-start refinements, lattice candidates, and residual-gap placements. |
+| **Contribution pipeline** | Validate submissions, detect duplicates, compare records, produce visual reports, and preserve attribution. |
+
+## Research scope
+
+The `1.0.0-rc.1` research release contains **304 independently verified
+records** across right, equilateral, and isosceles families. It includes:
+
+- known-optimum control cases;
+- verified finite constructions and deterministic solver traces;
+- computed phase classifications and boundary-waste measurements;
+- rigorous area and count bounds where available;
+- clearly labeled open regions and public challenges;
+- checksummed, DOI-ready archival artifacts.
+
+Evidence is intentionally graded:
+
+```text
+open problem
+    ↓
+computational candidate
+    ↓
+verified construction
+    ↓
+best known
+    ↓
+proven optimal
+```
+
+See the [data standard](docs/DATA_STANDARD.md), [numerical
+policy](docs/NUMERICAL_POLICY.md), and [release policy](docs/RELEASE_POLICY.md)
+for the exact meaning of each state.
+
+## Quick start
+
+Requirements: a current Node.js release and npm.
 
 ```bash
+git clone https://github.com/markkamuya/space-optimization.git
+cd space-optimization
 npm install
 npm run dev
 ```
 
-Open the local address printed by Vite.
-
-## Verification
+Vite prints the local application URL. For a production build:
 
 ```bash
-npm test
 npm run build
-npm run benchmark
-npm run atlas:benchmark
-npm run atlas:verify -- atlas/right/right-grid-2x1.json
-npm run atlas:release
+npm run preview
+```
+
+## Reproduce the evidence
+
+Run the complete code and build checks:
+
+```bash
+npm run check
+```
+
+Rebuild and independently verify the research release:
+
+```bash
 npm run atlas:research
-npm run atlas:submission -- atlas/path/to/candidate.json
-npm run atlas:archive
 npm run atlas:cross-verify
+```
+
+Useful focused commands:
+
+```bash
+npm run atlas:verify -- atlas/right/right-grid-2x1.json
+npm run atlas:benchmark
 npm run atlas:certificate -- proofs/right-grid-2x1.json atlas/right/right-grid-2x1.json
-npm run atlas:beta
 npm run atlas:v1-rc
 ```
 
-## Project map
+## Repository guide
 
 ```text
 src/
-  atlas/        verification, evidence states, fingerprints
-  constructions/ exact and reference mathematical generators
-  core/         problem definitions, seeded random generator, exports
-  geometry/     constructions, transforms, predicates, intersection
-  rendering/    canvas packing and convergence rendering
-  solvers/      independent scoring, compact baseline, multi-start search
-test/           geometry, problem, and solver regression tests
-benchmarks/     reproducible solver fixtures
-atlas/          version-controlled verified packing records
-schemas/        versioned JSON data contracts
-docs/           architecture and contribution guidance
+  atlas/          evidence states, verification, fingerprints
+  constructions/ exact and reference construction generators
+  core/           problem definitions, seeded randomness, exports
+  geometry/       transforms, predicates, intersections
+  rendering/      packing and convergence visualizations
+  solvers/        scoring, compact baselines, multi-start search
+atlas/            version-controlled packing records
+benchmarks/       reproducible solver fixtures
+independent_verifier/
+                  separate Python verification implementation
+schemas/          versioned data contracts
+scripts/          release, archive, and research tooling
+test/             geometry, solver, and regression tests
+docs/             methods, governance, and contribution guidance
 ```
 
-See [ROADMAP.md](ROADMAP.md) for the six product milestones and
-[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the design.
+The architectural boundaries are documented in
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-Foundation status is documented in
-[docs/FOUNDATION_MILESTONES.md](docs/FOUNDATION_MILESTONES.md).
+## Contributing
 
-See [docs/ATLAS_RELEASE_1.md](docs/ATLAS_RELEASE_1.md) for the public dataset
-scope, [docs/CONTRIBUTION_PIPELINE.md](docs/CONTRIBUTION_PIPELINE.md) for pull
-request submissions, and [docs/RESEARCH_EXPANSION.md](docs/RESEARCH_EXPANSION.md)
-for the sustained research program.
+Improvements are welcome as packing records, proofs, literature references,
+verification work, solver advances, or interface changes.
 
-Research release 2 contains 304 independently verified records, deterministic
-portfolio traces, rigorous area/count bounds, computed phase classifications,
-and a checksummed DOI-ready snapshot. See
-[docs/METHODOLOGY_V2.md](docs/METHODOLOGY_V2.md).
+For a packing submission:
 
-The current publication is `1.0.0-rc.1`. All internal gates pass, including
-independent Python replay of every record. Final `v1.0.0` is deliberately
-blocked on a real external contribution and an archival-provider DOI deposit;
-automation does not mark those human/external events complete.
+1. Start from the [submission walkthrough](docs/SUBMISSION_WALKTHROUGH.md).
+2. Add a record that conforms to the versioned schema.
+3. Run `npm run atlas:submission -- atlas/path/to/candidate.json`.
+4. Open a pull request and review the automated geometry and record-comparison report.
 
-## Constraint model
+Every accepted scientific claim must include coordinates, provenance,
+verification status, and reproducible evidence. Proof and citation claims
+remain subject to human review. General engineering guidance is in
+[docs/CONTRIBUTING.md](docs/CONTRIBUTING.md); the complete publication flow is
+in [docs/CONTRIBUTION_PIPELINE.md](docs/CONTRIBUTION_PIPELINE.md).
 
-A solution is valid when every triangle remains inside the usable sheet, no two
-triangles have positive overlapping area, and every pair observes the requested
-kerf distance. Margin reduces the usable sheet on every edge.
+## Release status
 
-Fill mode treats the entered triangles as repeatable types. With zero spacing,
-the solver evaluates lattice tilings for every type and selects the valid layout
-with the greatest covered area. It then searches all border corners and exposed
-piece vertices for additional rotated placements, repeating until no candidate
-fits. With spacing enabled or fixed-set mode selected, the general compact
-candidate search is used.
+All internal `1.0.0-rc.1` gates pass, including independent Python replay of
+every research record. Final `v1.0.0` remains deliberately gated on:
 
-Utilization is:
+- one genuine external contribution completing the public workflow; and
+- deposit of the frozen dataset with an archival provider that issues a DOI.
 
-```text
-sum of triangle areas / usable sheet area
-```
+Current gate details are tracked in
+[docs/V1_RELEASE_GATES.md](docs/V1_RELEASE_GATES.md).
 
-## License
+## Citation and license
 
-MIT
+Use the repository's [CITATION.cff](CITATION.cff) metadata when citing the
+dataset. The research dataset is published under **CC BY 4.0**. Release
+artifacts include checksums so archived snapshots can be identified and
+reproduced exactly.
+
+---
+
+<div align="center">
+
+**Open computational geometry should make uncertainty visible.**
+
+[Live atlas](https://triangle-packing-atlas.vercel.app/) ·
+[Open problems](https://triangle-packing-atlas.vercel.app/#challenges) ·
+[Research program](docs/RESEARCH_EXPANSION.md)
+
+</div>
