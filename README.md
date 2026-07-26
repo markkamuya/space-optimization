@@ -14,6 +14,7 @@ scale-preserving exports.
 - Deterministic compact bottom-left baseline
 - Seeded multi-start refinement with live progress and cancellation
 - Repeatable-type fill mode that maximizes covered sheet area
+- Residual-gap pass for rotated pieces along borders and exposed pockets
 - Side-by-side results and convergence visualization
 - Utilization, overlap, boundary, spacing, runtime, and score metrics
 - JSON import plus SVG, DXF, and JSON export
@@ -64,8 +65,10 @@ kerf distance. Margin reduces the usable sheet on every edge.
 
 Fill mode treats the entered triangles as repeatable types. With zero spacing,
 the solver evaluates lattice tilings for every type and selects the valid layout
-with the greatest covered area. With spacing enabled or fixed-set mode selected,
-the general compact candidate search is used.
+with the greatest covered area. It then searches all border corners and exposed
+piece vertices for additional rotated placements, repeating until no candidate
+fits. With spacing enabled or fixed-set mode selected, the general compact
+candidate search is used.
 
 Utilization is:
 

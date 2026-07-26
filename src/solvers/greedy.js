@@ -1,4 +1,4 @@
-import { packOrder } from './compact.js';
+import { findBestPlacement, packOrder } from './compact.js';
 import { evaluate } from './scoring.js';
 import { bounds, isInsideBounds, transform } from '../geometry/triangle.js';
 
@@ -70,14 +70,59 @@ function bestLatticeTiling(problem) {
     )[0] ?? null;
 }
 
+function fillResidualGaps(problem, base) {
+  const triangles = [...base.problem.triangles];
+  const state = base.state.map(placement => ({ ...placement }));
+  const placed = triangles.map((triangle, index) => ({
+    triangle,
+    shape: transform(triangle.shape, state[index]),
+    placement: state[index]
+  }));
+  const templates = [...new Map(
+    [...problem.triangles]
+      .sort((left, right) => right.area - left.area)
+      .map(template => [template.sides.slice().sort((a, b) => a - b).join(':'), template])
+  ).values()];
+
+  while (triangles.length < problem.maxPieces) {
+    let selected;
+    for (const template of templates) {
+      for (const phase of [0]) {
+        const candidate = findBestPlacement(problem, template, placed, phase);
+        if (!candidate) continue;
+        if (!selected || candidate.rank < selected.candidate.rank) {
+          selected = { template, candidate };
+        }
+      }
+      if (selected) break;
+    }
+    if (!selected) break;
+    const triangle = {
+      ...selected.template,
+      id: `${selected.template.id}${triangles.length + 1}`
+    };
+    triangles.push(triangle);
+    state.push(selected.candidate.placement);
+    placed.push({
+      triangle,
+      shape: selected.candidate.shape,
+      placement: selected.candidate.placement
+    });
+  }
+
+  const resultProblem = { ...problem, triangles };
+  return { problem: resultProblem, state, metrics: evaluate(resultProblem, state) };
+}
+
 export function solveGreedy(problem) {
   const started = performance.now();
   const lattice = bestLatticeTiling(problem);
   if (lattice) {
+    const filled = fillResidualGaps(problem, lattice);
     return {
-      solver: 'lattice-fill',
-      ...lattice,
-      iterations: lattice.state.length,
+      solver: 'lattice-plus-gaps',
+      ...filled,
+      iterations: filled.state.length,
       elapsedMs: performance.now() - started,
       history: []
     };

@@ -57,6 +57,11 @@ clips them to the usable sheet, and selects the type with greatest covered
 area. This reaches high sheet utilization without confusing a compact
 six-piece nest with an actual fill operation.
 
+The lattice is only an initial state. A residual pass aligns every permitted
+orientation against all four sheet corners and exposed triangle vertices. It
+accepts the largest valid insertion, updates the exposed geometry, and repeats
+until no triangle type fits or the configured piece limit is reached.
+
 ## Rendering and export
 
 Canvas rendering is a projection of solver output. SVG, DXF, and JSON exporters

@@ -22,10 +22,16 @@ export function orientationSet(problem, phase = 0) {
 
 function candidateTranslations(problem, rotated, placed) {
   const box = bounds(rotated);
-  const translations = [{
-    x: problem.margin - box.minX,
-    y: problem.margin - box.minY
-  }];
+  const left = problem.margin - box.minX;
+  const right = problem.width - problem.margin - box.maxX;
+  const bottom = problem.margin - box.minY;
+  const top = problem.height - problem.margin - box.maxY;
+  const translations = [
+    { x: left, y: bottom },
+    { x: left, y: top },
+    { x: right, y: bottom },
+    { x: right, y: top }
+  ];
   const xAnchors = [problem.margin];
   const yAnchors = [problem.margin];
 
@@ -44,6 +50,17 @@ function candidateTranslations(problem, rotated, placed) {
   const directions = problem.kerf > 0
     ? [[1, 0], [-1, 0], [0, 1], [0, -1], [.707, .707], [-.707, .707], [.707, -.707], [-.707, -.707]]
     : [[0, 0]];
+  const boundaryCorners = [
+    { x: problem.margin, y: problem.margin },
+    { x: problem.margin, y: problem.height - problem.margin },
+    { x: problem.width - problem.margin, y: problem.margin },
+    { x: problem.width - problem.margin, y: problem.height - problem.margin }
+  ];
+  for (const corner of boundaryCorners) {
+    for (const moving of vertices(rotated)) {
+      translations.push({ x: corner.x - moving.x, y: corner.y - moving.y });
+    }
+  }
   for (const item of placed) {
     for (const fixed of vertices(item.shape)) {
       for (const moving of vertices(rotated)) {
@@ -88,27 +105,30 @@ function placementRank(problem, candidate, placed) {
   return area * (1 + ratioPenalty * 0.3) + (width + height) * 0.05 + (maxX + maxY) * 0.001;
 }
 
-export function packOrder(problem, order, { phase = 0, allowPartial = false } = {}) {
-  const placed = [];
-  const orientations = orientationSet(problem, phase);
-
-  for (const index of order) {
-    let best;
-    for (const orientation of orientations) {
-      const rotated = transform(problem.triangles[index].shape, orientation);
-      for (const translation of candidateTranslations(problem, rotated, placed)) {
-        const shape = transform(rotated, translation);
-        if (!fits(problem, shape, placed)) continue;
-        const rank = placementRank(problem, shape, placed);
-        if (!best || rank < best.rank) {
-          best = {
-            rank,
-            shape,
-            placement: { ...translation, ...orientation }
-          };
-        }
+export function findBestPlacement(problem, triangle, placed, phase = 0) {
+  let best;
+  for (const orientation of orientationSet(problem, phase)) {
+    const rotated = transform(triangle.shape, orientation);
+    for (const translation of candidateTranslations(problem, rotated, placed)) {
+      const shape = transform(rotated, translation);
+      if (!fits(problem, shape, placed)) continue;
+      const rank = placementRank(problem, shape, placed);
+      if (!best || rank < best.rank) {
+        best = {
+          rank,
+          shape,
+          placement: { ...translation, ...orientation }
+        };
       }
     }
+  }
+  return best ?? null;
+}
+
+export function packOrder(problem, order, { phase = 0, allowPartial = false } = {}) {
+  const placed = [];
+  for (const index of order) {
+    const best = findBestPlacement(problem, problem.triangles[index], placed, phase);
     if (!best) {
       if (allowPartial) continue;
       return null;

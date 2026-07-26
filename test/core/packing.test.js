@@ -87,3 +87,11 @@ test('fill mode repeats a triangle type to cover most of the sheet', () => {
   assert.ok(result.state.length > 20);
   assert.ok(result.metrics.utilization > 0.7);
 });
+
+test('residual pass fills rotated border and corner gaps', () => {
+  const problem = normalizeProblem(DEFAULT_PROBLEM);
+  const result = solveGreedy(problem);
+  assert.equal(result.metrics.valid, true);
+  assert.ok(result.state.length > 60);
+  assert.ok(result.metrics.utilization > 0.9);
+});

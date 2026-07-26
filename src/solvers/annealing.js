@@ -19,7 +19,7 @@ export async function solveAnnealing(problem, options = {}) {
   const iterations = Math.max(1, Math.min(300, requested));
   const random = createRandom(options.seed ?? problem.seed);
   const baseline = options.initial ?? solveGreedy(problem);
-  if (baseline.solver === 'lattice-fill') {
+  if (baseline.solver.startsWith('lattice')) {
     options.onProgress?.({
       iteration: 1,
       iterations: 1,
