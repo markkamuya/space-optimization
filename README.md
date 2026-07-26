@@ -1,140 +1,72 @@
-# 🧮 Triangle Packing Toolkit  
-**Geometric Construction and Optimal Packing of Triangles within Rectangular Boundaries**
+# Forma — Triangle Packing Lab
 
----
+Forma is an interactive computational-geometry laboratory for packing
+heterogeneous triangles into rectangular sheets. It makes heuristic
+optimization inspectable: every experiment has a seed, a deterministic
+baseline, independent validity metrics, convergence history, and
+scale-preserving exports.
 
-## 📘 Overview
+## Why it is different
 
-This project tackles the mathematical and algorithmic challenge of constructing and fitting triangles inside a fixed rectangular region with minimal wasted space. It supports manual geometric construction modes (SSS, SAS, ASA/AAS) and offers an automated packing mode optimized for specific triangle types (right, equilateral, isosceles, scalene).
+- Validated SSS, SAS, and AAS construction primitives
+- Epsilon-aware collision semantics where edge contact is permitted
+- Exact triangle intersection area and explicit kerf constraints
+- Deterministic greedy baseline
+- Seeded simulated annealing with live progress and cancellation
+- Side-by-side results and convergence visualization
+- Utilization, overlap, boundary, spacing, runtime, and score metrics
+- JSON import plus SVG, DXF, and JSON export
+- Responsive, keyboard-accessible interface
+- Automated tests, benchmarks, and continuous integration
 
-Built with interactive HTML5 Canvas rendering, it enables precise control, real-time validation, and efficient spatial arrangement of triangles in 2D.
+The optimizer reports a **best-known heuristic layout**, not a proven global
+optimum.
 
----
+## Run locally
 
-## 🔧 Core Technologies
+```bash
+npm install
+npm run dev
+```
 
-- **HTML5 Canvas API** for dynamic 2D rendering and user interactions  
-- **Vanilla JavaScript** for geometric computations, UI logic, and event handling  
-- **CSS3** for clean UI styling and responsive layout  
-- Custom-built **triangle construction and packing algorithms** based on classical Euclidean geometry and computational optimization  
+Open the local address printed by Vite.
 
----
+## Verification
 
-## 🧮 Mathematical Foundations
+```bash
+npm test
+npm run build
+npm run benchmark
+```
 
-### Triangle Construction Modes
+## Project map
 
-- **SSS (Side-Side-Side)**: Constructs triangles given three side lengths satisfying the triangle inequality.  
-- **SAS (Side-Angle-Side)**: Constructs triangles from two sides and their included angle.  
-- **ASA / AAS (Angle-Side-Angle / Angle-Angle-Side)**: Constructs triangles based on two angles and one adjacent side.
+```text
+src/
+  core/         problem definitions, seeded random generator, exports
+  geometry/     constructions, transforms, predicates, intersection
+  rendering/    canvas packing and convergence rendering
+  solvers/      independent scoring, greedy baseline, annealing
+test/           geometry, problem, and solver regression tests
+benchmarks/     reproducible solver fixtures
+docs/           architecture and contribution guidance
+```
 
-### Triangle Validity Constraints
+See [ROADMAP.md](ROADMAP.md) for the six product milestones and
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the design.
 
-For triangle ΔABC with sides a, b, c:
+## Constraint model
 
-\[
-a + b > c, b + c > a, c + a > b
-\]
+A solution is valid when every triangle remains inside the usable sheet, no two
+triangles have positive overlapping area, and every pair observes the requested
+kerf distance. Margin reduces the usable sheet on every edge.
 
-This inequality ensures a valid, non-degenerate triangle.
+Utilization is:
 
-### Boundary Fitting Conditions
+```text
+sum of triangle areas / usable sheet area
+```
 
-Given rectangle bounds defined by:
+## License
 
-
-x_min ≤ x ≤ x_max, y_min ≤ y ≤ y_max
-
-
-
-The triangle’s vertices (x_i, y_i) satisfy:
-
-x_min ≤ x_i ≤ x_max, y_min ≤ y_i ≤ y_max for all i in {1, 2, 3}.
-
----
-
-## 🚧 Key Features
-
-### 🎨 Interactive Manual Editor
-
-- Construct triangles interactively via **SSS**, **SAS**, or **ASA/AAS** input forms  
-- Real-time validation of triangle inequalities and angle constraints  
-- Vertex manipulation with drag-and-drop on canvas  
-- Undo and redo operations for iterative editing  
-- Snap-to-grid and boundary constraints to enforce rectangle containment
-
-### 🤖 Automated Packing Engine
-
-- Supports optimized packing strategies tailored to triangle types:
-
-  - **Right Triangles:** Grid-aligned mirrored pairs with rotated residual placement  
-  - **Equilateral Triangles:** Hexagonal staggered tiling for maximal density  
-  - **Isosceles Triangles:** Up/down stacking with height adjustments via Pythagorean theorem  
-  - **Scalene Triangles:** Basic row-wise bounding box placement without rotation optimization
-
-- User-specified rectangular packing area with real-time layout rendering  
-- Color-coded triangles with opacity for visual clarity  
-- Undo/redo stack maintained during packing for exploration
-
----
-
-## 📐 Algorithmic Highlights
-
-- **Triangle Classification:** Using side length comparisons and angle calculations (Law of Cosines)  
-- **Coordinate Computation:** Vertex positions derived via trigonometric relations for all construction modes  
-- **Packing Layout:** Calculates maximum rows and columns fitting within rectangle dimensions based on triangle height and base  
-- **Collision and Boundary Checks:** Ensures no triangle overlaps or escapes the packing boundary  
-
----
-
-## 🖼️ Rendering and UI
-
-- HTML Canvas 2D context renders triangles with fill and stroke for distinction  
-- Interactive vertex points represented as draggable circles  
-- Responsive canvas resizing with coordinate scaling  
-- Modal input forms for entering geometric parameters
-
----
-
-## 🛠️ Development and Usage
-
-Clone and open `index.html` in any modern browser.
-
-- Use the **Manual Mode** tab to draw and edit triangles with detailed geometric inputs.  
-- Switch to **Automatic Mode** to input triangle parameters and rectangle dimensions, then pack triangles automatically.
-
----
-
-## ⚙️ Planned Enhancements
-
-- Implement rotation optimization for scalene triangle packing  
-- Add export options (SVG, PNG, DXF) for external use  
-- Integrate multi-type triangle mixed packing algorithms  
-- Enhance UI with pan, zoom, and layer management  
-
----
-
-## 📜 License
-
-This project is licensed under the MIT License.
-
-
----
-## 🤓 Bonus Fun
-
-Casually made a **Necker Cube** in my triangle editor 😎  
-Turns out optical illusions are just one `rotate()` away from accidental brilliance.
-
-![App Screenshot](https://github.com/markkamuya/space-optimization/blob/main/Screenshot%202025-07-03%20024031.png?raw=true)
-
-> Curious what a Necker Cube is?  
-> Learn more about this famous ambiguous figure here:
-> 🔗 [Necker Cube Optical Illusion on Wikipedia](https://en.wikipedia.org/wiki/Necker_cube)
----
----
-
-## ✍️ Author
-
-Crafted with mathematical rigor and geometric elegance by Mark Kamuya.
-
---- 
+MIT

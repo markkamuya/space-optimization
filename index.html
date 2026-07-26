@@ -1,434 +1,166 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css" rel="stylesheet">
-  <title>Interactive Cartesian Plane with Lines</title>
-  <link rel="stylesheet" href="styles.css" />
-  <style>
-    /* Simple tab styles */
-    .tabs {
-      display: flex;
-      border-bottom: 2px solid #ccc;
-      margin-bottom: 1rem;
-      margin-top: 1rem;
-      justify-content: center; /* center the tabs */
-    }
-    .tab {
-      padding: 10px 20px;
-      border: 2px solid transparent;
-      border-bottom: none;
-      cursor: pointer;
-      margin-right: 0.5rem;
-      user-select: none;
-    }
-    .tab.active {
-      border-color: #3b82f6 #3b82f6 white; /* Tailwind blue-500 */
-      font-weight: bold;
-      color: #3b82f6;
-    }
-    .tab-content {
-      display: none;
-    }
-    .tab-content.active {
-      display: block;
-    }
-    #instructions {
-      text-align: left;
-      max-width: 800px;
-      margin: 0 auto;
-      margin-top: 20px;
-    }
-    #controls {
-      text-align: center;
-      margin-bottom: 1rem;
-    }
-    #controlsAutomatic {
-      align-items: center;
-      text-align: center;
-      margin-bottom: 1rem;
-    }
-    #canvas {
-      display: block;
-      margin: 0 auto;
-      border: 1px solid #ccc;
-      background: #fff;
-    }
-    #canvasAutomatic {
-      display: block;
-      margin: 0 auto;
-      border: 1px solid #ccc;
-      background: #fff;
-    }
-  </style>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A reproducible computational geometry lab for exploring triangle packing strategies.">
+    <meta name="theme-color" content="#10120f">
+    <meta property="og:title" content="Forma — Triangle Packing Lab">
+    <meta property="og:description" content="Find the fit. Prove the result.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="/og.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Forma — Triangle Packing Lab">
+    <meta name="twitter:description" content="A reproducible computational geometry lab for triangle packing.">
+    <meta name="twitter:image" content="/og.png">
+    <title>Forma — Triangle Packing Lab</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Forma home">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>FORMA</span>
+      </a>
+      <p class="eyebrow">COMPUTATIONAL GEOMETRY LAB · 01</p>
+      <a href="#method" class="text-link">How it works ↘</a>
+    </header>
 
-<div class="flex flex-col items-center">
+    <main>
+      <section class="hero">
+        <div>
+          <p class="kicker">PACKING, MADE VISIBLE</p>
+          <h1>Find the fit.<br><em>Prove the result.</em></h1>
+        </div>
+        <div class="hero-copy">
+          <p>Arrange heterogeneous triangles inside a fixed sheet. Compare a deterministic baseline with seeded optimization, inspect every metric, and export the winning layout.</p>
+          <div class="hero-facts">
+            <span><b id="hero-count">06</b> pieces</span>
+            <span><b>02</b> solvers</span>
+            <span><b>100%</b> reproducible</span>
+          </div>
+        </div>
+      </section>
 
-  <div id="instructions">
-    <strong>Instructions:</strong><br>
-    - Use <b>Draw Line</b> button to draw lines.<br>
-    - Toggle <b>Arrow Lines</b> for arrows.<br>
-    - Right-click a line to delete it.<br>
-    - Drag endpoints or whole line to move it.<br>
-    - Pan by touch drag, or with right/middle mouse drag.<br>
-    - Zoom with mouse wheel.<br>
-    - Press Ctrl+Z to undo.
-  </div>
+      <section class="workspace" aria-label="Packing experiment">
+        <aside class="controls">
+          <div class="section-heading">
+            <span>01</span>
+            <div>
+              <p>Experiment</p>
+              <h2>Define the sheet</h2>
+            </div>
+          </div>
 
-  <!-- Tabs placed right after instructions -->
-  <div class="tabs">
-    <div id="tabManual" class="tab active">Manual</div>
-    <div id="tabAutomatic" class="tab">Automatic</div>
-  </div>
+          <label class="field field-wide">
+            <span>Name</span>
+            <input id="problem-name" value="Workshop offcuts">
+          </label>
+          <div class="field-grid">
+            <label class="field"><span>Width</span><input id="width" type="number" min="1" step="0.5" value="30"></label>
+            <label class="field"><span>Height</span><input id="height" type="number" min="1" step="0.5" value="20"></label>
+            <label class="field"><span>Margin</span><input id="margin" type="number" min="0" step="0.1" value="0.5"></label>
+            <label class="field"><span>Kerf</span><input id="kerf" type="number" min="0" step="0.05" value="0.15"></label>
+          </div>
+          <div class="toggle-row">
+            <label><input id="rotation" type="checkbox" checked><span>Allow rotation</span></label>
+            <label><input id="reflection" type="checkbox"><span>Allow reflection</span></label>
+          </div>
 
-  <!-- Manual Tab Content -->
-  <div id="contentManual" class="tab-content active">
+          <div class="section-heading compact">
+            <span>02</span>
+            <div>
+              <p>Pieces</p>
+              <h2>Triangle set</h2>
+            </div>
+          </div>
+          <div id="triangle-list" class="triangle-list"></div>
+          <button id="add-triangle" class="quiet-button" type="button">＋ Add triangle</button>
 
-    <div id="controls">
-      <button id="drawModeBtn">Draw Line</button>
-      <button id="arrowToggleBtn">Arrow Lines: OFF</button>
-      <label>Line Color: <input type="color" id="colorPicker" value="#008000"></label>
-      <button id="fullscreenBtn" title="Toggle Fullscreen" aria-label="Toggle Fullscreen">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M8 3H5a2 2 0 0 0-2 2v3"/>
-          <path d="M16 3h3a2 2 0 0 1 2 2v3"/>
-          <path d="M8 21H5a2 2 0 0 1-2-2v-3"/>
-          <path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
-        </svg>
-      </button>
+          <div class="section-heading compact">
+            <span>03</span>
+            <div>
+              <p>Solver</p>
+              <h2>Run the study</h2>
+            </div>
+          </div>
+          <div class="field-grid">
+            <label class="field"><span>Seed</span><input id="seed" value="stellar-01"></label>
+            <label class="field"><span>Iterations</span><input id="iterations" type="number" min="100" max="100000" step="100" value="12000"></label>
+          </div>
+          <div class="action-row">
+            <button id="run" class="primary-button" type="button">Run comparison <span>→</span></button>
+            <button id="cancel" class="icon-button" type="button" disabled aria-label="Cancel optimization">×</button>
+          </div>
+          <p id="status" class="status" role="status">Ready for an experiment.</p>
+          <progress id="progress" max="100" value="0" aria-label="Optimization progress"></progress>
+        </aside>
 
-      <!-- ADD THIS BUTTON FOR DRAWING TRIANGLE -->
-      <button id="drawTriangleBtn">Draw Triangle</button>
-      <label>Triangle Color: <input type="color" id="triangleColorPicker" value="#ff0000"></label>
-      <button id="spaceOptBtn">Space Optimization</button>
-    </div>
+        <div class="results">
+          <div class="result-toolbar">
+            <div>
+              <p class="kicker">LIVE STUDY</p>
+              <h2 id="study-title">Workshop offcuts</h2>
+            </div>
+            <div class="toolbar-actions">
+              <button id="load-example" class="text-button" type="button">Reset example</button>
+              <label class="text-button file-button">Import JSON<input id="import-json" type="file" accept="application/json"></label>
+            </div>
+          </div>
 
-    <canvas id="canvas" width="800" height="800"></canvas>
-    <div id="triangleError" style="color:#900; margin-top:10px;"></div>
+          <div class="canvas-grid">
+            <article class="result-card">
+              <div class="card-heading">
+                <div><span>A</span><h3>Greedy baseline</h3></div>
+                <strong id="greedy-valid">—</strong>
+              </div>
+              <canvas id="greedy-canvas" width="900" height="600" aria-label="Greedy triangle packing result"></canvas>
+              <div id="greedy-metrics" class="metric-strip"></div>
+            </article>
+            <article class="result-card featured">
+              <div class="card-heading">
+                <div><span>B</span><h3>Annealed result</h3></div>
+                <strong id="annealing-valid">—</strong>
+              </div>
+              <canvas id="annealing-canvas" width="900" height="600" aria-label="Optimized triangle packing result"></canvas>
+              <div id="annealing-metrics" class="metric-strip"></div>
+            </article>
+          </div>
 
-    <div id="enjoy" style="text-align: center;">
-      <p>Savour!</p>
-    </div>
-    <ul id="triangleContextMenu" style="
-      display: none; 
-      position: absolute; 
-      background: white; 
-      border: 1px solid #ccc; 
-      box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
-      list-style: none; 
-      padding: 0; 
-      margin: 0; 
-      z-index: 1000;
-      font-family: sans-serif;
-    ">
-      <li id="copyTriangle" style="padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #eee;">📋 Copy & Paste</li>
-      <li id="deleteTriangle" style="padding: 8px 12px; cursor: pointer;">🗑️ Delete</li>
-    </ul>
+          <div class="analysis-grid">
+            <article class="chart-card">
+              <div class="card-heading"><div><span>04</span><h3>Convergence</h3></div><strong id="improvement">—</strong></div>
+              <canvas id="chart" width="1200" height="280" aria-label="Optimization convergence chart"></canvas>
+            </article>
+            <article class="export-card">
+              <p class="kicker">TAKE IT WITH YOU</p>
+              <h2>Export the winner.</h2>
+              <p>Preserve exact coordinates and scale for analysis, design, or fabrication.</p>
+              <div class="export-actions">
+                <button data-export="svg" type="button">SVG</button>
+                <button data-export="dxf" type="button">DXF</button>
+                <button data-export="json" type="button">JSON</button>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
 
-    <!-- MODAL FOR TRIANGLE SIDES INPUT -->
-    <div id="triangleModal" style="display:none; position:fixed; top:20%; left:50%; transform:translateX(-50%); background:#fff; border:1px solid #ccc; padding:20px; z-index:2000; width:300px; box-shadow:0 4px 10px rgba(0,0,0,0.2);">
-      <h3>Create Triangle</h3>
-      <label>
-        Method:
-        <select id="triangleMethod">
-          <option value="SSS">SSS (3 sides)</option>
-          <option value="SAS">SAS (2 sides + angle)</option>
-          <option value="AAS">AAS (2 angles + side)</option>
-        </select>
-      </label>
-      <div id="triangleInputs" style="margin-top:10px;"></div>
-      <div style="margin-top:10px; text-align:right;">
-        <button id="createTriangleBtn">Create</button>
-        <button id="cancelTriangleBtn">Cancel</button>
-      </div>
-    </div>
+      <section id="method" class="method">
+        <div class="section-heading">
+          <span>05</span>
+          <div><p>Method</p><h2>Transparent by design</h2></div>
+        </div>
+        <div class="method-grid">
+          <article><b>01</b><h3>Construct</h3><p>Every piece is validated from three side lengths. Impossible and degenerate triangles are rejected before a run begins.</p></article>
+          <article><b>02</b><h3>Place</h3><p>A deterministic greedy scan creates a reproducible baseline, including rotation when enabled.</p></article>
+          <article><b>03</b><h3>Refine</h3><p>Seeded simulated annealing explores translations and rotations against continuous overlap and boundary penalties.</p></article>
+          <article><b>04</b><h3>Verify</h3><p>Validity, utilization, overlap area, runtime, and convergence remain visible. “Best found” is never mislabeled as a proven optimum.</p></article>
+        </div>
+      </section>
+    </main>
 
-    <div id="coordTooltip"></div>
-
-    <div id="contextMenu">
-      <button id="deleteLineBtn">Delete Line</button>
-    </div>
-    <div id="errorContainer"></div>
-  </div>
-
-  <!-- Automatic Tab Content -->
-  <div id="contentAutomatic" class="tab-content">
-  <div id="controlsAutomatic">
-    <button id="drawModeBtnAutomatic">Draw Line</button>
-    <button id="arrowToggleBtnAutomatic">Arrow Lines: OFF</button>
-    <label>Line Color: <input type="color" id="colorPickerAutomatic" value="#008000"></label>
-    <button id="fullscreenBtnAutomatic" title="Toggle Fullscreen" aria-label="Toggle Fullscreen">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M8 3H5a2 2 0 0 0-2 2v3"/>
-        <path d="M16 3h3a2 2 0 0 1 2 2v3"/>
-        <path d="M8 21H5a2 2 0 0 1-2-2v-3"/>
-        <path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
-      </svg>
-    </button>
-
-    <!-- ADD THIS BUTTON FOR DRAWING TRIANGLE -->
-    <button id="drawTriangleAutomaticBtn">Draw Triangle</button>
-    <label>Triangle Color: <input type="color" id="triangleColorPickerAutomatic" value="#ff0000"></label>
-    <button id="spaceOptBtnAutomatic">Space Optimization</button>
-  </div>
-
-  <canvas id="canvasAutomatic" width="800" height="800"></canvas>
-  <div id="triangleErrorAutomatic" style="color:#900; margin-top:10px;"></div>
-
-  <div id="enjoyAutomatic" style="text-align: center;">
-    <p>Savour!</p>
-  </div>
-
-  <ul id="triangleContextMenuAutomatic" style="
-    display: none; 
-    position: absolute; 
-    background: white; 
-    border: 1px solid #ccc; 
-    box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
-    list-style: none; 
-    padding: 0; 
-    margin: 0; 
-    z-index: 1000;
-    font-family: sans-serif;
-  ">
-    <li id="copyTriangleAutomatic" style="padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #eee;">📋 Copy & Paste</li>
-    <li id="deleteTriangleAutomatic" style="padding: 8px 12px; cursor: pointer;">🗑️ Delete</li>
-  </ul>
-
-  <!-- MODAL FOR TRIANGLE SIDES INPUT -->
-  <div id="triangleModalAutomatic" style="display:none; position:fixed; top:20%; left:50%; transform:translateX(-50%); background:#fff; border:1px solid #ccc; padding:20px; z-index:2000; width:300px; box-shadow:0 4px 10px rgba(0,0,0,0.2);">
-    <!-- Triangle Type Choice Modal -->
-<div id="triangleTypeModal" style="display:none; position:fixed; top:25%; left:50%; transform:translateX(-50%); background:#fff; border:1px solid #ccc; padding:20px; z-index:3000; width:320px; box-shadow:0 4px 10px rgba(0,0,0,0.2);">
-  <h3>Triangle Type</h3>
-  <p>Are your triangles homogeneous or heterogeneous?</p>
-  <div style="display:flex; justify-content:space-between; margin-top:15px;">
-    <button id="homogeneousBtn" class="px-4 py-2 bg-blue-500 text-white rounded">Homogeneous</button>
-    <button id="heterogeneousBtn" class="px-4 py-2 bg-green-500 text-white rounded">Heterogeneous</button>
-  </div>
-</div>
-
-<!-- Heterogeneous Triangle Count Input -->
-<div id="heteroTriangleCountModal" style="display:none; position:fixed; top:25%; left:50%; transform:translateX(-50%); background:#fff; border:1px solid #ccc; padding:20px; z-index:3000; width:300px; box-shadow:0 4px 10px rgba(0,0,0,0.2);">
-  <h3>How many triangles?</h3>
-  <input type="number" id="heteroTriangleCountInput" min="1" class="border px-2 py-1 w-full" />
-  <div style="text-align:right; margin-top:10px;">
-    <button id="confirmTriangleCount" class="bg-blue-500 text-white px-4 py-2 rounded">Next</button>
-    <button id="cancelTriangleCount" class="ml-2 text-gray-600 px-4 py-2">Cancel</button>
-  </div>
-</div>
-
-<!-- Dynamic Triangle Entry Modal -->
-<div id="heteroTriangleEntryModal" style="display:none; position:fixed; top:10%; left:50%; transform:translateX(-50%); background:#fff; border:1px solid #ccc; padding:20px; z-index:3000; width:400px; max-height:80vh; overflow-y:auto; box-shadow:0 4px 10px rgba(0,0,0,0.2);">
-  <h3>Enter Triangle Details</h3>
-  <div id="heteroTriangleInputsContainer"></div>
-  <div style="text-align:right; margin-top:10px;">
-    <button id="createHeteroTriangles" class="bg-green-600 text-white px-4 py-2 rounded">Create</button>
-    <button id="cancelHeteroTriangles" class="ml-2 text-gray-600 px-4 py-2">Cancel</button>
-  </div>
-</div>
-    <h3>Create Triangle</h3>
-    <label>
-      Method:
-      <select id="triangleMethodAutomatic">
-        <option value="SSS">SSS (3 sides)</option>
-        <option value="SAS">SAS (2 sides + angle)</option>
-        <option value="AAS">AAS (2 angles + side)</option>
-      </select>
-    </label>
-    <div id="triangleInputsAutomatic" style="margin-top:10px;"></div>
-    <div style="margin-top:10px; text-align:right;">
-      <button id="createTriangleAutomaticBtn">Create</button>
-      <button id="cancelTriangleAutomaticBtn">Cancel</button>
-    </div>
-  </div>
-
-  <div id="coordTooltipAutomatic"></div>
-
-  <div id="contextMenuAutomatic">
-    <button id="deleteLineBtnAutomatic">Delete Line</button>
-  </div>
-
-  <div id="errorContainerAutomatic"></div>
-</div>
-
-</div>
-
-<script>
-  const tabManual = document.getElementById('tabManual');
-  const tabAutomatic = document.getElementById('tabAutomatic');
-  const contentManual = document.getElementById('contentManual');
-  const contentAutomatic = document.getElementById('contentAutomatic');
-
-  let manualScriptLoaded = false;
-  let automaticScriptLoaded = false;
-
-  function loadScript(src, callback) {
-    const script = document.createElement('script');
-    script.src = src;
-    script.onload = callback;
-    document.body.appendChild(script);
-  }
-
-  // Manual Tab click
-  tabManual.addEventListener('click', () => {
-    tabManual.classList.add('active');
-    tabAutomatic.classList.remove('active');
-    contentManual.classList.add('active');
-    contentAutomatic.classList.remove('active');
-
-    if (!manualScriptLoaded) {
-      loadScript('shapes.js', () => {
-        console.log('Manual shapes.js loaded');
-        manualScriptLoaded = true;
-
-        loadScript('canvas.js', () => {
-          console.log('Manual canvas.js loaded');
-        });
-      });
-    }
-  });
-
-  // Automatic Tab click
-  tabAutomatic.addEventListener('click', () => {
-    tabAutomatic.classList.add('active');
-    tabManual.classList.remove('active');
-    contentAutomatic.classList.add('active');
-    contentManual.classList.remove('active');
-
-    if (!automaticScriptLoaded) {
-      loadScript('shapesAutomatic.js', () => {
-        console.log('Automatic shapesAutomatic.js loaded');
-        automaticScriptLoaded = true;
-
-        loadScript('canvasAutomatic.js', () => {
-          console.log('Automatic canvasAutomatic.js loaded');
-        });
-      });
-    }
-  });
-
-  // Optional: preload Manual tab scripts on page load
-  window.addEventListener('DOMContentLoaded', () => {
-    loadScript('shapes.js', () => {
-      manualScriptLoaded = true;
-      loadScript('canvas.js', () => {
-        console.log('Manual scripts preloaded');
-      });
-    });
-  });
-</script>
-<script>
-document.getElementById("spaceOptBtnAutomatic").addEventListener("click", () => {
-  document.getElementById("triangleTypeModal").style.display = "block";
-});
-
-// Handle triangle type choice
-document.getElementById("homogeneousBtn").addEventListener("click", () => {
-  document.getElementById("triangleTypeModal").style.display = "none";
-  alert("Proceeding with homogeneous triangle logic.");
-  // 👇 Insert or trigger your existing homogeneous logic here
-});
-
-document.getElementById("heterogeneousBtn").addEventListener("click", () => {
-  document.getElementById("triangleTypeModal").style.display = "none";
-  document.getElementById("heteroTriangleCountModal").style.display = "block";
-});
-
-// Cancel count modal
-document.getElementById("cancelTriangleCount").addEventListener("click", () => {
-  document.getElementById("heteroTriangleCountModal").style.display = "none";
-});
-
-// Confirm triangle count input
-document.getElementById("confirmTriangleCount").addEventListener("click", () => {
-  const count = parseInt(document.getElementById("heteroTriangleCountInput").value);
-  const container = document.getElementById("heteroTriangleInputsContainer");
-  container.innerHTML = ""; // Clear old inputs
-
-  if (count > 0) {
-    for (let i = 0; i < count; i++) {
-      const group = document.createElement("div");
-      group.className = "mb-4 border-b pb-4";
-      group.innerHTML = `
-        <label class="block font-bold">Triangle ${i + 1}</label>
-        <select class="methodSelector mb-2 w-full border p-1">
-          <option value="SSS">SSS (3 sides)</option>
-          <option value="SAS">SAS (2 sides + angle)</option>
-          <option value="AAS">AAS (2 angles + side)</option>
-        </select>
-        <div class="inputFields space-y-1"></div>
-      `;
-      container.appendChild(group);
-    }
-
-    document.querySelectorAll(".methodSelector").forEach(selector => {
-      selector.addEventListener("change", e => {
-        const inputFields = e.target.parentElement.querySelector(".inputFields");
-        inputFields.innerHTML = "";
-        switch (e.target.value) {
-          case "SSS":
-            inputFields.innerHTML = `
-              <input placeholder="Side a" class="w-full border p-1" />
-              <input placeholder="Side b" class="w-full border p-1" />
-              <input placeholder="Side c" class="w-full border p-1" />
-            `;
-            break;
-          case "SAS":
-            inputFields.innerHTML = `
-              <input placeholder="Side a" class="w-full border p-1" />
-              <input placeholder="Angle (deg)" class="w-full border p-1" />
-              <input placeholder="Side b" class="w-full border p-1" />
-            `;
-            break;
-          case "AAS":
-            inputFields.innerHTML = `
-              <input placeholder="Angle A (deg)" class="w-full border p-1" />
-              <input placeholder="Angle B (deg)" class="w-full border p-1" />
-              <input placeholder="Side c" class="w-full border p-1" />
-            `;
-            break;
-        }
-      });
-      selector.dispatchEvent(new Event("change")); // initialize
-    });
-
-    document.getElementById("heteroTriangleCountModal").style.display = "none";
-    document.getElementById("heteroTriangleEntryModal").style.display = "block";
-  }
-});
-
-// Cancel triangle entry
-document.getElementById("cancelHeteroTriangles").addEventListener("click", () => {
-  document.getElementById("heteroTriangleEntryModal").style.display = "none";
-});
-
-// Collect triangle data on "Create"
-document.getElementById("createHeteroTriangles").addEventListener("click", () => {
-  const triangles = [];
-  document.querySelectorAll("#heteroTriangleInputsContainer > div").forEach(group => {
-    const method = group.querySelector(".methodSelector").value;
-    const inputs = [...group.querySelectorAll(".inputFields input")].map(i => i.value.trim());
-    triangles.push({ method, values: inputs });
-  });
-
-  console.log("Entered Triangles:", triangles);
-
-  // 👇 Now pass this to your geometry engine or visualization logic
-  // alert("Collected triangle definitions. You can now build them or optimize layout.");
-  simulateAnnealingPacking(triangles).then(result => {
-  // display or use the result in your UI
-  console.log("Packing result:", result);
-  showPackingResult(result);
-});
-
-
-  document.getElementById("heteroTriangleEntryModal").style.display = "none";
-});
-</script>
-
-
-
-</body>
+    <footer><span>FORMA / TRIANGLE PACKING LAB</span><span>Best-known heuristic layouts · not proofs of optimality</span></footer>
+    <script type="module" src="./src/main.js"></script>
+  </body>
 </html>
