@@ -352,6 +352,7 @@ function renderResearchExplorer() {
     ['Verified records', canonicalRelease.coverage.verified],
     ['Proven controls', canonicalRelease.coverage.provenOptimal],
     ['Observed transitions', canonicalRelease.coverage.phaseTransitions],
+    ['Adaptive improvements', canonicalRelease.coverage.adaptivelyImproved ?? 0],
     ['Open compute tasks', canonicalRelease.coverage.openDistributedTasks]
   ].map(([label, value]) => `<div><b>${value}</b><span>${label}</span></div>`).join('');
   $('#research-results').innerHTML = visible.map(record => `
@@ -379,20 +380,36 @@ function renderResearchExplorer() {
 
 async function loadV1Context() {
   try {
-    const [statusResponse, literatureResponse] = await Promise.all([
-      fetch('/release-status.json'),
-      fetch('/literature/registry.json')
+    const [auditResponse, literatureResponse, challengeResponse] = await Promise.all([
+      fetch('/audit-v2.json'),
+      fetch('/literature/registry.json'),
+      fetch('/community-challenges-v2.json')
     ]);
-    const status = statusResponse.ok ? await statusResponse.json() : null;
+    const audit = auditResponse.ok ? await auditResponse.json() : null;
     const literature = literatureResponse.ok ? await literatureResponse.json() : null;
-    if (status) {
-      $('#release-gates').innerHTML = status.gates.map(gate => `
-        <div><dt>${gate.id.replaceAll('-', ' ')}</dt><dd class="${gate.status}">${gate.status.replaceAll('_', ' ')}</dd></div>`).join('');
+    const challenges = challengeResponse.ok ? await challengeResponse.json() : null;
+    if (audit) {
+      $('#release-gates').innerHTML = [
+        ['Canonical geometry replay', `${audit.summary.replayed}/${audit.summary.records} passed`, 'passed'],
+        ['Critical audit findings', audit.summary.critical, audit.summary.critical === 0 ? 'passed' : 'pending_external'],
+        ['Evidence mismatches', audit.summary.major, audit.summary.major === 0 ? 'passed' : 'pending_external'],
+        ['Archive DOI', 'pending provider deposit', 'pending_external']
+      ].map(([label, value, status]) => `
+        <div><dt>${label}</dt><dd class="${status}">${value}</dd></div>`).join('');
     }
     if (literature) {
       $('#literature-grid').innerHTML = literature.entries.map(entry => `
         <article><span>${entry.year} · ${entry.atlasRelation.replaceAll('-', ' ')}</span><h3>${entry.title}</h3><p>${entry.scope}</p>
           <b>${entry.claimImportStatus.replaceAll('_', ' ')}</b><a href="${entry.primarySource}" target="_blank" rel="noreferrer">Primary source ↗</a></article>`).join('');
+    }
+    if (challenges) {
+      $('#challenge-grid').replaceChildren();
+      challenges.challenges.forEach(challenge => {
+        const article = document.createElement('article');
+        article.innerHTML = `<span>${challenge.challengeId}</span><small>${challenge.status} · verified task</small><h3>${challenge.title}</h3><p>${challenge.objective}</p><b>${percent(challenge.baseline.utilization)} → ${percent(challenge.baseline.upperBound)} upper bound</b>`;
+        $('#challenge-grid').append(article);
+      });
+      $('#open-count').textContent = String(challenges.challenges.length).padStart(2, '0');
     }
   } catch {
     $('#release-gates').innerHTML = '<div><dt>Release status</dt><dd>metadata unavailable</dd></div>';

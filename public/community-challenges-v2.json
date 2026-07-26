@@ -1,0 +1,309 @@
+{
+  "format": "triangle-packing-community-challenges/v1",
+  "version": "2.0.0",
+  "publishedAt": "2026-07-26T00:00:00.000Z",
+  "externalContributionsAccepted": 0,
+  "challenges": [
+    {
+      "challengeId": "TPA-C01",
+      "title": "Improve s358065-r3",
+      "recordId": "s358065-r3",
+      "experimentId": "scalene/s358065/rectangle-3",
+      "baseline": {
+        "utilization": 0.41245497986956975,
+        "upperBound": 0.9995159012172569,
+        "fingerprint": "tpa1-2ad782788589aef1"
+      },
+      "objective": "Improve the verified lower bound or attach a stronger rigorous upper bound.",
+      "budget": {
+        "orientationEvaluations": 5000,
+        "wallTimeSeconds": 900
+      },
+      "requiredEvidence": [
+        "complete triangle coordinates",
+        "deterministic seed and solver version",
+        "strictly improved verified utilization or stronger rigorous bound",
+        "contributor attribution and license agreement"
+      ],
+      "starterCommand": "npm run atlas:experiment -- --record s358065-r3",
+      "submissionGuide": "docs/SUBMISSION_WALKTHROUGH.md",
+      "status": "open"
+    },
+    {
+      "challengeId": "TPA-C02",
+      "title": "Improve s358065-r2p85",
+      "recordId": "s358065-r2p85",
+      "experimentId": "scalene/s358065/rectangle-2.85",
+      "baseline": {
+        "utilization": 0.4341631367048102,
+        "upperBound": 0.9985752144210631,
+        "fingerprint": "tpa1-c01cd18b345cc872"
+      },
+      "objective": "Improve the verified lower bound or attach a stronger rigorous upper bound.",
+      "budget": {
+        "orientationEvaluations": 5000,
+        "wallTimeSeconds": 900
+      },
+      "requiredEvidence": [
+        "complete triangle coordinates",
+        "deterministic seed and solver version",
+        "strictly improved verified utilization or stronger rigorous bound",
+        "contributor attribution and license agreement"
+      ],
+      "starterCommand": "npm run atlas:experiment -- --record s358065-r2p85",
+      "submissionGuide": "docs/SUBMISSION_WALKTHROUGH.md",
+      "status": "open"
+    },
+    {
+      "challengeId": "TPA-C03",
+      "title": "Improve iso-a35-r3",
+      "recordId": "iso-a35-r3",
+      "experimentId": "isosceles/apex-35/rectangle-3",
+      "baseline": {
+        "utilization": 0.448106590899255,
+        "upperBound": 0.999277697705338,
+        "fingerprint": "tpa1-b74c8dd11b44a160"
+      },
+      "objective": "Improve the verified lower bound or attach a stronger rigorous upper bound.",
+      "budget": {
+        "orientationEvaluations": 5000,
+        "wallTimeSeconds": 900
+      },
+      "requiredEvidence": [
+        "complete triangle coordinates",
+        "deterministic seed and solver version",
+        "strictly improved verified utilization or stronger rigorous bound",
+        "contributor attribution and license agreement"
+      ],
+      "starterCommand": "npm run atlas:experiment -- --record iso-a35-r3",
+      "submissionGuide": "docs/SUBMISSION_WALKTHROUGH.md",
+      "status": "open"
+    },
+    {
+      "challengeId": "TPA-C04",
+      "title": "Improve s358065-r2p7",
+      "recordId": "s358065-r2p7",
+      "experimentId": "scalene/s358065/rectangle-2.7",
+      "baseline": {
+        "utilization": 0.4582833109661886,
+        "upperBound": 0.9990576179062906,
+        "fingerprint": "tpa1-153f8e119af6d994"
+      },
+      "objective": "Improve the verified lower bound or attach a stronger rigorous upper bound.",
+      "budget": {
+        "orientationEvaluations": 5000,
+        "wallTimeSeconds": 900
+      },
+      "requiredEvidence": [
+        "complete triangle coordinates",
+        "deterministic seed and solver version",
+        "strictly improved verified utilization or stronger rigorous bound",
+        "contributor attribution and license agreement"
+      ],
+      "starterCommand": "npm run atlas:experiment -- --record s358065-r2p7",
+      "submissionGuide": "docs/SUBMISSION_WALKTHROUGH.md",
+      "status": "open"
+    },
+    {
+      "challengeId": "TPA-C05",
+      "title": "Improve iso-a35-r2p85",
+      "recordId": "iso-a35-r2p85",
+      "experimentId": "isosceles/apex-35/rectangle-2.85",
+      "baseline": {
+        "utilization": 0.4716911483150049,
+        "upperBound": 0.9999852344278105,
+        "fingerprint": "tpa1-b0a05bdf841f2989"
+      },
+      "objective": "Improve the verified lower bound or attach a stronger rigorous upper bound.",
+      "budget": {
+        "orientationEvaluations": 5000,
+        "wallTimeSeconds": 900
+      },
+      "requiredEvidence": [
+        "complete triangle coordinates",
+        "deterministic seed and solver version",
+        "strictly improved verified utilization or stronger rigorous bound",
+        "contributor attribution and license agreement"
+      ],
+      "starterCommand": "npm run atlas:experiment -- --record iso-a35-r2p85",
+      "submissionGuide": "docs/SUBMISSION_WALKTHROUGH.md",
+      "status": "open"
+    },
+    {
+      "challengeId": "TPA-C06",
+      "title": "Improve s406575-r3",
+      "recordId": "s406575-r3",
+      "experimentId": "scalene/s406575/rectangle-3",
+      "baseline": {
+        "utilization": 0.4826136753288521,
+        "upperBound": 0.9990103079307256,
+        "fingerprint": "tpa1-69d36ccc6c21bfa0"
+      },
+      "objective": "Improve the verified lower bound or attach a stronger rigorous upper bound.",
+      "budget": {
+        "orientationEvaluations": 5000,
+        "wallTimeSeconds": 900
+      },
+      "requiredEvidence": [
+        "complete triangle coordinates",
+        "deterministic seed and solver version",
+        "strictly improved verified utilization or stronger rigorous bound",
+        "contributor attribution and license agreement"
+      ],
+      "starterCommand": "npm run atlas:experiment -- --record s406575-r3",
+      "submissionGuide": "docs/SUBMISSION_WALKTHROUGH.md",
+      "status": "open"
+    },
+    {
+      "challengeId": "TPA-C07",
+      "title": "Improve s358065-r2p55",
+      "recordId": "s358065-r2p55",
+      "experimentId": "scalene/s358065/rectangle-2.55",
+      "baseline": {
+        "utilization": 0.4852411527877291,
+        "upperBound": 0.9995967747427215,
+        "fingerprint": "tpa1-9e03fcbba7d30a0c"
+      },
+      "objective": "Improve the verified lower bound or attach a stronger rigorous upper bound.",
+      "budget": {
+        "orientationEvaluations": 5000,
+        "wallTimeSeconds": 900
+      },
+      "requiredEvidence": [
+        "complete triangle coordinates",
+        "deterministic seed and solver version",
+        "strictly improved verified utilization or stronger rigorous bound",
+        "contributor attribution and license agreement"
+      ],
+      "starterCommand": "npm run atlas:experiment -- --record s358065-r2p55",
+      "submissionGuide": "docs/SUBMISSION_WALKTHROUGH.md",
+      "status": "open"
+    },
+    {
+      "challengeId": "TPA-C08",
+      "title": "Improve iso-a35-r2p7",
+      "recordId": "iso-a35-r2p7",
+      "experimentId": "isosceles/apex-35/rectangle-2.7",
+      "baseline": {
+        "utilization": 0.49789621211028295,
+        "upperBound": 0.9991117323013012,
+        "fingerprint": "tpa1-d562fcf4e0839f92"
+      },
+      "objective": "Improve the verified lower bound or attach a stronger rigorous upper bound.",
+      "budget": {
+        "orientationEvaluations": 5000,
+        "wallTimeSeconds": 900
+      },
+      "requiredEvidence": [
+        "complete triangle coordinates",
+        "deterministic seed and solver version",
+        "strictly improved verified utilization or stronger rigorous bound",
+        "contributor attribution and license agreement"
+      ],
+      "starterCommand": "npm run atlas:experiment -- --record iso-a35-r2p7",
+      "submissionGuide": "docs/SUBMISSION_WALKTHROUGH.md",
+      "status": "open"
+    },
+    {
+      "challengeId": "TPA-C09",
+      "title": "Improve iso-a40-r3",
+      "recordId": "iso-a40-r3",
+      "experimentId": "isosceles/apex-40/rectangle-3",
+      "baseline": {
+        "utilization": 0.5021778200676071,
+        "upperBound": 0.9993338619345417,
+        "fingerprint": "tpa1-e58c1bcec9b157cc"
+      },
+      "objective": "Improve the verified lower bound or attach a stronger rigorous upper bound.",
+      "budget": {
+        "orientationEvaluations": 5000,
+        "wallTimeSeconds": 900
+      },
+      "requiredEvidence": [
+        "complete triangle coordinates",
+        "deterministic seed and solver version",
+        "strictly improved verified utilization or stronger rigorous bound",
+        "contributor attribution and license agreement"
+      ],
+      "starterCommand": "npm run atlas:experiment -- --record iso-a40-r3",
+      "submissionGuide": "docs/SUBMISSION_WALKTHROUGH.md",
+      "status": "open"
+    },
+    {
+      "challengeId": "TPA-C10",
+      "title": "Improve s406575-r2p85",
+      "recordId": "s406575-r2p85",
+      "experimentId": "scalene/s406575/rectangle-2.85",
+      "baseline": {
+        "utilization": 0.5080143950830022,
+        "upperBound": 0.9990949769965728,
+        "fingerprint": "tpa1-88aa3cf9884371d6"
+      },
+      "objective": "Improve the verified lower bound or attach a stronger rigorous upper bound.",
+      "budget": {
+        "orientationEvaluations": 5000,
+        "wallTimeSeconds": 900
+      },
+      "requiredEvidence": [
+        "complete triangle coordinates",
+        "deterministic seed and solver version",
+        "strictly improved verified utilization or stronger rigorous bound",
+        "contributor attribution and license agreement"
+      ],
+      "starterCommand": "npm run atlas:experiment -- --record s406575-r2p85",
+      "submissionGuide": "docs/SUBMISSION_WALKTHROUGH.md",
+      "status": "open"
+    },
+    {
+      "challengeId": "TPA-C11",
+      "title": "Improve s358065-r2p4",
+      "recordId": "s358065-r2p4",
+      "experimentId": "scalene/s358065/rectangle-2.4",
+      "baseline": {
+        "utilization": 0.5155687248369621,
+        "upperBound": 0.998484763767583,
+        "fingerprint": "tpa1-92ad61ac3bdd21c1"
+      },
+      "objective": "Improve the verified lower bound or attach a stronger rigorous upper bound.",
+      "budget": {
+        "orientationEvaluations": 5000,
+        "wallTimeSeconds": 900
+      },
+      "requiredEvidence": [
+        "complete triangle coordinates",
+        "deterministic seed and solver version",
+        "strictly improved verified utilization or stronger rigorous bound",
+        "contributor attribution and license agreement"
+      ],
+      "starterCommand": "npm run atlas:experiment -- --record s358065-r2p4",
+      "submissionGuide": "docs/SUBMISSION_WALKTHROUGH.md",
+      "status": "open"
+    },
+    {
+      "challengeId": "TPA-C12",
+      "title": "Improve iso-a35-r2p55",
+      "recordId": "iso-a35-r2p55",
+      "experimentId": "isosceles/apex-35/rectangle-2.55",
+      "baseline": {
+        "utilization": 0.5271842245873588,
+        "upperBound": 0.9998927459673567,
+        "fingerprint": "tpa1-490393adb8087dcc"
+      },
+      "objective": "Improve the verified lower bound or attach a stronger rigorous upper bound.",
+      "budget": {
+        "orientationEvaluations": 5000,
+        "wallTimeSeconds": 900
+      },
+      "requiredEvidence": [
+        "complete triangle coordinates",
+        "deterministic seed and solver version",
+        "strictly improved verified utilization or stronger rigorous bound",
+        "contributor attribution and license agreement"
+      ],
+      "starterCommand": "npm run atlas:experiment -- --record iso-a35-r2p55",
+      "submissionGuide": "docs/SUBMISSION_WALKTHROUGH.md",
+      "status": "open"
+    }
+  ],
+  "note": "Challenges are public and machine-verifiable. No external contribution is claimed until a non-maintainer pull request is accepted."
+}

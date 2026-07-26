@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build && node scripts/prepare-sites.js",
+    "build:vercel": "vite build",
     "preview": "vite preview",
     "test": "node --test",
     "benchmark": "node benchmarks/run.js",
@@ -15,6 +16,10 @@
     "atlas:research": "node scripts/build-research-release.js",
     "atlas:v2": "node scripts/build-v2-release.js",
     "atlas:experiment": "node cli/experiment.js",
+    "atlas:audit": "node scripts/audit-v2-release.js",
+    "atlas:challenges": "node scripts/build-community-challenges.js",
+    "atlas:adaptive": "node benchmarks/adaptive.js",
+    "atlas:freeze": "node scripts/freeze-v2-release.js",
     "atlas:submission": "node cli/submission.js",
     "atlas:report": "node cli/report.js",
     "atlas:archive": "sh scripts/package-archive.sh",
@@ -22,7 +27,7 @@
     "atlas:certificate": "node cli/certificates.js",
     "atlas:beta": "node scripts/community-beta.js",
     "atlas:v1-rc": "sh scripts/package-v1-rc.sh",
-    "check": "npm test && npm run atlas:v2 && npm run build"
+    "check": "npm test && npm run atlas:v2 && npm run atlas:audit && npm run atlas:challenges && npm run build"
   },
   "devDependencies": {
     "vite": "^7.0.0"

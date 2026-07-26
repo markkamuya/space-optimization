@@ -134,3 +134,29 @@ real external contribution is processed and an authorized archive mints a DOI.
 **Status:** implemented as `2.0.0`. A DOI remains explicitly pending an
 authorized deposit; distributed tasks and future record improvements remain
 open-ended research work.
+
+## Milestones 31–36 — operational research release
+
+31. **Production recovery:** Vercel uses a dedicated static Vite build instead
+    of embedding the 13 MB dataset in an auxiliary server artifact.
+32. **Scientific audit:** all 304 coordinates, fingerprints, bounds, evidence
+    labels, and neighboring parameter slices are replayed and summarized in a
+    downloadable audit report.
+33. **Stronger optimization:** deterministic adaptive boundary search combines
+    multi-resolution boundary anchors, continuous orientation samples, spatial
+    collision pruning, and optional reflection. The release retains only
+    independently valid improvements and preserves incumbent provenance.
+34. **Community launch:** twelve high-priority, machine-verifiable challenges
+    are published with starter commands, budgets, evidence requirements, and
+    honest external-contributor counters.
+35. **Mathematical strengthening:** finite candidate-domain clique-cover
+    certificates can prove domain optima without being mislabeled as global
+    continuous optima; exact tiling and global area/count certificates remain
+    distinct.
+36. **Archival publication:** a twelve-artifact frozen manifest, per-file
+    SHA-256 digests, canonical archive, Zenodo metadata, citation data, and
+    GitHub release are prepared. DOI remains null until an authorized provider
+    actually mints one.
+
+**Status:** code-complete. External participation and DOI minting are facts
+that the project records only after they happen.

@@ -8,7 +8,7 @@ Verified constructions, best-known computational records, rigorous controls,
 and explicitly unsolved regions—explorable across triangle shape and container geometry.
 
 [Explore the live atlas](https://triangle-packing-atlas.vercel.app/) ·
-[Download the research dataset](https://triangle-packing-atlas.vercel.app/atlas-research-v2.json) ·
+[Download the research dataset](https://triangle-packing-atlas.vercel.app/atlas-v2.json) ·
 [Read the methodology](docs/METHODOLOGY_V2.md) ·
 [Contribute a packing](docs/SUBMISSION_WALKTHROUGH.md)
 
@@ -43,7 +43,7 @@ the open-problem board.
 | **Interactive atlas** | Explore phase maps, triangle families, packing layouts, comparisons, boundary waste, timelines, and open problems. |
 | **Versioned dataset** | Preserve coordinates, normalized inputs, provenance, evidence state, fingerprints, and reproducible solver traces. |
 | **Independent verification** | Replay every published record with separate JavaScript and Python geometry implementations. |
-| **Packing laboratory** | Generate deterministic baselines, multi-start refinements, lattice candidates, and residual-gap placements. |
+| **Packing laboratory** | Generate deterministic baselines, lattice candidates, adaptive boundary repairs, and independently verified improvements. |
 | **Contribution pipeline** | Validate submissions, detect duplicates, compare records, produce visual reports, and preserve attribution. |
 
 ## Research scope
@@ -57,6 +57,8 @@ records** across right, equilateral, and isosceles families. It includes:
 - rigorous area and count bounds where available;
 - clearly labeled open regions and public challenges;
 - checksummed, DOI-ready archival artifacts.
+- a downloadable 304-record scientific audit and twelve public compute challenges;
+- eleven retained adaptive-boundary improvements in the canonical v2 snapshot.
 
 Evidence is intentionally graded:
 
@@ -107,6 +109,7 @@ Rebuild and independently verify the canonical research release:
 ```bash
 npm run atlas:research
 npm run atlas:v2
+npm run atlas:audit
 npm run atlas:cross-verify
 ```
 
@@ -117,6 +120,7 @@ npm run atlas:verify -- atlas/right/right-grid-2x1.json
 npm run atlas:benchmark
 npm run atlas:certificate -- proofs/right-grid-2x1.json atlas/right/right-grid-2x1.json
 npm run atlas:experiment -- --record iso-a60-r1p5
+npm run atlas:adaptive
 npm run atlas:v1-rc
 ```
 
@@ -170,6 +174,11 @@ reproduction command. See the [v2 release notes](docs/ATLAS_V2_RELEASE.md).
 
 The release is checksummed and DOI-ready. A DOI is not claimed until the frozen
 snapshot is deposited with an authorized archival provider.
+
+The [scientific audit](public/audit-v2.json), [community challenge
+set](docs/COMMUNITY_CHALLENGE_V2.md), and [certificate
+policy](docs/MATHEMATICAL_CERTIFICATES_V2.md) document the operational research
+gates added after the initial v2 registry.
 
 ## Citation and license
 

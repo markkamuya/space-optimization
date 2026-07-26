@@ -1,0 +1,52 @@
+{
+  "format": "triangle-packing-atlas-audit/v1",
+  "releaseVersion": "2.0.0",
+  "policy": {
+    "discontinuityThreshold": 0.12,
+    "criticalFindingsBlockRelease": true,
+    "reviewFindingsRequireInspectionButDoNotInvalidateCoordinates": true
+  },
+  "passed": true,
+  "summary": {
+    "records": 304,
+    "replayed": 304,
+    "uniqueExperiments": 304,
+    "critical": 0,
+    "major": 0,
+    "review": 0,
+    "meanUtilization": 0.8237162356490944,
+    "meanOptimalityGap": 0.1742367067977436,
+    "minimumUtilization": 0.41245497986956975,
+    "maximumUtilization": 1,
+    "byFamily": {
+      "isosceles": {
+        "records": 224,
+        "meanUtilization": 0.8344045588974948,
+        "provenOptimal": 0
+      },
+      "equilateral": {
+        "records": 16,
+        "meanUtilization": 0.8635139251950663,
+        "provenOptimal": 0
+      },
+      "right": {
+        "records": 16,
+        "meanUtilization": 0.9391483340741396,
+        "provenOptimal": 3
+      },
+      "scalene": {
+        "records": 48,
+        "meanUtilization": 0.7220941311662231,
+        "provenOptimal": 0
+      }
+    },
+    "byPattern": {
+      "vertical lattice": 36,
+      "acute horizontal lattice": 120,
+      "obtuse horizontal lattice": 131,
+      "rectangular pairs": 16,
+      "diagonal lattice": 1
+    }
+  },
+  "findings": []
+}

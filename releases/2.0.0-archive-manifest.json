@@ -1,0 +1,70 @@
+{
+  "format": "triangle-packing-atlas-archive/v2",
+  "version": "2.0.0",
+  "frozenAt": "2026-07-26T00:00:00.000Z",
+  "doi": null,
+  "doiStatus": "awaiting_authorized_provider_deposit",
+  "gitTag": "v2.0.0",
+  "files": [
+    {
+      "path": "public/atlas-v2.json",
+      "bytes": 12184798,
+      "sha256": "2013749cb0e4a1874dd201d5ec3c83649f1c157e72d484a09510bb3d23852b01"
+    },
+    {
+      "path": "public/atlas-v2.csv",
+      "bytes": 65021,
+      "sha256": "171536734dc3188ba000e396c4035a003a874399bc9dbb30283126feab562407"
+    },
+    {
+      "path": "public/audit-v2.json",
+      "bytes": 1314,
+      "sha256": "72e17245dff8cc310b9be2a7b7ba72510fb4f973e27990525396bb24a0f68f24"
+    },
+    {
+      "path": "public/work-queue-v2.json",
+      "bytes": 206773,
+      "sha256": "76fe744824f9ddb4ab15226f61c83f3fa657ef2cdd2cbd0188c3819637a0c814"
+    },
+    {
+      "path": "public/community-challenges-v2.json",
+      "bytes": 11715,
+      "sha256": "523a61d771f6c1fbc6307caf9239518f0053267b6350ee7601eb9f7bb3ee4eaf"
+    },
+    {
+      "path": "schemas/canonical-release.schema.json",
+      "bytes": 1612,
+      "sha256": "c94960bbd808240254ae47fef13b4f9a75e93ac1cbfa099b01459d2a7a1bae6b"
+    },
+    {
+      "path": "schemas/finite-domain-certificate.schema.json",
+      "bytes": 1256,
+      "sha256": "ab994730971939a20b29c8a768e2319edb2dd5eaf3bff3fa65f78c22c8f800be"
+    },
+    {
+      "path": "docs/METHODOLOGY_V2.md",
+      "bytes": 2280,
+      "sha256": "7a3dc28d0965a89ef6247d26d9f71f67471fc4ea1d39d5a594ec6bedaf839144"
+    },
+    {
+      "path": "docs/ATLAS_V2_RELEASE.md",
+      "bytes": 2534,
+      "sha256": "4b25e2bb06f6f66b1982571c6ddc456c9b3777198e8ba7bbf6e5f53d8b549864"
+    },
+    {
+      "path": "docs/MATHEMATICAL_CERTIFICATES_V2.md",
+      "bytes": 1336,
+      "sha256": "959e8a9ccdc1887d96bfefb38000679135889e9673a36bdd9537db26c4ff1c64"
+    },
+    {
+      "path": "CITATION.cff",
+      "bytes": 532,
+      "sha256": "5b224a7400e5bb896d792bc30b813c4c5b72c42732eb945c4a34ba45eb69d415"
+    },
+    {
+      "path": ".zenodo.json",
+      "bytes": 425,
+      "sha256": "8e8aea7582cce73583ce00109cf3ecaa99749b975b4ca38abda0f6b544695c37"
+    }
+  ]
+}

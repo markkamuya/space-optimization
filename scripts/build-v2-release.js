@@ -1,6 +1,8 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { RESEARCH_RECORDS } from '../src/research/dataset.js';
+import { adaptiveBoundarySearch } from '../src/solvers/adaptive.js';
+import { boundBundle } from '../src/research/bounds.js';
 import {
   CANONICAL_FORMAT,
   canonicalRecord,
@@ -9,7 +11,81 @@ import {
 } from '../src/research/registry.js';
 import { buildWorkQueue } from '../src/research/distributed.js';
 
-const records = RESEARCH_RECORDS.map(canonicalRecord);
+const adaptiveTargets = new Set([...RESEARCH_RECORDS]
+  .filter(record => record.bounds.optimalityGap > 0 && record.verification.pieceCount < 300)
+  .sort((left, right) => right.bounds.optimalityGap - left.bounds.optimalityGap)
+  .slice(0, 12)
+  .map(record => record.id));
+const optimizedSources = RESEARCH_RECORDS.map(record => {
+  if (!adaptiveTargets.has(record.id)) return record;
+  const result = adaptiveBoundarySearch({
+    sides: record.problem.triangles[0].sides,
+    width: record.problem.width,
+    height: record.problem.height,
+    initialState: record.solution.placements,
+    maxPieces: 300,
+    orientationCount: 24,
+    passes: 2,
+    allowReflection: record.problem.allowReflection
+  });
+  if (!result.verification.valid || result.inserted === 0) return record;
+  return {
+    ...record,
+    problem: result.verification.normalizedProblem,
+    solution: {
+      construction: 'adaptive-boundary-search/v1',
+      placements: result.state
+    },
+    verification: {
+      valid: true,
+      fingerprint: result.verification.fingerprint,
+      utilization: result.verification.metrics.utilization,
+      pieceCount: result.state.length
+    },
+    bounds: boundBundle(result.problem, { metrics: result.verification.metrics }),
+    solver: {
+      ...record.solver,
+      winner: 'adaptive-boundary-search',
+      portfolio: [
+        ...record.solver.portfolio,
+        {
+          solver: 'adaptive-boundary-search',
+          iterations: result.attempts,
+          pieceCount: result.state.length,
+          utilization: result.verification.metrics.utilization
+        }
+      ],
+      budget: {
+        ...record.solver.budget,
+        adaptiveAttempts: result.attempts
+      },
+      environment: {
+        ...record.solver.environment,
+        algorithmVersion: 'adaptive-boundary-search/v1'
+      }
+    },
+    descriptors: {
+      ...record.descriptors,
+      boundaryWaste: 1 - result.verification.metrics.utilization,
+      boundaryGapAnalysis: {
+        ...record.descriptors.boundaryGapAnalysis,
+        unusedArea: result.problem.width * result.problem.height - result.verification.metrics.triangleArea,
+        priority: 'repaired'
+      }
+    },
+    provenance: {
+      ...record.provenance,
+      generator: 'adaptive-boundary-search/v1',
+      seed: `adaptive-${record.id}`
+    },
+    adaptiveImprovement: {
+      insertedPieces: result.inserted,
+      attempts: result.attempts,
+      previousUtilization: record.verification.utilization
+    }
+  };
+});
+const records = optimizedSources.map(canonicalRecord);
 const audit = validateCanonicalRecords(records);
 if (!audit.valid) throw new Error(`Canonical registry failed: ${JSON.stringify(audit.errors.slice(0, 5))}`);
 
@@ -35,7 +111,8 @@ const release = {
     families: Object.fromEntries([...Map.groupBy(records, record => record.family)]
       .map(([family, values]) => [family, values.length])),
     openDistributedTasks: queue.length,
-    phaseTransitions: transitions.length
+    phaseTransitions: transitions.length,
+    adaptivelyImproved: records.filter(record => record.adaptiveImprovement).length
   },
   transitions,
   records

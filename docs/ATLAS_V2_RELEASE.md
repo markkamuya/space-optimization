@@ -19,6 +19,9 @@ work queue all use the same canonical record registry.
 - JSON and CSV snapshots plus a checksummed immutable release manifest.
 - 301 prioritized distributed tasks that require coordinates and an independently
   verified improvement.
+- Eleven canonical records improved by deterministic adaptive boundary search.
+- A complete audit with zero critical or major findings across all 304 records.
+- Twelve public community challenges selected from the highest-priority gaps.
 
 ## Reproduction
 
@@ -32,6 +35,10 @@ npm run atlas:cross-verify
 The release checksum is written to `public/atlas-v2.sha256`. Rebuilding on a
 supported runtime must reproduce every record fingerprint. Build-environment
 metadata is not used as scientific evidence.
+
+The frozen archival manifest records individual SHA-256 digests for the
+canonical JSON, CSV, audit, work queue, challenges, schemas, methodology,
+certificate policy, citation data, and archival-provider metadata.
 
 ## Claim boundary
 

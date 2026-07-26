@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trianglepackingatlas.org/schemas/finite-domain-certificate.v1.json",
+  "title": "Finite candidate-domain packing certificate",
+  "type": "object",
+  "required": ["format", "type", "problem", "candidates", "selectedIndices", "cliqueCover", "claim"],
+  "properties": {
+    "format": { "const": "triangle-packing-certificate/v2" },
+    "type": { "const": "finite_candidate_domain" },
+    "claim": { "const": "optimal_within_declared_finite_candidate_domain" },
+    "problem": {
+      "type": "object",
+      "required": ["width", "height", "sides"],
+      "properties": {
+        "width": { "type": "number", "exclusiveMinimum": 0 },
+        "height": { "type": "number", "exclusiveMinimum": 0 },
+        "sides": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": { "type": "number", "exclusiveMinimum": 0 }
+        }
+      }
+    },
+    "candidates": { "type": "array", "items": { "type": "object" } },
+    "selectedIndices": { "type": "array", "items": { "type": "integer", "minimum": 0 } },
+    "cliqueCover": {
+      "type": "array",
+      "items": { "type": "array", "items": { "type": "integer", "minimum": 0 } }
+    }
+  }
+}

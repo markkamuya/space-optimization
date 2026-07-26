@@ -12,6 +12,10 @@
   phase transitions.
 - Added v2 CI gates, registry and worker-contract tests, methodology, claim
   boundaries, and release documentation.
+- Added a 304-record scientific audit, adaptive boundary optimizer with eleven
+  retained record improvements, twelve public challenges, finite-domain
+  clique-cover certificates, a Vercel-specific static build, and a frozen
+  twelve-artifact archive manifest.
 
 ## 1.0.0-rc.1 — 2026-07-26
 
