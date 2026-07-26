@@ -11,7 +11,7 @@ import { evaluate } from './scoring.js';
 const EPSILON = 1e-7;
 
 export function orientationSet(problem, phase = 0) {
-  const count = problem.allowRotation ? 24 : 1;
+  const count = problem.allowRotation ? (problem.fillSheet ? 12 : 24) : 1;
   const angles = Array.from({ length: count }, (_, index) =>
     problem.allowRotation ? (index + phase) * Math.PI * 2 / count : 0
   );
@@ -35,9 +35,10 @@ function candidateTranslations(problem, rotated, placed) {
     yAnchors.push(itemBounds.maxY + problem.kerf);
   }
   for (const x of xAnchors) {
-    for (const y of yAnchors) {
-      translations.push({ x: x - box.minX, y: y - box.minY });
-    }
+    translations.push({ x: x - box.minX, y: problem.margin - box.minY });
+  }
+  for (const y of yAnchors) {
+    translations.push({ x: problem.margin - box.minX, y: y - box.minY });
   }
 
   const directions = problem.kerf > 0
@@ -87,9 +88,8 @@ function placementRank(problem, candidate, placed) {
   return area * (1 + ratioPenalty * 0.3) + (width + height) * 0.05 + (maxX + maxY) * 0.001;
 }
 
-export function packOrder(problem, order, { phase = 0 } = {}) {
+export function packOrder(problem, order, { phase = 0, allowPartial = false } = {}) {
   const placed = [];
-  const state = Array(problem.triangles.length);
   const orientations = orientationSet(problem, phase);
 
   for (const index of order) {
@@ -109,10 +109,23 @@ export function packOrder(problem, order, { phase = 0 } = {}) {
         }
       }
     }
-    if (!best) return null;
-    placed.push({ index, shape: best.shape });
-    state[index] = best.placement;
+    if (!best) {
+      if (allowPartial) continue;
+      return null;
+    }
+    placed.push({
+      index,
+      triangle: problem.triangles[index],
+      shape: best.shape,
+      placement: best.placement
+    });
   }
 
-  return { state, metrics: evaluate(problem, state) };
+  const resultProblem = allowPartial
+    ? { ...problem, triangles: placed.map(item => item.triangle) }
+    : problem;
+  const state = allowPartial
+    ? placed.map(item => item.placement)
+    : placed.sort((left, right) => left.index - right.index).map(item => item.placement);
+  return { problem: resultProblem, state, metrics: evaluate(resultProblem, state) };
 }

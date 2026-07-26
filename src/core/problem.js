@@ -5,7 +5,9 @@ export const DEFAULT_PROBLEM = Object.freeze({
   width: 30,
   height: 20,
   margin: 0.5,
-  kerf: 0.15,
+  kerf: 0,
+  fillSheet: true,
+  maxPieces: 120,
   allowRotation: true,
   allowReflection: false,
   seed: 'stellar-01',
@@ -24,11 +26,15 @@ export function normalizeProblem(input) {
   const height = Number(input.height);
   const margin = Number(input.margin ?? 0);
   const kerf = Number(input.kerf ?? 0);
-  if (![width, height, margin, kerf].every(Number.isFinite)) {
+  const maxPieces = Number(input.maxPieces ?? 80);
+  if (![width, height, margin, kerf, maxPieces].every(Number.isFinite)) {
     throw new TypeError('Container dimensions, margin, and kerf must be finite numbers');
   }
   if (width <= 0 || height <= 0 || margin < 0 || kerf < 0) {
     throw new RangeError('Container dimensions must be positive; margin and kerf cannot be negative');
+  }
+  if (!Number.isInteger(maxPieces) || maxPieces < 1 || maxPieces > 300) {
+    throw new RangeError('Maximum pieces must be an integer from 1 to 300');
   }
   if (width <= margin * 2 || height <= margin * 2) {
     throw new RangeError('Margin leaves no usable packing area');
@@ -56,6 +62,8 @@ export function normalizeProblem(input) {
     height,
     margin,
     kerf,
+    fillSheet: input.fillSheet !== false,
+    maxPieces,
     allowRotation: input.allowRotation !== false,
     allowReflection: input.allowReflection === true,
     seed: String(input.seed ?? 'triangle-lab'),
@@ -70,6 +78,8 @@ export function serializableProblem(problem) {
     height: problem.height,
     margin: problem.margin,
     kerf: problem.kerf,
+    fillSheet: problem.fillSheet,
+    maxPieces: problem.maxPieces,
     allowRotation: problem.allowRotation,
     allowReflection: problem.allowReflection,
     seed: problem.seed,

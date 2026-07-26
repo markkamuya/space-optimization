@@ -13,6 +13,7 @@ scale-preserving exports.
 - Exact triangle intersection area and explicit kerf constraints
 - Deterministic compact bottom-left baseline
 - Seeded multi-start refinement with live progress and cancellation
+- Repeatable-type fill mode that maximizes covered sheet area
 - Side-by-side results and convergence visualization
 - Utilization, overlap, boundary, spacing, runtime, and score metrics
 - JSON import plus SVG, DXF, and JSON export
@@ -60,6 +61,11 @@ See [ROADMAP.md](ROADMAP.md) for the six product milestones and
 A solution is valid when every triangle remains inside the usable sheet, no two
 triangles have positive overlapping area, and every pair observes the requested
 kerf distance. Margin reduces the usable sheet on every edge.
+
+Fill mode treats the entered triangles as repeatable types. With zero spacing,
+the solver evaluates lattice tilings for every type and selects the valid layout
+with the greatest covered area. With spacing enabled or fixed-set mode selected,
+the general compact candidate search is used.
 
 Utilization is:
 

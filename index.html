@@ -60,9 +60,10 @@
             <label class="field"><span>Width</span><input id="width" type="number" min="1" step="0.5" value="30"></label>
             <label class="field"><span>Height</span><input id="height" type="number" min="1" step="0.5" value="20"></label>
             <label class="field"><span>Margin</span><input id="margin" type="number" min="0" step="0.1" value="0.5"></label>
-            <label class="field"><span>Kerf</span><input id="kerf" type="number" min="0" step="0.05" value="0.15"></label>
+            <label class="field"><span>Spacing / kerf</span><input id="kerf" type="number" min="0" step="0.05" value="0"></label>
           </div>
           <div class="toggle-row">
+            <label><input id="fill-sheet" type="checkbox" checked><span>Repeat types to fill sheet</span></label>
             <label><input id="rotation" type="checkbox" checked><span>Allow rotation</span></label>
             <label><input id="reflection" type="checkbox"><span>Allow reflection</span></label>
           </div>
@@ -86,7 +87,8 @@
           </div>
           <div class="field-grid">
             <label class="field"><span>Seed</span><input id="seed" value="stellar-01"></label>
-            <label class="field"><span>Search starts</span><input id="iterations" type="number" min="1" max="300" step="1" value="60"></label>
+            <label class="field"><span>Maximum pieces</span><input id="max-pieces" type="number" min="1" max="300" step="1" value="120"></label>
+            <label class="field"><span>Search starts</span><input id="iterations" type="number" min="1" max="30" step="1" value="4"></label>
           </div>
           <div class="action-row">
             <button id="run" class="primary-button" type="button">Run comparison <span>→</span></button>
@@ -153,7 +155,7 @@
         </div>
         <div class="method-grid">
           <article><b>01</b><h3>Construct</h3><p>Every piece is validated from three side lengths. Impossible and degenerate triangles are rejected before a run begins.</p></article>
-          <article><b>02</b><h3>Place</h3><p>A compact bottom-left constructor tests edge, corner, and vertex contacts across valid orientations.</p></article>
+          <article><b>02</b><h3>Fill</h3><p>Triangle definitions become repeatable types. The constructor keeps adding valid pieces until no candidate fits.</p></article>
           <article><b>03</b><h3>Refine</h3><p>Seeded multi-start search changes piece order and orientation phase, keeping only independently verified layouts.</p></article>
           <article><b>04</b><h3>Verify</h3><p>Validity, utilization, overlap area, runtime, and convergence remain visible. “Best found” is never mislabeled as a proven optimum.</p></article>
         </div>

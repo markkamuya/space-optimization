@@ -51,6 +51,12 @@ piece order and orientation phase. It accepts only independently valid layouts
 and retains the best-known state, so it cannot return a lower-quality score
 than its starting solution.
 
+In fill mode, definitions are repeatable types rather than a finite inventory.
+For zero-spacing jobs, the solver constructs paired-triangle lattice cells,
+clips them to the usable sheet, and selects the type with greatest covered
+area. This reaches high sheet utilization without confusing a compact
+six-piece nest with an actual fill operation.
+
 ## Rendering and export
 
 Canvas rendering is a projection of solver output. SVG, DXF, and JSON exporters

@@ -68,10 +68,22 @@ test('kerf is enforced as a minimum spacing constraint', () => {
 });
 
 test('greedy solver produces a valid reproducible baseline', () => {
-  const problem = normalizeProblem(DEFAULT_PROBLEM);
+  const problem = normalizeProblem({ ...DEFAULT_PROBLEM, fillSheet: false });
   const first = solveGreedy(problem);
   const second = solveGreedy(problem);
   assert.equal(first.metrics.valid, true);
   assert.deepEqual(first.state, second.state);
   assert.deepEqual(first.state, solveGreedy(problem).state);
+});
+
+test('fill mode repeats a triangle type to cover most of the sheet', () => {
+  const problem = normalizeProblem({
+    ...DEFAULT_PROBLEM,
+    triangles: [DEFAULT_PROBLEM.triangles[2]],
+    maxPieces: 200
+  });
+  const result = solveGreedy(problem);
+  assert.equal(result.metrics.valid, true);
+  assert.ok(result.state.length > 20);
+  assert.ok(result.metrics.utilization > 0.7);
 });

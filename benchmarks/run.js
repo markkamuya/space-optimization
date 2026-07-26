@@ -31,7 +31,7 @@ for (const fixture of fixtures) {
     Math.max(1, baseline.metrics.score) * 100;
   console.log(JSON.stringify({
     fixture: fixture.name,
-    pieces: problem.triangles.length,
+    pieces: result.state.length,
     baselineValid: baseline.metrics.valid,
     optimizedValid: result.metrics.valid,
     utilizationPercent: +(result.metrics.utilization * 100).toFixed(2),

@@ -11,6 +11,8 @@ const elements = {
   height: $('#height'),
   margin: $('#margin'),
   kerf: $('#kerf'),
+  fillSheet: $('#fill-sheet'),
+  maxPieces: $('#max-pieces'),
   rotation: $('#rotation'),
   reflection: $('#reflection'),
   seed: $('#seed'),
@@ -62,6 +64,8 @@ function readProblem() {
     height: elements.height.value,
     margin: elements.margin.value,
     kerf: elements.kerf.value,
+    fillSheet: elements.fillSheet.checked,
+    maxPieces: elements.maxPieces.value,
     allowRotation: elements.rotation.checked,
     allowReflection: elements.reflection.checked,
     seed: elements.seed.value,
@@ -86,8 +90,8 @@ function showResult(prefix, result) {
 
 function renderAll() {
   if (!currentProblem || !greedyResult || !optimizedResult) return;
-  renderPacking(elements.greedyCanvas, currentProblem, greedyResult);
-  renderPacking(elements.annealingCanvas, currentProblem, optimizedResult);
+  renderPacking(elements.greedyCanvas, greedyResult.problem ?? currentProblem, greedyResult);
+  renderPacking(elements.annealingCanvas, optimizedResult.problem ?? currentProblem, optimizedResult);
   renderChart(elements.chart, optimizedResult.history);
 }
 
@@ -117,11 +121,11 @@ async function runStudy() {
     optimizedResult = await solveAnnealing(currentProblem, {
       iterations: Number(elements.iterations.value),
       signal: controller.signal,
-      onProgress({ iteration, iterations, state, metrics }) {
+      onProgress({ iteration, iterations, state, metrics, problem }) {
         elements.progress.value = iteration / iterations * 100;
-        optimizedResult = { ...optimizedResult, state, metrics };
+        optimizedResult = { ...optimizedResult, state, metrics, problem };
         if (iteration % Math.max(1, Math.floor(iterations / 10)) === 0) {
-          renderPacking(elements.annealingCanvas, currentProblem, optimizedResult);
+          renderPacking(elements.annealingCanvas, optimizedResult.problem ?? currentProblem, optimizedResult);
         }
       }
     });
@@ -149,6 +153,8 @@ function applyProblem(input) {
   elements.height.value = source.height;
   elements.margin.value = source.margin;
   elements.kerf.value = source.kerf;
+  elements.fillSheet.checked = source.fillSheet !== false;
+  elements.maxPieces.value = source.maxPieces ?? 120;
   elements.rotation.checked = source.allowRotation !== false;
   elements.reflection.checked = source.allowReflection === true;
   elements.seed.value = source.seed;
@@ -188,7 +194,7 @@ document.querySelectorAll('[data-export]').forEach(button => {
   button.addEventListener('click', () => {
     if (!currentProblem || !optimizedResult) return;
     const exporters = { svg: exportSVG, dxf: exportDXF, json: exportJSON };
-    exporters[button.dataset.export](currentProblem, optimizedResult);
+    exporters[button.dataset.export](optimizedResult.problem ?? currentProblem, optimizedResult);
   });
 });
 window.addEventListener('resize', () => requestAnimationFrame(renderAll));

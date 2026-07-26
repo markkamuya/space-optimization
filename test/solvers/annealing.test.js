@@ -6,7 +6,7 @@ import { solveAnnealing } from '../../src/solvers/annealing.js';
 import { solveGreedy } from '../../src/solvers/greedy.js';
 
 test('multi-start search is reproducible and never loses the baseline', async () => {
-  const problem = normalizeProblem(DEFAULT_PROBLEM);
+  const problem = normalizeProblem({ ...DEFAULT_PROBLEM, fillSheet: false });
   const baseline = solveGreedy(problem);
   const first = await solveAnnealing(problem, { iterations: 12, seed: 'test-seed', initial: baseline });
   const second = await solveAnnealing(problem, { iterations: 12, seed: 'test-seed', initial: baseline });
