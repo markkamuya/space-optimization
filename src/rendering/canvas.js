@@ -34,6 +34,7 @@ export function renderPacking(canvas, problem, result) {
   );
   context.setLineDash([]);
 
+  const showLabels = result.showLabels ?? result.state.length <= 48;
   for (const item of placedTriangles(problem, result.state)) {
     const points = vertices(item.placed).map(point => ({
       x: originX + point.x * scale,
@@ -47,11 +48,13 @@ export function renderPacking(canvas, problem, result) {
     context.fill();
     context.strokeStyle = '#161812';
     context.stroke();
-    const center = points.reduce((acc, point) => ({ x: acc.x + point.x / 3, y: acc.y + point.y / 3 }), { x: 0, y: 0 });
-    context.fillStyle = '#161812';
-    context.font = '500 10px DM Mono';
-    context.textAlign = 'center';
-    context.fillText(item.id, center.x, center.y + 3);
+    if (showLabels) {
+      const center = points.reduce((acc, point) => ({ x: acc.x + point.x / 3, y: acc.y + point.y / 3 }), { x: 0, y: 0 });
+      context.fillStyle = '#161812';
+      context.font = '500 10px DM Mono';
+      context.textAlign = 'center';
+      context.fillText(item.id, center.x, center.y + 3);
+    }
   }
 }
 

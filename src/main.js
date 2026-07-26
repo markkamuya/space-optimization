@@ -7,6 +7,8 @@ const percent = value => `${(value * 100).toFixed(1)}%`;
 let familyFilter = 'all';
 let selectedPhase = phaseAt(60, 1.5);
 let researchRelease = null;
+let canonicalRelease = null;
+let researchLimit = 24;
 
 $('#record-count').textContent = String(ATLAS_RECORDS.length).padStart(2, '0');
 $('#open-count').textContent = String(OPEN_PROBLEMS.length).padStart(2, '0');
@@ -280,15 +282,98 @@ function renderLeaderboard() {
 
 async function loadResearchRelease() {
   try {
-    const response = await fetch('/atlas-research-v2.json');
+    const response = await fetch('/atlas-v2.json');
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    researchRelease = await response.json();
-    $('#record-count').textContent = String(researchRelease.verifiedCount + ATLAS_RECORDS.length);
+    canonicalRelease = await response.json();
+    researchRelease = {
+      records: canonicalRelease.records,
+      verifiedCount: canonicalRelease.coverage.verified,
+      sampling: {
+        rectangleRatios: [...new Set(canonicalRelease.records
+          .filter(record => record.family !== 'scalene')
+          .map(record => record.parameters.rectangleRatio))],
+        resolution: `${canonicalRelease.coverage.records} canonical experiments`
+      }
+    };
+    $('#record-count').textContent = String(researchRelease.verifiedCount);
     makePhaseMap();
     updatePhase();
     renderLeaderboard();
+    renderResearchExplorer();
   } catch {
     $('#resolution-label').textContent = 'curated fallback';
+    $('#research-result-count').textContent = 'Canonical dataset unavailable';
+  }
+}
+
+function researchRecordLabel(record) {
+  return record.family === 'scalene'
+    ? `${record.family} · ${record.id.split('-r')[0]} · ${record.parameters.rectangleRatio}:1`
+    : `${record.family} · ${record.parameters.apexAngle}° · ${record.parameters.rectangleRatio}:1`;
+}
+
+function filteredResearchRecords() {
+  const query = $('#research-search').value.trim().toLowerCase();
+  const family = $('#research-family').value;
+  const evidence = $('#research-evidence').value;
+  return canonicalRelease.records.filter(record => {
+    if (family !== 'all' && record.family !== family) return false;
+    if (evidence !== 'all' && record.evidence.state !== evidence) return false;
+    const haystack = `${record.id} ${record.experimentId} ${record.family} ${record.pattern} ${record.evidence.state}`.toLowerCase();
+    return !query || haystack.includes(query);
+  });
+}
+
+function openResearchRecord(record) {
+  const detail = $('#record-detail');
+  detail.innerHTML = `
+    <div class="detail-header"><div><p class="kicker">${record.family} / ${record.evidence.state.replaceAll('_', ' ')}</p><h2>${record.experimentId}</h2><p>${record.evidence.claim}</p></div>
+      <div class="detail-stat"><b>${percent(record.verification.utilization)}</b><span>verified lower bound</span></div></div>
+    <canvas width="1000" height="560" aria-label="${record.id} packing coordinates"></canvas>
+    <div class="detail-grid">
+      <section><h3>Verification certificate</h3><p><code>${record.verification.certificate}</code></p><dl><div><dt>Pieces</dt><dd>${record.verification.pieceCount}</dd></div><div><dt>Overlap</dt><dd>0</dd></div><div><dt>Verifier</dt><dd>${record.verification.verifier}</dd></div></dl></section>
+      <section><h3>Bounds & uncertainty</h3><dl><div><dt>Lower bound</dt><dd>${percent(record.bounds.lowerBound)}</dd></div><div><dt>Upper bound</dt><dd>${percent(record.bounds.upperBound)}</dd></div><div><dt>Rigorous gap</dt><dd>${percent(record.bounds.optimalityGap)}</dd></div></dl><p>${record.descriptors.boundaryGapAnalysis.priority} boundary-repair priority.</p></section>
+      <section><h3>Reproduce & cite</h3><p><code>${record.reproducibility.command}</code></p><p>Seed <code>${record.reproducibility.seed}</code><br>Fingerprint <code>${record.verification.fingerprint}</code></p><a href="/atlas-v2.json" download>Download canonical coordinates ↓</a></section>
+    </div>`;
+  $('#record-dialog').showModal();
+  requestAnimationFrame(() => renderPacking(
+    detail.querySelector('canvas'),
+    normalizeProblem(record.problem),
+    { state: record.solution.placements }
+  ));
+  history.replaceState(null, '', `#research?record=${encodeURIComponent(record.id)}`);
+}
+
+function renderResearchExplorer() {
+  if (!canonicalRelease) return;
+  const records = filteredResearchRecords();
+  const visible = records.slice(0, researchLimit);
+  $('#research-summary').innerHTML = [
+    ['Verified records', canonicalRelease.coverage.verified],
+    ['Proven controls', canonicalRelease.coverage.provenOptimal],
+    ['Observed transitions', canonicalRelease.coverage.phaseTransitions],
+    ['Open compute tasks', canonicalRelease.coverage.openDistributedTasks]
+  ].map(([label, value]) => `<div><b>${value}</b><span>${label}</span></div>`).join('');
+  $('#research-results').innerHTML = visible.map(record => `
+    <button type="button" data-record="${record.id}">
+      <span><b>${researchRecordLabel(record)}</b><small>${record.experimentId}</small></span>
+      <span>${record.pattern}</span>
+      <span><i class="${record.evidence.state}">${record.evidence.state.replaceAll('_', ' ')}</i></span>
+      <span><b>${percent(record.verification.utilization)}</b><small>gap ${percent(record.bounds.optimalityGap)}</small></span>
+    </button>`).join('');
+  $('#research-results').querySelectorAll('[data-record]').forEach(button => {
+    button.addEventListener('click', () =>
+      openResearchRecord(canonicalRelease.records.find(record => record.id === button.dataset.record)));
+  });
+  $('#research-result-count').textContent = `Showing ${visible.length} of ${records.length} matching records`;
+  $('#research-more').hidden = visible.length >= records.length;
+  $('#transition-list').innerHTML = canonicalRelease.transitions.slice(0, 8).map(transition => `
+    <article><b>${transition.apexAngle}°</b><span>${transition.betweenRatios.join('–')}:1</span><p>${transition.from} → ${transition.to}</p><small>${transition.evidence.join(' / ')}</small></article>`).join('') ||
+    '<p>No pattern transition was observed at this sampling resolution.</p>';
+  const match = location.hash.match(/^#research\?record=([^&]+)/);
+  if (match) {
+    const record = canonicalRelease.records.find(item => item.id === decodeURIComponent(match[1]));
+    if (record && !$('#record-dialog').open) openResearchRecord(record);
   }
 }
 
@@ -316,6 +401,16 @@ async function loadV1Context() {
 
 $('#angle').addEventListener('input', updatePhase);
 $('#ratio').addEventListener('input', updatePhase);
+for (const selector of ['#research-search', '#research-family', '#research-evidence']) {
+  $(selector).addEventListener(selector === '#research-search' ? 'input' : 'change', () => {
+    researchLimit = 24;
+    renderResearchExplorer();
+  });
+}
+$('#research-more').addEventListener('click', () => {
+  researchLimit += 24;
+  renderResearchExplorer();
+});
 $('#record-dialog .dialog-close').addEventListener('click', () => $('#record-dialog').close());
 $('#record-dialog').addEventListener('click', event => {
   if (event.target === $('#record-dialog')) $('#record-dialog').close();

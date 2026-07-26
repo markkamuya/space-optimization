@@ -20,7 +20,7 @@
     <header class="topbar">
       <a class="brand" href="#top" aria-label="Triangle Packing Atlas home"><span class="brand-mark"></span><span>TPA</span></a>
       <nav aria-label="Primary navigation">
-        <a href="#map">Map</a><a href="#families">Families</a><a href="#records">Records</a><a href="#challenges">Open problems</a>
+        <a href="#map">Map</a><a href="#families">Families</a><a href="#research">Research</a><a href="#challenges">Open problems</a>
       </nav>
       <a class="contribute-link" href="#contribute">Contribute ↗</a>
     </header>
@@ -28,7 +28,7 @@
     <main id="top">
       <section class="hero">
         <div>
-          <p class="kicker">OPEN COMPUTATIONAL GEOMETRY · V1 RELEASE CANDIDATE</p>
+          <p class="kicker">OPEN COMPUTATIONAL GEOMETRY · CANONICAL ATLAS V2</p>
           <h1>A living map of<br><em>what fits.</em></h1>
         </div>
         <div class="hero-copy">
@@ -116,6 +116,27 @@
         <div id="comparison" class="comparison"></div>
       </section>
 
+      <section id="research" class="research-explorer">
+        <div class="section-intro">
+          <div><p class="kicker">CANONICAL RECORD REGISTRY</p><h2>Query the evidence,<br>not a gallery.</h2></div>
+          <p>Search every computed experiment by family, pattern, evidence state, angle, or identifier. Each result carries coordinates, a certificate, provenance, a bound, and a one-command reproduction path.</p>
+        </div>
+        <div class="research-summary" id="research-summary" aria-live="polite"></div>
+        <div class="research-toolbar">
+          <label>Search records<input id="research-search" type="search" placeholder="e.g. equilateral, apex-60, vertical"></label>
+          <label>Family<select id="research-family"><option value="all">All families</option><option>right</option><option>equilateral</option><option>isosceles</option><option>scalene</option></select></label>
+          <label>Evidence<select id="research-evidence"><option value="all">All evidence</option><option value="proven_optimal">Proven optimal</option><option value="verified_best_known">Verified best known</option></select></label>
+          <div class="research-downloads"><a href="/atlas-v2.json" download>JSON ↓</a><a href="/atlas-v2.csv" download>CSV ↓</a><a href="/work-queue-v2.json" download>WORK QUEUE ↓</a></div>
+        </div>
+        <div class="registry-head"><span>Experiment</span><span>Pattern</span><span>Evidence</span><span>Fill / gap</span></div>
+        <div id="research-results" class="registry-results"></div>
+        <div class="registry-footer"><span id="research-result-count">Loading canonical release…</span><button id="research-more" type="button">Show more records</button></div>
+        <div class="transition-panel">
+          <div><p class="kicker">OBSERVED PHASE BOUNDARIES</p><h3>Transitions backed by adjacent samples.</h3></div>
+          <div id="transition-list"></div>
+        </div>
+      </section>
+
       <section id="challenges" class="challenge-section">
         <div class="section-intro light">
           <div><p class="kicker">OPEN-PROBLEM BROWSER</p><h2>The blank parts are the point.</h2></div>
@@ -142,13 +163,13 @@
       </section>
 
       <section class="research-section">
-        <p class="kicker">RESEARCH EXPANSION · MILESTONE 9</p>
-        <h2>From atlas to open endeavor.</h2>
+        <p class="kicker">RESEARCH INFRASTRUCTURE · MILESTONES 22–30</p>
+        <h2>From atlas to shared instrument.</h2>
         <div class="research-track">
-          <article><span>NOW</span><h3>Finite rectangles</h3><p>Right, equilateral, and isosceles slices with reproducible records.</p></article>
-          <article><span>NEXT</span><h3>Scalene space</h3><p>Normalized two-angle phase maps and verified solver baselines.</p></article>
-          <article><span>THEN</span><h3>Bounds & literature</h3><p>Rigorous upper bounds, citation ingestion, and finite/asymptotic comparison.</p></article>
-          <article><span>OPEN</span><h3>Distributed studies</h3><p>Versioned challenge sets for classrooms, researchers, and solver fleets.</p></article>
+          <article><span>CANONICAL</span><h3>Traceable records</h3><p>Stable experiment IDs, coordinates, certificates, provenance, history, and citations.</p></article>
+          <article><span>REPRODUCIBLE</span><h3>Solver laboratory</h3><p>Deterministic commands, declared budgets, fingerprints, and independent replay.</p></article>
+          <article><span>COMPUTED</span><h3>Phase evidence</h3><p>Sample-backed transitions, rigorous gaps, and visible uncertainty.</p></article>
+          <article><span>DISTRIBUTED</span><h3>Open work queue</h3><p>Prioritized, bounded tasks that require coordinates and verified improvements.</p></article>
         </div>
       </section>
 
@@ -161,11 +182,11 @@
       </section>
 
       <section class="archive-section">
-        <div><p class="kicker">V1 GATE · 1.0.0-RC.1</p><h2>Verified in two languages.<br>Honest about what remains.</h2></div>
+        <div><p class="kicker">ATLAS V2 · RESEARCH RELEASE</p><h2>One registry.<br>Reproducible evidence.</h2></div>
         <div>
-          <p>The v1 candidate includes 304 records, independent JavaScript and Python verification, solver tournaments, proof certificates, literature scope, community acceptance tests, and complete archival metadata.</p>
+          <p>Atlas v2 unifies 304 records into a canonical, certificate-backed registry with executable reproduction commands, computed transitions, downloadable JSON and CSV, an open distributed work queue, and immutable checksums.</p>
           <dl id="release-gates"><div><dt>Release status</dt><dd>loading…</dd></div></dl>
-          <a href="/atlas-research-v2.json" download class="primary-action">Download v1 candidate dataset <span>↓</span></a>
+          <a href="/atlas-v2.json" download class="primary-action">Download canonical v2 dataset <span>↓</span></a>
         </div>
       </section>
     </main>

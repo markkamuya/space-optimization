@@ -105,3 +105,32 @@ ready; an actual DOI requires an authorized archival-provider deposit.
 
 **Status:** all internal gates pass. `v1.0.0` remains correctly blocked until a
 real external contribution is processed and an authorized archive mints a DOI.
+
+## Milestones 22–30 — canonical Atlas v2
+
+22. **Canonical dataset:** all 304 experiments now share stable record and
+    experiment identifiers, coordinates, provenance, evidence, history, and
+    downloadable JSON/CSV representations.
+23. **Trusted verification:** every record carries a fingerprint, verifier
+    version, tolerance policy, and deterministic certificate; JavaScript and
+    independent Python replay remain release gates.
+24. **Reproducible laboratory:** each record publishes its seed, algorithm
+    version, declared budget, and an executable `atlas:experiment` command.
+25. **Computed phase map:** the interface is driven by the canonical registry
+    and publishes 38 transitions backed by adjacent computed samples.
+26. **Community submission system:** CI verifies, renders, compares, and then
+    rebuilds the canonical registry; proof and citation review remains human.
+27. **Best-known registry:** fingerprints detect duplicates, normalized
+    experiment IDs identify incumbents, inferior candidates are classified,
+    and immutable history preserves attribution.
+28. **Research UX:** the hosted Atlas provides full-text and evidence filtering,
+    deep-linked record pages, coordinates, bounds, certificates, comparisons,
+    and JSON/CSV downloads.
+29. **Distributed exploration:** a versioned queue publishes 301 prioritized
+    tasks with budgets and strict result-validation contracts.
+30. **Atlas v2 release:** canonical snapshot, checksum, schema, manifest,
+    methodology, citation metadata, and limitations are publication-ready.
+
+**Status:** implemented as `2.0.0`. A DOI remains explicitly pending an
+authorized deposit; distributed tasks and future record improvements remain
+open-ended research work.

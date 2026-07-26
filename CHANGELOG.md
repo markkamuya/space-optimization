@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.0.0 — 2026-07-26
+
+- Unified all 304 experiments into a certificate-backed canonical registry.
+- Added stable experiment IDs, immutable record history, executable
+  reproduction commands, and duplicate/inferior-result classification.
+- Published JSON and CSV datasets, a schema, checksum, canonical manifest, and
+  a prioritized distributed work queue.
+- Replaced the gallery-only research experience with searchable, evidence-aware
+  records, deep-linked packing inspection, bounds, certificates, and computed
+  phase transitions.
+- Added v2 CI gates, registry and worker-contract tests, methodology, claim
+  boundaries, and release documentation.
+
 ## 1.0.0-rc.1 — 2026-07-26
 
 - Added an independent Python verifier with 304/304 cross-language agreement.

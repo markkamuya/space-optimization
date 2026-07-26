@@ -86,7 +86,8 @@ def stable(value):
 
 def fingerprint(record):
     problem, placements = record["problem"], record["solution"]["placements"]
-    sides = sorted(rounded(value) for value in problem["homogeneousPiece"]["sides"])
+    piece = problem.get("homogeneousPiece") or problem["triangles"][0]
+    sides = sorted(rounded(value) for value in piece["sides"])
     triangles = [{
         "sides": sides,
         "placement": {
@@ -114,7 +115,8 @@ def fingerprint(record):
 def verify(record):
     problem = record["problem"]
     placements = record["solution"]["placements"]
-    template = triangle_from_sides(*problem["homogeneousPiece"]["sides"])
+    piece = problem.get("homogeneousPiece") or problem["triangles"][0]
+    template = triangle_from_sides(*piece["sides"])
     placed = [transform(template, placement) for placement in placements]
     errors = []
     for index, points in enumerate(placed):

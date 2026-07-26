@@ -13,7 +13,7 @@ and explicitly unsolved regions—explorable across triangle shape and container
 [Contribute a packing](docs/SUBMISSION_WALKTHROUGH.md)
 
 [![CI](https://github.com/markkamuya/space-optimization/actions/workflows/ci.yml/badge.svg)](https://github.com/markkamuya/space-optimization/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/badge/release-1.0.0--rc.1-1b2723)](https://github.com/markkamuya/space-optimization/releases/tag/v1.0.0-rc.1)
+[![Release](https://img.shields.io/badge/release-2.0.0-1b2723)](releases/2.0.0-canonical.json)
 [![Records](https://img.shields.io/badge/research_records-304-dfff55)](https://triangle-packing-atlas.vercel.app/atlas-research-v2.json)
 [![Dataset license](https://img.shields.io/badge/dataset-CC_BY_4.0-f17b50)](CITATION.cff)
 
@@ -48,7 +48,7 @@ the open-problem board.
 
 ## Research scope
 
-The `1.0.0-rc.1` research release contains **304 independently verified
+The canonical `2.0.0` research release contains **304 independently verified
 records** across right, equilateral, and isosceles families. It includes:
 
 - known-optimum control cases;
@@ -102,10 +102,11 @@ Run the complete code and build checks:
 npm run check
 ```
 
-Rebuild and independently verify the research release:
+Rebuild and independently verify the canonical research release:
 
 ```bash
 npm run atlas:research
+npm run atlas:v2
 npm run atlas:cross-verify
 ```
 
@@ -115,6 +116,7 @@ Useful focused commands:
 npm run atlas:verify -- atlas/right/right-grid-2x1.json
 npm run atlas:benchmark
 npm run atlas:certificate -- proofs/right-grid-2x1.json atlas/right/right-grid-2x1.json
+npm run atlas:experiment -- --record iso-a60-r1p5
 npm run atlas:v1-rc
 ```
 
@@ -161,14 +163,13 @@ in [docs/CONTRIBUTION_PIPELINE.md](docs/CONTRIBUTION_PIPELINE.md).
 
 ## Release status
 
-All internal `1.0.0-rc.1` gates pass, including independent Python replay of
-every research record. Final `v1.0.0` remains deliberately gated on:
+Atlas v2 unifies the public interface and scientific artifacts around one
+canonical registry. Every record includes coordinates, provenance, evidence
+state, bounds, a verification certificate, immutable history, and an executable
+reproduction command. See the [v2 release notes](docs/ATLAS_V2_RELEASE.md).
 
-- one genuine external contribution completing the public workflow; and
-- deposit of the frozen dataset with an archival provider that issues a DOI.
-
-Current gate details are tracked in
-[docs/V1_RELEASE_GATES.md](docs/V1_RELEASE_GATES.md).
+The release is checksummed and DOI-ready. A DOI is not claimed until the frozen
+snapshot is deposited with an authorized archival provider.
 
 ## Citation and license
 

@@ -1,0 +1,17 @@
+{
+  "format": "triangle-packing-atlas-release-manifest/v2",
+  "version": "2.0.0",
+  "dataset": "public/atlas-v2.json",
+  "csv": "public/atlas-v2.csv",
+  "queue": "public/work-queue-v2.json",
+  "sha256": "1a2e585eb2dd56881ab5e75591dc125fa1fd7c680c7a84312f4f6cef8980f38a",
+  "records": 304,
+  "audit": {
+    "valid": true,
+    "errors": [],
+    "uniqueExperiments": 304
+  },
+  "immutable": true,
+  "doi": null,
+  "doiStatus": "ready-for-provider-deposit"
+}

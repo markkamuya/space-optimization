@@ -1,0 +1,50 @@
+# Atlas v2 research release
+
+Atlas v2 is the first release in which the public interface, downloadable
+dataset, experiment reproducer, verifier, record comparison, and distributed
+work queue all use the same canonical record registry.
+
+## Release contents
+
+- 304 coordinate-complete and independently verified experiments.
+- Stable identifiers for records and normalized experiments.
+- A verification certificate, fingerprint, tolerance policy, and verifier
+  version on every record.
+- Explicit evidence claims separating proven controls from verified best-known
+  computational results.
+- Rigorous lower and upper bounds with visible optimality gaps.
+- Deterministic seeds, algorithm versions, solver budgets, and one-command
+  reproduction instructions.
+- 38 observed pattern transitions supported by adjacent computed samples.
+- JSON and CSV snapshots plus a checksummed immutable release manifest.
+- 301 prioritized distributed tasks that require coordinates and an independently
+  verified improvement.
+
+## Reproduction
+
+```bash
+npm ci
+npm run atlas:v2
+npm run atlas:experiment -- --record iso-a60-r1p5
+npm run atlas:cross-verify
+```
+
+The release checksum is written to `public/atlas-v2.sha256`. Rebuilding on a
+supported runtime must reproduce every record fingerprint. Build-environment
+metadata is not used as scientific evidence.
+
+## Claim boundary
+
+Three exact right-triangle controls are marked proven optimal because their
+verified lower bound matches a rigorous area bound. Other records are
+`verified_best_known`: they are valid lower bounds and release incumbents, not
+claims of global optimality. A DOI field remains null until an authorized
+archival-provider deposit occurs.
+
+## Community and distributed computation
+
+Submissions pass schema validation, geometry replay, fingerprint deduplication,
+and incumbent comparison. Proofs and citations still require human review.
+Workers may select tasks from `public/work-queue-v2.json`; results without an
+explicit seed, complete placements, or a strict improvement are rejected before
+the ordinary submission pipeline.

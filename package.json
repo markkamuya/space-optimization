@@ -1,6 +1,6 @@
 {
   "name": "triangle-packing-atlas",
-  "version": "1.0.0-rc.1",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -13,14 +13,16 @@
     "atlas:benchmark": "node benchmarks/atlas.js",
     "atlas:release": "node scripts/build-atlas-release.js",
     "atlas:research": "node scripts/build-research-release.js",
+    "atlas:v2": "node scripts/build-v2-release.js",
+    "atlas:experiment": "node cli/experiment.js",
     "atlas:submission": "node cli/submission.js",
     "atlas:report": "node cli/report.js",
     "atlas:archive": "sh scripts/package-archive.sh",
-    "atlas:cross-verify": "python3 independent_verifier/verify_release.py",
+    "atlas:cross-verify": "python3 independent_verifier/verify_release.py public/atlas-v2.json",
     "atlas:certificate": "node cli/certificates.js",
     "atlas:beta": "node scripts/community-beta.js",
     "atlas:v1-rc": "sh scripts/package-v1-rc.sh",
-    "check": "npm test && npm run build"
+    "check": "npm test && npm run atlas:v2 && npm run build"
   },
   "devDependencies": {
     "vite": "^7.0.0"
