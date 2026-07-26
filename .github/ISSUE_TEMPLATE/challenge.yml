@@ -1,0 +1,31 @@
+name: Atlas challenge
+description: Propose or work on a clearly scoped open packing problem.
+title: "[Challenge]: "
+labels: ["challenge", "good first issue"]
+body:
+  - type: dropdown
+    id: family
+    attributes:
+      label: Triangle family
+      options: [Right, Equilateral, Isosceles, Scalene, Mixed]
+    validations:
+      required: true
+  - type: input
+    id: slice
+    attributes:
+      label: Normalized shape and container slice
+      placeholder: "Apex 60°, rectangle 1.5:1, side length 1"
+    validations:
+      required: true
+  - type: textarea
+    id: question
+    attributes:
+      label: Research question
+      description: State the bound, construction, reproduction, or record to improve.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Existing evidence
+      description: Link records, code, or primary literature.

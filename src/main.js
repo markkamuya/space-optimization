@@ -1,203 +1,238 @@
-import { DEFAULT_PROBLEM, normalizeProblem, serializableProblem } from './core/problem.js';
-import { exportDXF, exportJSON, exportSVG } from './core/export.js';
-import { renderChart, renderPacking } from './rendering/canvas.js';
-import { solveAnnealing } from './solvers/annealing.js';
-import { solveGreedy } from './solvers/greedy.js';
+import { ATLAS_RECORDS, OPEN_PROBLEMS, phaseAt } from './atlas/catalog.js';
+import { normalizeProblem } from './core/problem.js';
+import { renderPacking } from './rendering/canvas.js';
 
 const $ = selector => document.querySelector(selector);
-const elements = {
-  name: $('#problem-name'),
-  width: $('#width'),
-  height: $('#height'),
-  margin: $('#margin'),
-  kerf: $('#kerf'),
-  fillSheet: $('#fill-sheet'),
-  maxPieces: $('#max-pieces'),
-  rotation: $('#rotation'),
-  reflection: $('#reflection'),
-  seed: $('#seed'),
-  iterations: $('#iterations'),
-  triangleList: $('#triangle-list'),
-  run: $('#run'),
-  cancel: $('#cancel'),
-  status: $('#status'),
-  progress: $('#progress'),
-  greedyCanvas: $('#greedy-canvas'),
-  annealingCanvas: $('#annealing-canvas'),
-  chart: $('#chart')
-};
+const percent = value => `${(value * 100).toFixed(1)}%`;
+let familyFilter = 'all';
+let selectedPhase = phaseAt(60, 1.5);
 
-let triangleDefinitions = DEFAULT_PROBLEM.triangles.map(item => ({ ...item, sides: [...item.sides] }));
-let currentProblem;
-let greedyResult;
-let optimizedResult;
-let controller;
+$('#record-count').textContent = String(ATLAS_RECORDS.length).padStart(2, '0');
+$('#open-count').textContent = String(OPEN_PROBLEMS.length).padStart(2, '0');
 
-function renderTriangleInputs() {
-  elements.triangleList.replaceChildren();
-  triangleDefinitions.forEach((definition, index) => {
-    const row = document.createElement('div');
-    row.className = 'triangle-row';
-    row.style.setProperty('--piece-color', definition.color);
-    row.innerHTML = `
-      <i aria-hidden="true"></i>
-      <b>${definition.id}</b>
-      <input aria-label="Triangle ${definition.id} side lengths" value="${definition.sides.join(', ')}">
-      <button type="button" aria-label="Remove triangle ${definition.id}">×</button>
-    `;
-    row.querySelector('input').addEventListener('change', event => {
-      definition.sides = event.target.value.split(',').map(value => Number(value.trim()));
-    });
-    row.querySelector('button').addEventListener('click', () => {
-      triangleDefinitions.splice(index, 1);
-      renderTriangleInputs();
-    });
-    elements.triangleList.append(row);
-  });
-  $('#hero-count').textContent = String(triangleDefinitions.length).padStart(2, '0');
-}
-
-function readProblem() {
-  return normalizeProblem({
-    name: elements.name.value,
-    width: elements.width.value,
-    height: elements.height.value,
-    margin: elements.margin.value,
-    kerf: elements.kerf.value,
-    fillSheet: elements.fillSheet.checked,
-    maxPieces: elements.maxPieces.value,
-    allowRotation: elements.rotation.checked,
-    allowReflection: elements.reflection.checked,
-    seed: elements.seed.value,
-    triangles: triangleDefinitions
-  });
-}
-
-function metricMarkup(result) {
-  if (!result) return '';
-  return [
-    ['Envelope fill', `${(result.metrics.envelopeUtilization * 100).toFixed(1)}%`],
-    ['Sheet usage', `${(result.metrics.utilization * 100).toFixed(1)}%`],
-    ['Runtime', `${result.elapsedMs.toFixed(0)} ms`]
-  ].map(([label, value]) => `<div class="metric"><span>${label}</span><b>${value}</b></div>`).join('');
-}
-
-function showResult(prefix, result) {
-  $(`#${prefix}-valid`).textContent = result.metrics.valid ? '✓ Valid' : '△ Violations';
-  $(`#${prefix}-valid`).style.color = result.metrics.valid ? '#178448' : '#b33a1f';
-  $(`#${prefix}-metrics`).innerHTML = metricMarkup(result);
-}
-
-function renderAll() {
-  if (!currentProblem || !greedyResult || !optimizedResult) return;
-  renderPacking(elements.greedyCanvas, greedyResult.problem ?? currentProblem, greedyResult);
-  renderPacking(elements.annealingCanvas, optimizedResult.problem ?? currentProblem, optimizedResult);
-  renderChart(elements.chart, optimizedResult.history);
-}
-
-async function runStudy() {
-  try {
-    currentProblem = readProblem();
-  } catch (error) {
-    elements.status.textContent = error.message;
-    return;
-  }
-  controller?.abort();
-  controller = new AbortController();
-  elements.run.disabled = true;
-  elements.cancel.disabled = false;
-  elements.progress.value = 0;
-  $('#study-title').textContent = currentProblem.name;
-  elements.status.textContent = 'Building deterministic baseline…';
-
-  greedyResult = solveGreedy(currentProblem);
-  optimizedResult = { ...greedyResult, solver: 'annealing', history: [] };
-  showResult('greedy', greedyResult);
-  showResult('annealing', optimizedResult);
-  renderAll();
-
-  try {
-    elements.status.textContent = 'Trying compact piece orders and orientation phases…';
-    optimizedResult = await solveAnnealing(currentProblem, {
-      iterations: Number(elements.iterations.value),
-      signal: controller.signal,
-      onProgress({ iteration, iterations, state, metrics, problem }) {
-        elements.progress.value = iteration / iterations * 100;
-        optimizedResult = { ...optimizedResult, state, metrics, problem };
-        if (iteration % Math.max(1, Math.floor(iterations / 10)) === 0) {
-          renderPacking(elements.annealingCanvas, optimizedResult.problem ?? currentProblem, optimizedResult);
-        }
+function drawPattern(canvas, angle, ratio, phase) {
+  const context = canvas.getContext('2d');
+  const width = canvas.width;
+  const height = canvas.height;
+  context.clearRect(0, 0, width, height);
+  context.fillStyle = '#f4f1e8';
+  context.fillRect(0, 0, width, height);
+  const padding = 32;
+  const boxWidth = width - padding * 2;
+  const boxHeight = Math.min(height - padding * 2, boxWidth / ratio);
+  const x0 = (width - boxWidth) / 2;
+  const y0 = (height - boxHeight) / 2;
+  context.fillStyle = '#fffdf7';
+  context.fillRect(x0, y0, boxWidth, boxHeight);
+  context.save();
+  context.beginPath();
+  context.rect(x0, y0, boxWidth, boxHeight);
+  context.clip();
+  const radians = angle * Math.PI / 180;
+  const base = Math.max(38, Math.min(76, boxWidth / 8));
+  const triHeight = Math.max(22, base / 2 / Math.tan(radians / 2));
+  let index = 0;
+  for (let row = -1; row < boxHeight / triHeight + 2; row += 1) {
+    for (let column = -2; column < boxWidth / base + 3; column += 1) {
+      const x = x0 + column * base + (row % 2 ? base / 2 : 0);
+      const y = y0 + row * triHeight;
+      const down = (row + column) % 2 !== 0;
+      context.beginPath();
+      if (down) {
+        context.moveTo(x, y);
+        context.lineTo(x + base, y);
+        context.lineTo(x + base / 2, y + triHeight);
+      } else {
+        context.moveTo(x + base / 2, y);
+        context.lineTo(x + base, y + triHeight);
+        context.lineTo(x, y + triHeight);
       }
+      context.closePath();
+      context.fillStyle = `${phase.color}${index % 3 === 0 ? 'd8' : 'a8'}`;
+      context.fill();
+      context.strokeStyle = '#14201c';
+      context.lineWidth = 1.2;
+      context.stroke();
+      index += 1;
+    }
+  }
+  context.restore();
+  context.strokeStyle = '#14201c';
+  context.lineWidth = 2;
+  context.strokeRect(x0, y0, boxWidth, boxHeight);
+}
+
+function makePhaseMap() {
+  const grid = $('#phase-grid');
+  const angles = [110, 95, 80, 65, 50, 35];
+  const ratios = [0.75, 1.1, 1.5, 2, 2.5, 3];
+  grid.replaceChildren();
+  for (const angle of angles) {
+    for (const ratio of ratios) {
+      const phase = phaseAt(angle, ratio);
+      const cell = document.createElement('button');
+      cell.type = 'button';
+      cell.className = 'phase-cell';
+      cell.style.setProperty('--phase-color', phase.color);
+      cell.title = `${angle}°, ${ratio}:1 — ${phase.name}`;
+      cell.setAttribute('aria-label', cell.title);
+      cell.addEventListener('click', () => {
+        $('#angle').value = angle;
+        $('#ratio').value = ratio;
+        updatePhase();
+      });
+      grid.append(cell);
+    }
+  }
+}
+
+function updatePhase() {
+  const angle = Number($('#angle').value);
+  const ratio = Number($('#ratio').value);
+  selectedPhase = phaseAt(angle, ratio);
+  $('#angle-output').textContent = `${angle}°`;
+  $('#ratio-output').textContent = `${ratio.toFixed(2)}:1`;
+  $('#phase-name').textContent = selectedPhase.name;
+  $('#phase-note').textContent = selectedPhase.note;
+  $('#phase-status').textContent = selectedPhase.status;
+  $('#phase-fill').textContent = percent(selectedPhase.utilization);
+  $('#phase-waste').textContent = percent(1 - selectedPhase.utilization);
+  $('#phase-dot').style.background = selectedPhase.color;
+  $('#live-label').textContent = `${angle}° / ${ratio.toFixed(2)}:1`;
+  $('#used-bar').style.width = percent(selectedPhase.utilization);
+  $('#used-bar').style.background = selectedPhase.color;
+  $('#waste-bar').style.width = percent(1 - selectedPhase.utilization);
+  drawPattern($('#live-canvas'), angle, ratio, selectedPhase);
+}
+
+function statusLabel(record) {
+  if (record.status === 'proven_optimal') return 'PROVEN OPTIMUM';
+  if (record.status === 'verified_construction') return 'VERIFIED';
+  return record.status.replaceAll('_', ' ').toUpperCase();
+}
+
+function recordCard(record) {
+  const article = document.createElement('article');
+  article.className = 'record-card';
+  article.dataset.family = record.family;
+  article.innerHTML = `
+    <div class="record-preview"><canvas width="540" height="340" aria-label="${record.title} packing"></canvas><span>${statusLabel(record)}</span></div>
+    <div class="record-meta"><small>${record.family} · ${record.problem.width.toFixed(1)} × ${record.problem.height.toFixed(1)}</small><h3>${record.title}</h3>
+      <dl><div><dt>Fill</dt><dd>${percent(record.verification.utilization)}</dd></div><div><dt>Pieces</dt><dd>${record.solution.placements.length}</dd></div><div><dt>Gap</dt><dd>${percent(record.verification.optimalityGap)}</dd></div></dl>
+    </div>`;
+  article.tabIndex = 0;
+  article.setAttribute('role', 'button');
+  article.addEventListener('click', () => openRecord(record));
+  article.addEventListener('keydown', event => {
+    if (event.key === 'Enter' || event.key === ' ') openRecord(record);
+  });
+  requestAnimationFrame(() => renderPacking(
+    article.querySelector('canvas'),
+    normalizeProblem(record.problem),
+    { state: record.solution.placements }
+  ));
+  return article;
+}
+
+function renderRecords() {
+  const grid = $('#record-grid');
+  grid.replaceChildren();
+  ATLAS_RECORDS
+    .filter(record => familyFilter === 'all' || record.family === familyFilter)
+    .forEach(record => grid.append(recordCard(record)));
+}
+
+function openRecord(record) {
+  const detail = $('#record-detail');
+  detail.innerHTML = `
+    <div class="detail-header"><div><p class="kicker">${record.family} / ${statusLabel(record)}</p><h2>${record.title}</h2><p>${record.pattern}. Fingerprint <code>${record.verification.fingerprint}</code></p></div>
+      <div class="detail-stat"><b>${percent(record.verification.utilization)}</b><span>verified fill</span></div></div>
+    <canvas width="1000" height="560" aria-label="${record.title} detailed packing"></canvas>
+    <div class="detail-grid">
+      <section><h3>Boundary-waste decomposition</h3><div class="detail-waste"><span style="width:${percent(record.verification.utilization)}"></span><i style="width:${percent(1 - record.verification.utilization)}"></i></div>
+        <dl><div><dt>Triangle area</dt><dd>${percent(record.verification.utilization)}</dd></div><div><dt>Boundary waste</dt><dd>${percent(1 - record.verification.utilization)}</dd></div><div><dt>Overlap</dt><dd>0.0%</dd></div></dl></section>
+      <section><h3>Historical improvement</h3><div class="timeline">${record.history.map(point => `<div><b style="height:${Math.max(8, point.utilization * 100)}%"></b><span>${point.year}</span><small>${percent(point.utilization)}</small></div>`).join('')}</div></section>
+      <section><h3>Provenance</h3><p>Generated by <code>${record.provenance.generator}</code>, independently verified under the Atlas numerical policy.</p><a href="/atlas-v1.json" download>Download reproducible coordinates ↓</a></section>
+    </div>`;
+  const dialog = $('#record-dialog');
+  dialog.showModal();
+  requestAnimationFrame(() => renderPacking(
+    detail.querySelector('canvas'),
+    normalizeProblem(record.problem),
+    { state: record.solution.placements }
+  ));
+}
+
+function renderFilters() {
+  const filters = $('#family-filters');
+  ['all', 'right', 'equilateral', 'isosceles'].forEach(family => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = family;
+    button.className = family === familyFilter ? 'active' : '';
+    button.addEventListener('click', () => {
+      familyFilter = family;
+      renderFilters();
+      renderRecords();
     });
-    showResult('annealing', optimizedResult);
-    const improvement = (greedyResult.metrics.score - optimizedResult.metrics.score) /
-      Math.max(1, greedyResult.metrics.score) * 100;
-    $('#improvement').textContent = `${Math.max(0, improvement).toFixed(1)}% lower score`;
-    elements.status.textContent = optimizedResult.metrics.valid
-      ? `Best valid layout found in ${optimizedResult.elapsedMs.toFixed(0)} ms.`
-      : 'Best-known layout still has constraint violations; try more iterations or a larger sheet.';
-    elements.progress.value = 100;
-    renderAll();
-  } catch (error) {
-    elements.status.textContent = error.name === 'AbortError' ? 'Run cancelled.' : error.message;
-  } finally {
-    elements.run.disabled = false;
-    elements.cancel.disabled = true;
-  }
+    filters.append(button);
+  });
 }
 
-function applyProblem(input) {
-  const source = input.problem ?? input;
-  elements.name.value = source.name;
-  elements.width.value = source.width;
-  elements.height.value = source.height;
-  elements.margin.value = source.margin;
-  elements.kerf.value = source.kerf;
-  elements.fillSheet.checked = source.fillSheet !== false;
-  elements.maxPieces.value = source.maxPieces ?? 120;
-  elements.rotation.checked = source.allowRotation !== false;
-  elements.reflection.checked = source.allowReflection === true;
-  elements.seed.value = source.seed;
-  triangleDefinitions = source.triangles.map(item => ({
-    id: item.id,
-    sides: [...item.sides],
-    color: item.color
-  }));
-  renderTriangleInputs();
-  runStudy();
+function renderChallenges() {
+  OPEN_PROBLEMS.forEach((problem, index) => {
+    const article = document.createElement('article');
+    article.innerHTML = `<span>OP-${String(index + 1).padStart(2, '0')}</span><small>${problem.family} · ${problem.difficulty}</small><h3>${problem.title}</h3><p>${problem.question}</p><b>${problem.shape} / ${problem.ratio}:1</b>`;
+    $('#challenge-grid').append(article);
+  });
 }
 
-$('#add-triangle').addEventListener('click', () => {
-  const index = triangleDefinitions.length;
-  const colors = ['#f97316', '#22c55e', '#38bdf8', '#a78bfa', '#fb7185', '#facc15'];
-  triangleDefinitions.push({
-    id: String.fromCharCode(65 + index),
-    sides: [3, 4, 5],
-    color: colors[index % colors.length]
-  });
-  renderTriangleInputs();
-});
-elements.run.addEventListener('click', runStudy);
-elements.cancel.addEventListener('click', () => controller?.abort());
-$('#load-example').addEventListener('click', () => applyProblem(serializableProblem(normalizeProblem(DEFAULT_PROBLEM))));
-$('#import-json').addEventListener('change', async event => {
-  const file = event.target.files[0];
-  if (!file) return;
-  try {
-    applyProblem(JSON.parse(await file.text()));
-  } catch (error) {
-    elements.status.textContent = `Could not import file: ${error.message}`;
-  }
-  event.target.value = '';
-});
-document.querySelectorAll('[data-export]').forEach(button => {
-  button.addEventListener('click', () => {
-    if (!currentProblem || !optimizedResult) return;
-    const exporters = { svg: exportSVG, dxf: exportDXF, json: exportJSON };
-    exporters[button.dataset.export](optimizedResult.problem ?? currentProblem, optimizedResult);
-  });
-});
-window.addEventListener('resize', () => requestAnimationFrame(renderAll));
+function compare() {
+  const left = ATLAS_RECORDS.find(record => record.id === $('#compare-a').value);
+  const right = ATLAS_RECORDS.find(record => record.id === $('#compare-b').value);
+  $('#comparison').innerHTML = [left, right].map(record => `
+    <article><span>${statusLabel(record)}</span><h3>${record.title}</h3>
+      <div class="comparison-bar"><i style="width:${percent(record.verification.utilization)}"></i></div>
+      <dl><div><dt>Verified fill</dt><dd>${percent(record.verification.utilization)}</dd></div><div><dt>Boundary waste</dt><dd>${percent(1 - record.verification.utilization)}</dd></div><div><dt>Pattern</dt><dd>${record.pattern}</dd></div></dl>
+    </article>`).join('');
+}
 
-renderTriangleInputs();
-runStudy();
+function setupComparison() {
+  for (const selector of ['#compare-a', '#compare-b']) {
+    const select = $(selector);
+    ATLAS_RECORDS.forEach(record => select.add(new Option(record.title, record.id)));
+    select.addEventListener('change', compare);
+  }
+  $('#compare-b').selectedIndex = Math.min(ATLAS_RECORDS.length - 1, 4);
+  compare();
+}
+
+$('#angle').addEventListener('input', updatePhase);
+$('#ratio').addEventListener('input', updatePhase);
+$('#record-dialog .dialog-close').addEventListener('click', () => $('#record-dialog').close());
+$('#record-dialog').addEventListener('click', event => {
+  if (event.target === $('#record-dialog')) $('#record-dialog').close();
+});
+window.addEventListener('resize', updatePhase);
+
+makePhaseMap();
+updatePhase();
+renderFilters();
+renderRecords();
+renderChallenges();
+setupComparison();
+
+document.querySelectorAll('[data-family-card]').forEach(card => {
+  card.tabIndex = 0;
+  card.setAttribute('role', 'button');
+  const activate = () => {
+    familyFilter = card.dataset.familyCard;
+    renderFilters();
+    renderRecords();
+    $('#records').scrollIntoView({ behavior: 'smooth' });
+  };
+  card.addEventListener('click', activate);
+  card.addEventListener('keydown', event => {
+    if (event.key === 'Enter' || event.key === ' ') activate();
+  });
+});

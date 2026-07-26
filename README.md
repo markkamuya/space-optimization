@@ -5,8 +5,10 @@ constructions, computational results, and unresolved problems. It combines an
 independent geometry verifier, versioned data standard, reference
 constructions, benchmark corpus, solver laboratory, and interactive viewer.
 
-The existing Forma interface is the prototype viewer. The Atlas dataset and
-verifier are now the source of truth.
+The hosted interface is Atlas-first: it exposes a phase map, family slices,
+verified record pages, pattern comparisons, boundary-waste analysis, historical
+timelines, open problems, and a contribution path. The verifier and release
+dataset remain the source of truth.
 
 ## Why it is different
 
@@ -43,6 +45,8 @@ npm run build
 npm run benchmark
 npm run atlas:benchmark
 npm run atlas:verify -- atlas/right/right-grid-2x1.json
+npm run atlas:release
+npm run atlas:submission -- atlas/path/to/candidate.json
 ```
 
 ## Project map
@@ -67,6 +71,11 @@ See [ROADMAP.md](ROADMAP.md) for the six product milestones and
 
 Foundation status is documented in
 [docs/FOUNDATION_MILESTONES.md](docs/FOUNDATION_MILESTONES.md).
+
+See [docs/ATLAS_RELEASE_1.md](docs/ATLAS_RELEASE_1.md) for the public dataset
+scope, [docs/CONTRIBUTION_PIPELINE.md](docs/CONTRIBUTION_PIPELINE.md) for pull
+request submissions, and [docs/RESEARCH_EXPANSION.md](docs/RESEARCH_EXPANSION.md)
+for the sustained research program.
 
 ## Constraint model
 

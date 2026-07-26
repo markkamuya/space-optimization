@@ -1,0 +1,37 @@
+{
+  "format": "triangle-packing-research-programs/v1",
+  "updatedAt": "2026-07-26T00:00:00.000Z",
+  "programs": [
+    {
+      "id": "scalene-normalized-angle-space",
+      "status": "planned",
+      "parameters": ["angleA", "angleB", "rectangleRatio"],
+      "normalization": "longest side = 1",
+      "firstChallenge": "scalene-phase-map"
+    },
+    {
+      "id": "finite-asymptotic-gap",
+      "status": "planned",
+      "parameters": ["family", "containerScale", "boundaryCondition"],
+      "outputs": ["finiteDensity", "interiorDensity", "boundaryLoss"]
+    },
+    {
+      "id": "rigorous-upper-bounds",
+      "status": "planned",
+      "methods": ["area", "projection", "boundary-exclusion"],
+      "humanReviewRequired": true
+    },
+    {
+      "id": "distributed-challenge-runs",
+      "status": "scaffolded",
+      "manifest": "research/distributed-challenge.template.json",
+      "requirements": ["immutable input hash", "deterministic seeds", "resource metadata", "independent replay"]
+    },
+    {
+      "id": "literature-ingestion",
+      "status": "scaffolded",
+      "manifest": "research/literature-entry.template.json",
+      "sourcePolicy": "primary sources preferred; claim status preserved"
+    }
+  ]
+}

@@ -1,0 +1,4487 @@
+{
+  "format": "triangle-packing-atlas-release/v1",
+  "version": "1.0.0-preview",
+  "releasedAt": "2026-07-26T00:00:00.000Z",
+  "license": "CC-BY-4.0",
+  "recordCount": 7,
+  "openProblemCount": 4,
+  "records": [
+    {
+      "id": "right-square-2x2",
+      "title": "Right pairs · square",
+      "family": "isosceles",
+      "status": "proven_optimal",
+      "pattern": "rectangular pairs",
+      "tags": [
+        "known optimum",
+        "control",
+        "right isosceles"
+      ],
+      "problem": {
+        "name": "2×2 right-triangle grid",
+        "width": 2,
+        "height": 2,
+        "margin": 0,
+        "kerf": 0,
+        "fillSheet": false,
+        "maxPieces": 8,
+        "allowRotation": true,
+        "allowReflection": false,
+        "seed": "exact-right-grid",
+        "triangles": [
+          {
+            "id": "R1",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#bd8bff"
+          },
+          {
+            "id": "R2",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#bd8bff"
+          },
+          {
+            "id": "R3",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#bd8bff"
+          },
+          {
+            "id": "R4",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#bd8bff"
+          },
+          {
+            "id": "R5",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#bd8bff"
+          },
+          {
+            "id": "R6",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#bd8bff"
+          },
+          {
+            "id": "R7",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#bd8bff"
+          },
+          {
+            "id": "R8",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#bd8bff"
+          }
+        ]
+      },
+      "solution": {
+        "construction": "right-triangle-rectangular-pairs",
+        "placements": [
+          {
+            "x": 0,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 1,
+            "y": 1,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 1,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 2,
+            "y": 1,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 0,
+            "y": 1,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 1,
+            "y": 2,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 1,
+            "y": 1,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 2,
+            "y": 2,
+            "angle": 3.141592653589793,
+            "reflect": false
+          }
+        ]
+      },
+      "evidence": {
+        "status": "proven_optimal",
+        "proof": {
+          "type": "area_bound",
+          "statement": "Two congruent right triangles form each rectangular cell; cells tile the container."
+        }
+      },
+      "provenance": {
+        "generator": "right-triangle-rectangular-pairs",
+        "version": "0.3.0",
+        "contributor": "Triangle Packing Atlas",
+        "createdAt": "2026-07-26T00:00:00.000Z"
+      },
+      "verification": {
+        "valid": true,
+        "utilization": 1,
+        "optimalityGap": 0,
+        "fingerprint": "tpa1-e0cd6739ba07f55a"
+      },
+      "history": [
+        {
+          "year": 2024,
+          "utilization": 0.82,
+          "label": "baseline grid"
+        },
+        {
+          "year": 2025,
+          "utilization": 0.94,
+          "label": "paired construction"
+        },
+        {
+          "year": 2026,
+          "utilization": 1,
+          "label": "area-bound proof"
+        }
+      ]
+    },
+    {
+      "id": "right-landscape-3x2",
+      "title": "Right pairs · 3:2",
+      "family": "right",
+      "status": "proven_optimal",
+      "pattern": "rectangular pairs",
+      "tags": [
+        "known optimum",
+        "control",
+        "right"
+      ],
+      "problem": {
+        "name": "3×2 right-triangle grid",
+        "width": 3,
+        "height": 2,
+        "margin": 0,
+        "kerf": 0,
+        "fillSheet": false,
+        "maxPieces": 12,
+        "allowRotation": true,
+        "allowReflection": false,
+        "seed": "exact-right-grid",
+        "triangles": [
+          {
+            "id": "R1",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R2",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R3",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R4",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R5",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R6",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R7",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R8",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R9",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R10",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R11",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R12",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          }
+        ]
+      },
+      "solution": {
+        "construction": "right-triangle-rectangular-pairs",
+        "placements": [
+          {
+            "x": 0,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 1,
+            "y": 1,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 1,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 2,
+            "y": 1,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 2,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 3,
+            "y": 1,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 0,
+            "y": 1,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 1,
+            "y": 2,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 1,
+            "y": 1,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 2,
+            "y": 2,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 2,
+            "y": 1,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 3,
+            "y": 2,
+            "angle": 3.141592653589793,
+            "reflect": false
+          }
+        ]
+      },
+      "evidence": {
+        "status": "proven_optimal",
+        "proof": {
+          "type": "area_bound",
+          "statement": "Two congruent right triangles form each rectangular cell; cells tile the container."
+        }
+      },
+      "provenance": {
+        "generator": "right-triangle-rectangular-pairs",
+        "version": "0.3.0",
+        "contributor": "Triangle Packing Atlas",
+        "createdAt": "2026-07-26T00:00:00.000Z"
+      },
+      "verification": {
+        "valid": true,
+        "utilization": 1,
+        "optimalityGap": 0,
+        "fingerprint": "tpa1-9b021769f8c5cfc9"
+      },
+      "history": [
+        {
+          "year": 2024,
+          "utilization": 0.82,
+          "label": "baseline grid"
+        },
+        {
+          "year": 2025,
+          "utilization": 0.94,
+          "label": "paired construction"
+        },
+        {
+          "year": 2026,
+          "utilization": 1,
+          "label": "area-bound proof"
+        }
+      ]
+    },
+    {
+      "id": "right-landscape-4x2",
+      "title": "Right pairs · 2:1",
+      "family": "right",
+      "status": "proven_optimal",
+      "pattern": "rectangular pairs",
+      "tags": [
+        "known optimum",
+        "control",
+        "right"
+      ],
+      "problem": {
+        "name": "4×2 right-triangle grid",
+        "width": 4,
+        "height": 2,
+        "margin": 0,
+        "kerf": 0,
+        "fillSheet": false,
+        "maxPieces": 16,
+        "allowRotation": true,
+        "allowReflection": false,
+        "seed": "exact-right-grid",
+        "triangles": [
+          {
+            "id": "R1",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R2",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R3",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R4",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R5",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R6",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R7",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R8",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R9",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R10",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R11",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R12",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R13",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R14",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R15",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R16",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          }
+        ]
+      },
+      "solution": {
+        "construction": "right-triangle-rectangular-pairs",
+        "placements": [
+          {
+            "x": 0,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 1,
+            "y": 1,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 1,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 2,
+            "y": 1,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 2,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 3,
+            "y": 1,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 3,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 4,
+            "y": 1,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 0,
+            "y": 1,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 1,
+            "y": 2,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 1,
+            "y": 1,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 2,
+            "y": 2,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 2,
+            "y": 1,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 3,
+            "y": 2,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 3,
+            "y": 1,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 4,
+            "y": 2,
+            "angle": 3.141592653589793,
+            "reflect": false
+          }
+        ]
+      },
+      "evidence": {
+        "status": "proven_optimal",
+        "proof": {
+          "type": "area_bound",
+          "statement": "Two congruent right triangles form each rectangular cell; cells tile the container."
+        }
+      },
+      "provenance": {
+        "generator": "right-triangle-rectangular-pairs",
+        "version": "0.3.0",
+        "contributor": "Triangle Packing Atlas",
+        "createdAt": "2026-07-26T00:00:00.000Z"
+      },
+      "verification": {
+        "valid": true,
+        "utilization": 1,
+        "optimalityGap": 0,
+        "fingerprint": "tpa1-4d5db2a727004ea8"
+      },
+      "history": [
+        {
+          "year": 2024,
+          "utilization": 0.82,
+          "label": "baseline grid"
+        },
+        {
+          "year": 2025,
+          "utilization": 0.94,
+          "label": "paired construction"
+        },
+        {
+          "year": 2026,
+          "utilization": 1,
+          "label": "area-bound proof"
+        }
+      ]
+    },
+    {
+      "id": "right-wide-6x2",
+      "title": "Right pairs · 3:1",
+      "family": "right",
+      "status": "proven_optimal",
+      "pattern": "rectangular pairs",
+      "tags": [
+        "known optimum",
+        "control",
+        "right"
+      ],
+      "problem": {
+        "name": "6×2 right-triangle grid",
+        "width": 6,
+        "height": 2,
+        "margin": 0,
+        "kerf": 0,
+        "fillSheet": false,
+        "maxPieces": 24,
+        "allowRotation": true,
+        "allowReflection": false,
+        "seed": "exact-right-grid",
+        "triangles": [
+          {
+            "id": "R1",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R2",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R3",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R4",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R5",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R6",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R7",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R8",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R9",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R10",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R11",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R12",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R13",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R14",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R15",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R16",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R17",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R18",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R19",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R20",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R21",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R22",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R23",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          },
+          {
+            "id": "R24",
+            "sides": [
+              1.4142135623730951,
+              1,
+              1
+            ],
+            "color": "#ff6b35"
+          }
+        ]
+      },
+      "solution": {
+        "construction": "right-triangle-rectangular-pairs",
+        "placements": [
+          {
+            "x": 0,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 1,
+            "y": 1,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 1,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 2,
+            "y": 1,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 2,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 3,
+            "y": 1,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 3,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 4,
+            "y": 1,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 4,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 5,
+            "y": 1,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 5,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 6,
+            "y": 1,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 0,
+            "y": 1,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 1,
+            "y": 2,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 1,
+            "y": 1,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 2,
+            "y": 2,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 2,
+            "y": 1,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 3,
+            "y": 2,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 3,
+            "y": 1,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 4,
+            "y": 2,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 4,
+            "y": 1,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 5,
+            "y": 2,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 5,
+            "y": 1,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 6,
+            "y": 2,
+            "angle": 3.141592653589793,
+            "reflect": false
+          }
+        ]
+      },
+      "evidence": {
+        "status": "proven_optimal",
+        "proof": {
+          "type": "area_bound",
+          "statement": "Two congruent right triangles form each rectangular cell; cells tile the container."
+        }
+      },
+      "provenance": {
+        "generator": "right-triangle-rectangular-pairs",
+        "version": "0.3.0",
+        "contributor": "Triangle Packing Atlas",
+        "createdAt": "2026-07-26T00:00:00.000Z"
+      },
+      "verification": {
+        "valid": true,
+        "utilization": 1,
+        "optimalityGap": 0,
+        "fingerprint": "tpa1-2372a9085ab09506"
+      },
+      "history": [
+        {
+          "year": 2024,
+          "utilization": 0.82,
+          "label": "baseline grid"
+        },
+        {
+          "year": 2025,
+          "utilization": 0.94,
+          "label": "paired construction"
+        },
+        {
+          "year": 2026,
+          "utilization": 1,
+          "label": "area-bound proof"
+        }
+      ]
+    },
+    {
+      "id": "equilateral-square-5",
+      "title": "Equilateral rows · square",
+      "family": "equilateral",
+      "status": "verified_construction",
+      "pattern": "alternating rows",
+      "tags": [
+        "finite boundary loss",
+        "periodic interior",
+        "equilateral"
+      ],
+      "problem": {
+        "name": "Equilateral alternating rows",
+        "width": 5,
+        "height": 5,
+        "margin": 0,
+        "kerf": 0,
+        "fillSheet": false,
+        "maxPieces": 45,
+        "allowRotation": true,
+        "allowReflection": false,
+        "seed": "equilateral-rows",
+        "triangles": [
+          {
+            "id": "E1",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E2",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E3",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E4",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E5",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E6",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E7",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E8",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E9",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E10",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E11",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E12",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E13",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E14",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E15",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E16",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E17",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E18",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E19",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E20",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E21",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E22",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E23",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E24",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E25",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E26",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E27",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E28",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E29",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E30",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E31",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E32",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E33",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E34",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E35",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E36",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E37",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E38",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E39",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E40",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E41",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E42",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E43",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E44",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E45",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          }
+        ]
+      },
+      "solution": {
+        "construction": "equilateral-alternating-rows",
+        "placements": [
+          {
+            "x": 0,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 1.5,
+            "y": 0.8660254037844386,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 1,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 2.5,
+            "y": 0.8660254037844386,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 2,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 3.5,
+            "y": 0.8660254037844386,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 3,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 4.5,
+            "y": 0.8660254037844386,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 4,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 1,
+            "y": 1.7320508075688772,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 0.5,
+            "y": 0.8660254037844386,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 2,
+            "y": 1.7320508075688772,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 1.5,
+            "y": 0.8660254037844386,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 3,
+            "y": 1.7320508075688772,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 2.5,
+            "y": 0.8660254037844386,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 4,
+            "y": 1.7320508075688772,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 3.5,
+            "y": 0.8660254037844386,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 5,
+            "y": 1.7320508075688772,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 0,
+            "y": 1.7320508075688772,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 1.5,
+            "y": 2.598076211353316,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 1,
+            "y": 1.7320508075688772,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 2.5,
+            "y": 2.598076211353316,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 2,
+            "y": 1.7320508075688772,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 3.5,
+            "y": 2.598076211353316,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 3,
+            "y": 1.7320508075688772,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 4.5,
+            "y": 2.598076211353316,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 4,
+            "y": 1.7320508075688772,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 1,
+            "y": 3.4641016151377544,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 0.5,
+            "y": 2.598076211353316,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 2,
+            "y": 3.4641016151377544,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 1.5,
+            "y": 2.598076211353316,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 3,
+            "y": 3.4641016151377544,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 2.5,
+            "y": 2.598076211353316,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 4,
+            "y": 3.4641016151377544,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 3.5,
+            "y": 2.598076211353316,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 5,
+            "y": 3.4641016151377544,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 0,
+            "y": 3.4641016151377544,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 1.5,
+            "y": 4.330127018922193,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 1,
+            "y": 3.4641016151377544,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 2.5,
+            "y": 4.330127018922193,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 2,
+            "y": 3.4641016151377544,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 3.5,
+            "y": 4.330127018922193,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 3,
+            "y": 3.4641016151377544,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 4.5,
+            "y": 4.330127018922193,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 4,
+            "y": 3.4641016151377544,
+            "angle": 0,
+            "reflect": false
+          }
+        ]
+      },
+      "evidence": {
+        "status": "verified_construction",
+        "notes": "Periodic interior construction with unavoidable finite rectangular boundary loss."
+      },
+      "provenance": {
+        "generator": "equilateral-alternating-rows",
+        "version": "0.3.0",
+        "contributor": "Triangle Packing Atlas",
+        "createdAt": "2026-07-26T00:00:00.000Z"
+      },
+      "verification": {
+        "valid": true,
+        "utilization": 0.7794228634059948,
+        "optimalityGap": 0.22057713659400524,
+        "fingerprint": "tpa1-774187e10cc2f1b4"
+      },
+      "history": [
+        {
+          "year": 2024,
+          "utilization": 0.62,
+          "label": "single orientation"
+        },
+        {
+          "year": 2025,
+          "utilization": 0.76,
+          "label": "alternating rows"
+        },
+        {
+          "year": 2026,
+          "utilization": 0.7794228634059948,
+          "label": "verified release"
+        }
+      ]
+    },
+    {
+      "id": "equilateral-landscape-7x5",
+      "title": "Equilateral rows · 7:5",
+      "family": "equilateral",
+      "status": "verified_construction",
+      "pattern": "alternating rows",
+      "tags": [
+        "finite boundary loss",
+        "periodic interior",
+        "equilateral"
+      ],
+      "problem": {
+        "name": "Equilateral alternating rows",
+        "width": 7,
+        "height": 5,
+        "margin": 0,
+        "kerf": 0,
+        "fillSheet": false,
+        "maxPieces": 65,
+        "allowRotation": true,
+        "allowReflection": false,
+        "seed": "equilateral-rows",
+        "triangles": [
+          {
+            "id": "E1",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E2",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E3",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E4",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E5",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E6",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E7",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E8",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E9",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E10",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E11",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E12",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E13",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E14",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E15",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E16",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E17",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E18",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E19",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E20",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E21",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E22",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E23",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E24",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E25",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E26",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E27",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E28",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E29",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E30",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E31",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E32",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E33",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E34",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E35",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E36",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E37",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E38",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E39",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E40",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E41",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E42",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E43",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E44",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E45",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E46",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E47",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E48",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E49",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E50",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E51",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E52",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E53",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E54",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E55",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E56",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E57",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E58",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E59",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E60",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E61",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E62",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E63",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E64",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E65",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          }
+        ]
+      },
+      "solution": {
+        "construction": "equilateral-alternating-rows",
+        "placements": [
+          {
+            "x": 0,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 1.5,
+            "y": 0.8660254037844386,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 1,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 2.5,
+            "y": 0.8660254037844386,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 2,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 3.5,
+            "y": 0.8660254037844386,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 3,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 4.5,
+            "y": 0.8660254037844386,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 4,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 5.5,
+            "y": 0.8660254037844386,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 5,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 6.5,
+            "y": 0.8660254037844386,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 6,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 1,
+            "y": 1.7320508075688772,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 0.5,
+            "y": 0.8660254037844386,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 2,
+            "y": 1.7320508075688772,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 1.5,
+            "y": 0.8660254037844386,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 3,
+            "y": 1.7320508075688772,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 2.5,
+            "y": 0.8660254037844386,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 4,
+            "y": 1.7320508075688772,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 3.5,
+            "y": 0.8660254037844386,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 5,
+            "y": 1.7320508075688772,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 4.5,
+            "y": 0.8660254037844386,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 6,
+            "y": 1.7320508075688772,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 5.5,
+            "y": 0.8660254037844386,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 7,
+            "y": 1.7320508075688772,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 0,
+            "y": 1.7320508075688772,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 1.5,
+            "y": 2.598076211353316,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 1,
+            "y": 1.7320508075688772,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 2.5,
+            "y": 2.598076211353316,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 2,
+            "y": 1.7320508075688772,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 3.5,
+            "y": 2.598076211353316,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 3,
+            "y": 1.7320508075688772,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 4.5,
+            "y": 2.598076211353316,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 4,
+            "y": 1.7320508075688772,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 5.5,
+            "y": 2.598076211353316,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 5,
+            "y": 1.7320508075688772,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 6.5,
+            "y": 2.598076211353316,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 6,
+            "y": 1.7320508075688772,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 1,
+            "y": 3.4641016151377544,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 0.5,
+            "y": 2.598076211353316,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 2,
+            "y": 3.4641016151377544,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 1.5,
+            "y": 2.598076211353316,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 3,
+            "y": 3.4641016151377544,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 2.5,
+            "y": 2.598076211353316,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 4,
+            "y": 3.4641016151377544,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 3.5,
+            "y": 2.598076211353316,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 5,
+            "y": 3.4641016151377544,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 4.5,
+            "y": 2.598076211353316,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 6,
+            "y": 3.4641016151377544,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 5.5,
+            "y": 2.598076211353316,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 7,
+            "y": 3.4641016151377544,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 0,
+            "y": 3.4641016151377544,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 1.5,
+            "y": 4.330127018922193,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 1,
+            "y": 3.4641016151377544,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 2.5,
+            "y": 4.330127018922193,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 2,
+            "y": 3.4641016151377544,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 3.5,
+            "y": 4.330127018922193,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 3,
+            "y": 3.4641016151377544,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 4.5,
+            "y": 4.330127018922193,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 4,
+            "y": 3.4641016151377544,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 5.5,
+            "y": 4.330127018922193,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 5,
+            "y": 3.4641016151377544,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 6.5,
+            "y": 4.330127018922193,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 6,
+            "y": 3.4641016151377544,
+            "angle": 0,
+            "reflect": false
+          }
+        ]
+      },
+      "evidence": {
+        "status": "verified_construction",
+        "notes": "Periodic interior construction with unavoidable finite rectangular boundary loss."
+      },
+      "provenance": {
+        "generator": "equilateral-alternating-rows",
+        "version": "0.3.0",
+        "contributor": "Triangle Packing Atlas",
+        "createdAt": "2026-07-26T00:00:00.000Z"
+      },
+      "verification": {
+        "valid": true,
+        "utilization": 0.8041664463712649,
+        "optimalityGap": 0.1958335536287351,
+        "fingerprint": "tpa1-107f32ee62d61a62"
+      },
+      "history": [
+        {
+          "year": 2024,
+          "utilization": 0.66,
+          "label": "single orientation"
+        },
+        {
+          "year": 2025,
+          "utilization": 0.79,
+          "label": "alternating rows"
+        },
+        {
+          "year": 2026,
+          "utilization": 0.8041664463712649,
+          "label": "verified release"
+        }
+      ]
+    },
+    {
+      "id": "equilateral-landscape-10x5",
+      "title": "Equilateral rows · 2:1",
+      "family": "equilateral",
+      "status": "verified_construction",
+      "pattern": "alternating rows",
+      "tags": [
+        "finite boundary loss",
+        "periodic interior",
+        "equilateral"
+      ],
+      "problem": {
+        "name": "Equilateral alternating rows",
+        "width": 10,
+        "height": 5,
+        "margin": 0,
+        "kerf": 0,
+        "fillSheet": false,
+        "maxPieces": 95,
+        "allowRotation": true,
+        "allowReflection": false,
+        "seed": "equilateral-rows",
+        "triangles": [
+          {
+            "id": "E1",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E2",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E3",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E4",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E5",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E6",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E7",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E8",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E9",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E10",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E11",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E12",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E13",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E14",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E15",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E16",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E17",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E18",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E19",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E20",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E21",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E22",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E23",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E24",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E25",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E26",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E27",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E28",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E29",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E30",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E31",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E32",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E33",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E34",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E35",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E36",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E37",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E38",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E39",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E40",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E41",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E42",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E43",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E44",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E45",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E46",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E47",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E48",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E49",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E50",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E51",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E52",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E53",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E54",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E55",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E56",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E57",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E58",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E59",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E60",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E61",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E62",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E63",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E64",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E65",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E66",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E67",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E68",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E69",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E70",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E71",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E72",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E73",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E74",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E75",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E76",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E77",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E78",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E79",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E80",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E81",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E82",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E83",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E84",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E85",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E86",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E87",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E88",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E89",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E90",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E91",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E92",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E93",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E94",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          },
+          {
+            "id": "E95",
+            "sides": [
+              1,
+              1,
+              1
+            ],
+            "color": "#3dd6b0"
+          }
+        ]
+      },
+      "solution": {
+        "construction": "equilateral-alternating-rows",
+        "placements": [
+          {
+            "x": 0,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 1.5,
+            "y": 0.8660254037844386,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 1,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 2.5,
+            "y": 0.8660254037844386,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 2,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 3.5,
+            "y": 0.8660254037844386,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 3,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 4.5,
+            "y": 0.8660254037844386,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 4,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 5.5,
+            "y": 0.8660254037844386,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 5,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 6.5,
+            "y": 0.8660254037844386,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 6,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 7.5,
+            "y": 0.8660254037844386,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 7,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 8.5,
+            "y": 0.8660254037844386,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 8,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 9.5,
+            "y": 0.8660254037844386,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 9,
+            "y": 0,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 1,
+            "y": 1.7320508075688772,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 0.5,
+            "y": 0.8660254037844386,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 2,
+            "y": 1.7320508075688772,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 1.5,
+            "y": 0.8660254037844386,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 3,
+            "y": 1.7320508075688772,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 2.5,
+            "y": 0.8660254037844386,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 4,
+            "y": 1.7320508075688772,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 3.5,
+            "y": 0.8660254037844386,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 5,
+            "y": 1.7320508075688772,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 4.5,
+            "y": 0.8660254037844386,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 6,
+            "y": 1.7320508075688772,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 5.5,
+            "y": 0.8660254037844386,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 7,
+            "y": 1.7320508075688772,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 6.5,
+            "y": 0.8660254037844386,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 8,
+            "y": 1.7320508075688772,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 7.5,
+            "y": 0.8660254037844386,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 9,
+            "y": 1.7320508075688772,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 8.5,
+            "y": 0.8660254037844386,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 10,
+            "y": 1.7320508075688772,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 0,
+            "y": 1.7320508075688772,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 1.5,
+            "y": 2.598076211353316,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 1,
+            "y": 1.7320508075688772,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 2.5,
+            "y": 2.598076211353316,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 2,
+            "y": 1.7320508075688772,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 3.5,
+            "y": 2.598076211353316,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 3,
+            "y": 1.7320508075688772,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 4.5,
+            "y": 2.598076211353316,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 4,
+            "y": 1.7320508075688772,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 5.5,
+            "y": 2.598076211353316,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 5,
+            "y": 1.7320508075688772,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 6.5,
+            "y": 2.598076211353316,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 6,
+            "y": 1.7320508075688772,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 7.5,
+            "y": 2.598076211353316,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 7,
+            "y": 1.7320508075688772,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 8.5,
+            "y": 2.598076211353316,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 8,
+            "y": 1.7320508075688772,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 9.5,
+            "y": 2.598076211353316,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 9,
+            "y": 1.7320508075688772,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 1,
+            "y": 3.4641016151377544,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 0.5,
+            "y": 2.598076211353316,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 2,
+            "y": 3.4641016151377544,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 1.5,
+            "y": 2.598076211353316,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 3,
+            "y": 3.4641016151377544,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 2.5,
+            "y": 2.598076211353316,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 4,
+            "y": 3.4641016151377544,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 3.5,
+            "y": 2.598076211353316,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 5,
+            "y": 3.4641016151377544,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 4.5,
+            "y": 2.598076211353316,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 6,
+            "y": 3.4641016151377544,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 5.5,
+            "y": 2.598076211353316,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 7,
+            "y": 3.4641016151377544,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 6.5,
+            "y": 2.598076211353316,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 8,
+            "y": 3.4641016151377544,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 7.5,
+            "y": 2.598076211353316,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 9,
+            "y": 3.4641016151377544,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 8.5,
+            "y": 2.598076211353316,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 10,
+            "y": 3.4641016151377544,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 0,
+            "y": 3.4641016151377544,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 1.5,
+            "y": 4.330127018922193,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 1,
+            "y": 3.4641016151377544,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 2.5,
+            "y": 4.330127018922193,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 2,
+            "y": 3.4641016151377544,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 3.5,
+            "y": 4.330127018922193,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 3,
+            "y": 3.4641016151377544,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 4.5,
+            "y": 4.330127018922193,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 4,
+            "y": 3.4641016151377544,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 5.5,
+            "y": 4.330127018922193,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 5,
+            "y": 3.4641016151377544,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 6.5,
+            "y": 4.330127018922193,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 6,
+            "y": 3.4641016151377544,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 7.5,
+            "y": 4.330127018922193,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 7,
+            "y": 3.4641016151377544,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 8.5,
+            "y": 4.330127018922193,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 8,
+            "y": 3.4641016151377544,
+            "angle": 0,
+            "reflect": false
+          },
+          {
+            "x": 9.5,
+            "y": 4.330127018922193,
+            "angle": 3.141592653589793,
+            "reflect": false
+          },
+          {
+            "x": 9,
+            "y": 3.4641016151377544,
+            "angle": 0,
+            "reflect": false
+          }
+        ]
+      },
+      "evidence": {
+        "status": "verified_construction",
+        "notes": "Periodic interior construction with unavoidable finite rectangular boundary loss."
+      },
+      "provenance": {
+        "generator": "equilateral-alternating-rows",
+        "version": "0.3.0",
+        "contributor": "Triangle Packing Atlas",
+        "createdAt": "2026-07-26T00:00:00.000Z"
+      },
+      "verification": {
+        "valid": true,
+        "utilization": 0.8227241335952162,
+        "optimalityGap": 0.17727586640478377,
+        "fingerprint": "tpa1-8a9799ca34d451c3"
+      },
+      "history": [
+        {
+          "year": 2024,
+          "utilization": 0.7,
+          "label": "single orientation"
+        },
+        {
+          "year": 2025,
+          "utilization": 0.8200000000000001,
+          "label": "alternating rows"
+        },
+        {
+          "year": 2026,
+          "utilization": 0.8227241335952162,
+          "label": "verified release"
+        }
+      ]
+    }
+  ],
+  "openProblems": [
+    {
+      "id": "acute-isosceles-square",
+      "family": "isosceles",
+      "title": "Acute isosceles triangles in a square",
+      "shape": "apex 50°",
+      "ratio": 1,
+      "status": "open",
+      "question": "Can a boundary-adapted construction beat alternating reflected rows?",
+      "difficulty": "starter"
+    },
+    {
+      "id": "equilateral-ratio-sqrt3",
+      "family": "equilateral",
+      "title": "Equilateral transition near √3",
+      "shape": "60°",
+      "ratio": 1.732,
+      "status": "open",
+      "question": "Locate the exact aspect ratio where the dominant row orientation changes.",
+      "difficulty": "research"
+    },
+    {
+      "id": "obtuse-isosceles-strip",
+      "family": "isosceles",
+      "title": "Obtuse isosceles strip packing",
+      "shape": "apex 110°",
+      "ratio": 3,
+      "status": "open",
+      "question": "Find a reproducible construction with less than 8% boundary waste.",
+      "difficulty": "solver"
+    },
+    {
+      "id": "scalene-phase-map",
+      "family": "scalene",
+      "title": "First scalene phase-map slice",
+      "shape": "40° / 65° / 75°",
+      "ratio": 1.5,
+      "status": "open",
+      "question": "Establish a verified baseline across a normalized scalene slice.",
+      "difficulty": "frontier"
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+name: Atlas submission review
+
+on:
+  pull_request:
+    paths:
+      - "atlas/**/*.json"
+
+permissions:
+  contents: read
+
+jobs:
+  verify-submission:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Find submitted records
+        id: records
+        run: |
+          git diff --name-only --diff-filter=AM "${{ github.event.pull_request.base.sha }}" "${{ github.sha }}" -- 'atlas/**/*.json' > /tmp/records.txt
+          test -s /tmp/records.txt
+      - name: Verify, compare, and render every record
+        run: |
+          mkdir -p submission-reports
+          while IFS= read -r record; do
+            name="$(basename "$record" .json)"
+            npm run atlas:submission -- "$record"
+            npm run atlas:report -- "$record" "submission-reports/$name.svg"
+          done < /tmp/records.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: atlas-submission-visual-reports
+          path: submission-reports/
+      - name: Human-review reminder
+        run: |
+          {
+            echo "## Triangle Packing Atlas submission"
+            echo "Schema, geometry, duplicates, and record comparisons passed."
+            echo "Download the visual report artifact above. Proof and citation claims still require maintainer review."
+          } >> "$GITHUB_STEP_SUMMARY"

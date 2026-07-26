@@ -23,3 +23,4 @@ jobs:
       - run: npm run benchmark
       - run: npm run atlas:benchmark
       - run: npm run atlas:verify -- atlas/right/right-grid-2x1.json
+      - run: npm run atlas:release

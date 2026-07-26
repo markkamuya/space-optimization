@@ -1,0 +1,39 @@
+{
+  "format": "triangle-packing-atlas/v1",
+  "id": "replace-with-stable-record-id",
+  "problem": {
+    "name": "Describe the normalized packing problem",
+    "width": 1,
+    "height": 1,
+    "margin": 0,
+    "kerf": 0,
+    "fillSheet": false,
+    "maxPieces": 2,
+    "allowRotation": true,
+    "allowReflection": false,
+    "seed": "submission-seed",
+    "triangles": [
+      { "id": "T1", "sides": [1.4142135623730951, 1, 1], "color": "#ff6b35" },
+      { "id": "T2", "sides": [1.4142135623730951, 1, 1], "color": "#3dd6b0" }
+    ]
+  },
+  "solution": {
+    "construction": "name-and-version-of-your-method",
+    "placements": [
+      { "x": 0, "y": 0, "angle": 0, "reflect": false },
+      { "x": 1, "y": 1, "angle": 3.141592653589793, "reflect": false }
+    ]
+  },
+  "evidence": {
+    "status": "candidate",
+    "notes": "Explain the construction and any numerical assumptions."
+  },
+  "provenance": {
+    "generator": "your-solver-or-construction",
+    "version": "1.0.0",
+    "seed": "submission-seed",
+    "runtimeMs": 0,
+    "contributor": "Your name or handle",
+    "createdAt": "2026-07-26T00:00:00.000Z"
+  }
+}

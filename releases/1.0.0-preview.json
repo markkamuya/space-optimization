@@ -1,0 +1,16 @@
+{
+  "format": "triangle-packing-atlas-release-manifest/v1",
+  "version": "1.0.0-preview",
+  "date": "2026-07-26",
+  "dataset": "public/atlas-v1.json",
+  "license": "CC-BY-4.0",
+  "doi": null,
+  "doiStatus": "ready-for-archival-review",
+  "verificationCommand": "npm test && npm run atlas:benchmark && npm run atlas:release",
+  "scope": {
+    "families": ["right", "equilateral", "isosceles"],
+    "recordCount": 7,
+    "openProblemCount": 4
+  },
+  "notes": "First explorable preview. Hypothesized phase regions are not dataset records."
+}

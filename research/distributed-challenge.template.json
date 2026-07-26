@@ -1,0 +1,14 @@
+{
+  "format": "triangle-packing-distributed-challenge/v1",
+  "id": "replace-me",
+  "datasetVersion": "1.0.0-preview",
+  "problemIds": [],
+  "solverContract": "docs/SOLVER_INTERFACE.md",
+  "seeds": [],
+  "limits": {
+    "wallTimeSeconds": 3600,
+    "memoryMegabytes": 4096
+  },
+  "requiredOutput": ["record", "runtime", "environment", "inputHash"],
+  "independentReplayRequired": true
+}
