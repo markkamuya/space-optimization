@@ -35,7 +35,7 @@
           <p>Verified constructions, best-known records, and unsolved regions—mapped across triangle shape and container geometry.</p>
           <div class="hero-facts">
             <span><b id="record-count">—</b> verified records</span>
-            <span><b id="family-count">03</b> family slices</span>
+            <span><b id="family-count">04</b> family slices</span>
             <span><b id="open-count">—</b> open problems</span>
           </div>
           <a class="primary-action" href="#map">Explore the phase map <span>↓</span></a>
@@ -65,12 +65,14 @@
               <div><dt>Evidence</dt><dd id="phase-status">—</dd></div>
               <div><dt>Observed fill</dt><dd id="phase-fill">—</dd></div>
               <div><dt>Boundary loss</dt><dd id="phase-waste">—</dd></div>
+              <div><dt>Rigorous gap</dt><dd id="phase-gap">—</dd></div>
+              <div><dt>Nearest sample</dt><dd id="phase-distance">—</dd></div>
             </dl>
           </aside>
           <div class="phase-panel">
             <div class="axis-label axis-y">TRIANGLE APEX →</div>
             <div id="phase-grid" class="phase-grid" role="img" aria-label="Packing pattern phase map"></div>
-            <div class="axis-label">RECTANGLE ASPECT RATIO →</div>
+            <div class="axis-label">RECTANGLE ASPECT RATIO → · <span id="resolution-label">loading computed release…</span></div>
           </div>
           <article class="live-pattern">
             <div class="panel-heading"><span>LIVE SLICE</span><b id="live-label">60° / 1.50:1</b></div>
@@ -96,7 +98,7 @@
       <section id="records" class="records-section">
         <div class="section-intro">
           <div><p class="kicker">VERIFIED RECORDS</p><h2>Inspect the evidence.</h2></div>
-          <a href="/atlas-v1.json" download class="download-link">Download release JSON ↓</a>
+          <div class="download-stack"><a href="/atlas-v1.json" download class="download-link">Curated release ↓</a><a href="/atlas-research-v2.json" download class="download-link">304-record research release ↓</a></div>
         </div>
         <div id="record-grid" class="record-grid"></div>
       </section>
@@ -122,6 +124,14 @@
         <div id="challenge-grid" class="challenge-grid"></div>
       </section>
 
+      <section class="leaderboard-section">
+        <div class="section-intro">
+          <div><p class="kicker">RECORD LEADERBOARD</p><h2>Strong results, traceable people.</h2></div>
+          <p>Rankings use independently verified density. Reproducibility and attribution travel with every coordinate set.</p>
+        </div>
+        <div id="leaderboard" class="leaderboard"></div>
+      </section>
+
       <section id="contribute" class="contribute-section">
         <div><p class="kicker">COMMUNITY PIPELINE</p><h2>Bring coordinates,<br><em>not screenshots.</em></h2></div>
         <ol><li><b>01</b> Submit JSON</li><li><b>02</b> Verify geometry</li><li><b>03</b> Compare record</li><li><b>04</b> Review evidence</li><li><b>05</b> Publish</li></ol>
@@ -139,6 +149,15 @@
           <article><span>NEXT</span><h3>Scalene space</h3><p>Normalized two-angle phase maps and verified solver baselines.</p></article>
           <article><span>THEN</span><h3>Bounds & literature</h3><p>Rigorous upper bounds, citation ingestion, and finite/asymptotic comparison.</p></article>
           <article><span>OPEN</span><h3>Distributed studies</h3><p>Versioned challenge sets for classrooms, researchers, and solver fleets.</p></article>
+        </div>
+      </section>
+
+      <section class="archive-section">
+        <div><p class="kicker">ARCHIVAL RELEASE · 2.0.0</p><h2>Immutable, checksummed,<br>and ready to cite.</h2></div>
+        <div>
+          <p>The deposit package includes 304 verified research records, exact coordinates, solver traces, bounds, provenance, checksums, citation metadata, a changelog, and correction policy.</p>
+          <dl><div><dt>Dataset</dt><dd>atlas-research-v2.json</dd></div><div><dt>License</dt><dd>CC BY 4.0</dd></div><div><dt>Archive status</dt><dd>DOI-ready · not yet deposited</dd></div></dl>
+          <a href="/atlas-research-v2.json" download class="primary-action">Download immutable snapshot <span>↓</span></a>
         </div>
       </section>
     </main>

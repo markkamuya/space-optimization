@@ -1,0 +1,16 @@
+{
+  "format": "triangle-packing-atlas-contributors/v1",
+  "contributors": [
+    {
+      "name": "Mark Kamuya",
+      "role": "founder and maintainer",
+      "contributions": ["project direction", "Atlas publication"]
+    },
+    {
+      "name": "Triangle Packing Atlas",
+      "role": "automation identity",
+      "contributions": ["reference constructions", "research release generation"]
+    }
+  ],
+  "attributionPolicy": "Every accepted record retains its submitted contributor name and provenance in all later releases."
+}

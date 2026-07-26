@@ -1,0 +1,18 @@
+- name: challenge
+  color: "3dd6b0"
+  description: Reproducible Atlas problem seeking a construction, bound, or reproduction.
+- name: good first issue
+  color: "dfff45"
+  description: Scoped contribution suitable for a new Atlas contributor.
+- name: solver
+  color: "5f8cff"
+  description: Solver implementation, benchmark, or distributed-run work.
+- name: research
+  color: "bd8bff"
+  description: Research-frontier geometry, bounds, or literature work.
+- name: dispute
+  color: "ff6b35"
+  description: A published record, claim, citation, or attribution is contested.
+- name: needs-review
+  color: "f5c451"
+  description: Requires maintainer, proof, citation, or provenance review.

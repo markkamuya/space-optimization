@@ -46,7 +46,9 @@ npm run benchmark
 npm run atlas:benchmark
 npm run atlas:verify -- atlas/right/right-grid-2x1.json
 npm run atlas:release
+npm run atlas:research
 npm run atlas:submission -- atlas/path/to/candidate.json
+npm run atlas:archive
 ```
 
 ## Project map
@@ -76,6 +78,11 @@ See [docs/ATLAS_RELEASE_1.md](docs/ATLAS_RELEASE_1.md) for the public dataset
 scope, [docs/CONTRIBUTION_PIPELINE.md](docs/CONTRIBUTION_PIPELINE.md) for pull
 request submissions, and [docs/RESEARCH_EXPANSION.md](docs/RESEARCH_EXPANSION.md)
 for the sustained research program.
+
+Research release 2 contains 304 independently verified records, deterministic
+portfolio traces, rigorous area/count bounds, computed phase classifications,
+and a checksummed DOI-ready snapshot. See
+[docs/METHODOLOGY_V2.md](docs/METHODOLOGY_V2.md).
 
 ## Constraint model
 

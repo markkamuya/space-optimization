@@ -1,0 +1,29 @@
+name: Dispute or correct an Atlas record
+description: Challenge a coordinate record, bound, proof, citation, or attribution.
+title: "[Dispute]: "
+labels: ["dispute", "needs-review"]
+body:
+  - type: input
+    id: record
+    attributes:
+      label: Record id
+    validations:
+      required: true
+  - type: dropdown
+    id: field
+    attributes:
+      label: Contested material
+      options: [Coordinates, Verification, Bound, Proof, Citation, Attribution, Other]
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Reproducible evidence
+      description: Include commands, coordinates, primary sources, or a minimal counterexample.
+    validations:
+      required: true
+  - type: textarea
+    id: correction
+    attributes:
+      label: Requested correction

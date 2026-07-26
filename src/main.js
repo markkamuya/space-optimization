@@ -6,6 +6,7 @@ const $ = selector => document.querySelector(selector);
 const percent = value => `${(value * 100).toFixed(1)}%`;
 let familyFilter = 'all';
 let selectedPhase = phaseAt(60, 1.5);
+let researchRelease = null;
 
 $('#record-count').textContent = String(ATLAS_RECORDS.length).padStart(2, '0');
 $('#open-count').textContent = String(OPEN_PROBLEMS.length).padStart(2, '0');
@@ -62,11 +63,60 @@ function drawPattern(canvas, angle, ratio, phase) {
   context.strokeRect(x0, y0, boxWidth, boxHeight);
 }
 
+function recordColor(record) {
+  if (record.family === 'right') return '#ff6b35';
+  if (record.family === 'equilateral') return '#3dd6b0';
+  if (record.family === 'scalene') return '#5f8cff';
+  if (record.pattern.includes('vertical')) return '#f5c451';
+  if (record.pattern.includes('diagonal')) return '#bd8bff';
+  return '#8e7be8';
+}
+
+function nearestComputed(angle, ratio) {
+  if (!researchRelease) return null;
+  return researchRelease.records
+    .filter(record => record.family !== 'scalene')
+    .map(record => ({
+      record,
+      distance: Math.hypot(
+        (record.parameters.apexAngle - angle) / 75,
+        (record.parameters.rectangleRatio - ratio) / 2.25
+      )
+    }))
+    .sort((left, right) => left.distance - right.distance)[0];
+}
+
 function makePhaseMap() {
   const grid = $('#phase-grid');
+  grid.replaceChildren();
+  if (researchRelease) {
+    const records = researchRelease.records.filter(record => record.family !== 'scalene');
+    grid.style.gridTemplateColumns = `repeat(${researchRelease.sampling.rectangleRatios.length}, 1fr)`;
+    records
+      .sort((left, right) =>
+        right.parameters.apexAngle - left.parameters.apexAngle ||
+        left.parameters.rectangleRatio - right.parameters.rectangleRatio)
+      .forEach(record => {
+        const cell = document.createElement('button');
+        cell.type = 'button';
+        cell.className = 'phase-cell computed';
+        cell.style.setProperty('--phase-color', recordColor(record));
+        cell.style.setProperty('--confidence', Math.max(.45, 1 - record.bounds.optimalityGap));
+        cell.title = `${record.parameters.apexAngle}°, ${record.parameters.rectangleRatio}:1 — ${record.pattern}, ${percent(record.verification.utilization)}`;
+        cell.setAttribute('aria-label', cell.title);
+        cell.addEventListener('click', () => {
+          $('#angle').value = record.parameters.apexAngle;
+          $('#ratio').value = record.parameters.rectangleRatio;
+          updatePhase();
+        });
+        grid.append(cell);
+      });
+    $('#resolution-label').textContent = researchRelease.sampling.resolution;
+    return;
+  }
   const angles = [110, 95, 80, 65, 50, 35];
   const ratios = [0.75, 1.1, 1.5, 2, 2.5, 3];
-  grid.replaceChildren();
+  grid.style.gridTemplateColumns = 'repeat(6, 1fr)';
   for (const angle of angles) {
     for (const ratio of ratios) {
       const phase = phaseAt(angle, ratio);
@@ -89,7 +139,16 @@ function makePhaseMap() {
 function updatePhase() {
   const angle = Number($('#angle').value);
   const ratio = Number($('#ratio').value);
-  selectedPhase = phaseAt(angle, ratio);
+  const nearest = nearestComputed(angle, ratio);
+  selectedPhase = nearest
+    ? {
+        name: nearest.record.pattern,
+        status: nearest.record.status.replaceAll('_', ' '),
+        utilization: nearest.record.verification.utilization,
+        color: recordColor(nearest.record),
+        note: `${nearest.record.verification.pieceCount} independently verified pieces; winner: ${nearest.record.solver.winner}.`
+      }
+    : phaseAt(angle, ratio);
   $('#angle-output').textContent = `${angle}°`;
   $('#ratio-output').textContent = `${ratio.toFixed(2)}:1`;
   $('#phase-name').textContent = selectedPhase.name;
@@ -97,6 +156,8 @@ function updatePhase() {
   $('#phase-status').textContent = selectedPhase.status;
   $('#phase-fill').textContent = percent(selectedPhase.utilization);
   $('#phase-waste').textContent = percent(1 - selectedPhase.utilization);
+  $('#phase-gap').textContent = nearest ? percent(nearest.record.bounds.optimalityGap) : 'not computed';
+  $('#phase-distance').textContent = nearest ? nearest.distance.toFixed(3) : 'illustrative';
   $('#phase-dot').style.background = selectedPhase.color;
   $('#live-label').textContent = `${angle}° / ${ratio.toFixed(2)}:1`;
   $('#used-bar').style.width = percent(selectedPhase.utilization);
@@ -207,6 +268,30 @@ function setupComparison() {
   compare();
 }
 
+function renderLeaderboard() {
+  if (!researchRelease) return;
+  const leaders = [...researchRelease.records]
+    .sort((left, right) => right.verification.utilization - left.verification.utilization)
+    .slice(0, 8);
+  $('#leaderboard').innerHTML = leaders.map((record, index) => `
+    <article><b>${String(index + 1).padStart(2, '0')}</b><div><small>${record.family} · ${record.parameters.apexAngle}° · ${record.parameters.rectangleRatio}:1</small><h3>${record.pattern}</h3><span>${record.provenance.contributor}</span></div>
+      <strong>${percent(record.verification.utilization)}</strong><em>gap ${percent(record.bounds.optimalityGap)}</em></article>`).join('');
+}
+
+async function loadResearchRelease() {
+  try {
+    const response = await fetch('/atlas-research-v2.json');
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    researchRelease = await response.json();
+    $('#record-count').textContent = String(researchRelease.verifiedCount + ATLAS_RECORDS.length);
+    makePhaseMap();
+    updatePhase();
+    renderLeaderboard();
+  } catch {
+    $('#resolution-label').textContent = 'curated fallback';
+  }
+}
+
 $('#angle').addEventListener('input', updatePhase);
 $('#ratio').addEventListener('input', updatePhase);
 $('#record-dialog .dialog-close').addEventListener('click', () => $('#record-dialog').close());
@@ -221,6 +306,7 @@ renderFilters();
 renderRecords();
 renderChallenges();
 setupComparison();
+loadResearchRelease();
 
 document.querySelectorAll('[data-family-card]').forEach(card => {
   card.tabIndex = 0;

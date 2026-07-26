@@ -69,3 +69,21 @@ Implementation details are in `docs/FOUNDATION_MILESTONES.md`.
 
 **Status:** program and manifest scaffolding published; research results and
 partnerships remain ongoing by nature.
+
+## Milestones 10–15 — research release 2
+
+10. **Substantial dataset:** 304 verified records across a 16×16 isosceles grid
+    and 48 scalene slices.
+11. **Solver program:** deterministic horizontal, vertical, and diagonal
+    lattice portfolio with budgets, traces, environments, and retained winners.
+12. **Bounds:** rigorous container and homogeneous count bounds with explicit
+    gaps; unsupported proof methods remain visibly unsupported.
+13. **Research phase map:** every map cell is computed, classified from solver
+    descriptors, and accompanied by sampling distance and gap opacity.
+14. **Community release:** contributor attribution, leaderboard, walkthrough,
+    challenge and dispute templates, governance, and correction policy.
+15. **Archival release:** immutable JSON, SHA-256 checksum, citation and Zenodo
+    metadata, methodology, changelog, data license, and deposit archive.
+
+**Status:** implemented as release `2.0.0`. DOI metadata and deposit package are
+ready; an actual DOI requires an authorized archival-provider deposit.

@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trianglepackingatlas.org/schemas/research-release.v2.json",
+  "title": "Triangle Packing Atlas Research Release",
+  "type": "object",
+  "required": ["format", "version", "releasedAt", "sampling", "recordCount", "verifiedCount", "records"],
+  "properties": {
+    "format": { "const": "triangle-packing-atlas-research/v1" },
+    "version": { "type": "string" },
+    "releasedAt": { "type": "string", "format": "date-time" },
+    "license": { "const": "CC-BY-4.0" },
+    "sampling": { "type": "object" },
+    "recordCount": { "type": "integer", "minimum": 1 },
+    "verifiedCount": { "type": "integer", "minimum": 1 },
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "family", "parameters", "pattern", "problem", "solution", "verification", "bounds", "solver", "provenance"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]+$" },
+          "family": { "enum": ["right", "equilateral", "isosceles", "scalene"] },
+          "parameters": { "type": "object" },
+          "pattern": { "type": "string" },
+          "problem": {
+            "type": "object",
+            "required": ["width", "height", "homogeneousPiece", "count"]
+          },
+          "solution": {
+            "type": "object",
+            "required": ["construction", "placements"]
+          },
+          "verification": {
+            "type": "object",
+            "required": ["valid", "fingerprint", "utilization", "pieceCount"]
+          },
+          "bounds": {
+            "type": "object",
+            "required": ["lowerBound", "upperBound", "optimalityGap", "methods"]
+          },
+          "solver": {
+            "type": "object",
+            "required": ["portfolio", "winner", "budget", "environment"]
+          },
+          "provenance": {
+            "type": "object",
+            "required": ["generator", "seed", "contributor", "createdAt"]
+          }
+        }
+      }
+    }
+  }
+}

@@ -3,9 +3,9 @@ import { validateRecordShape } from './schema.js';
 import { verifyAtlasRecord } from './verifier.js';
 
 function problemKey(problem) {
-  const triangles = [...problem.triangles]
+  const triangles = [...new Set(problem.triangles
     .map(triangle => [...triangle.sides].sort((a, b) => a - b).map(value => Number(value.toFixed(9))).join(','))
-    .sort();
+    .sort())];
   return JSON.stringify({
     width: Number(problem.width.toFixed(9)),
     height: Number(problem.height.toFixed(9)),

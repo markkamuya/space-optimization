@@ -1,0 +1,11 @@
+{
+  "title": "Triangle Packing Atlas: Research Dataset",
+  "upload_type": "dataset",
+  "description": "Verified finite triangle-packing constructions, solver traces, rigorous bounds, phase classifications, and open problems.",
+  "creators": [
+    { "name": "Kamuya, Mark" }
+  ],
+  "license": "cc-by-4.0",
+  "keywords": ["triangle packing", "computational geometry", "packing density", "open dataset"],
+  "version": "2.0.0"
+}

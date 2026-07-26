@@ -2,6 +2,7 @@
 import { readFile } from 'node:fs/promises';
 import { ATLAS_RECORDS } from '../src/atlas/catalog.js';
 import { assessSubmission } from '../src/atlas/submission.js';
+import { RESEARCH_RECORDS } from '../src/research/dataset.js';
 
 const path = process.argv[2];
 if (!path) {
@@ -9,6 +10,6 @@ if (!path) {
   process.exit(2);
 }
 const candidate = JSON.parse(await readFile(path, 'utf8'));
-const report = assessSubmission(candidate, ATLAS_RECORDS);
+const report = assessSubmission(candidate, [...ATLAS_RECORDS, ...RESEARCH_RECORDS]);
 console.log(JSON.stringify(report, null, 2));
 if (report.disposition.startsWith('reject_')) process.exitCode = 1;

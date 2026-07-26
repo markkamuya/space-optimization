@@ -1,0 +1,15 @@
+{
+  "format": "triangle-packing-atlas-release-manifest/v2",
+  "version": "2.0.0",
+  "date": "2026-07-26",
+  "dataset": "public/atlas-research-v2.json",
+  "sha256": "5a6f7bf02632113af8b24b5014e031a23d2a3b4400dc4c8a1f499a80f72de4f0",
+  "license": "CC-BY-4.0",
+  "doi": null,
+  "doiStatus": "ready-for-provider-deposit",
+  "methodology": "docs/METHODOLOGY_V2.md",
+  "citation": "CITATION.cff",
+  "records": 304,
+  "verified": 304,
+  "immutable": true
+}

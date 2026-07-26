@@ -4,6 +4,7 @@ import { normalizeProblem } from '../src/core/problem.js';
 import { transform, vertices } from '../src/geometry/triangle.js';
 import { assessSubmission } from '../src/atlas/submission.js';
 import { ATLAS_RECORDS } from '../src/atlas/catalog.js';
+import { RESEARCH_RECORDS } from '../src/research/dataset.js';
 
 const input = process.argv[2];
 const output = process.argv[3] ?? 'submission-report.svg';
@@ -12,7 +13,7 @@ if (!input) {
   process.exit(2);
 }
 const record = JSON.parse(await readFile(input, 'utf8'));
-const report = assessSubmission(record, ATLAS_RECORDS);
+const report = assessSubmission(record, [...ATLAS_RECORDS, ...RESEARCH_RECORDS]);
 const problem = normalizeProblem(record.problem);
 const width = 960;
 const height = 620;
