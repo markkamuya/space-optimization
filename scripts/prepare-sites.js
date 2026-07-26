@@ -48,7 +48,10 @@ export default {
     return new Response(decode(encoded), {
       headers: {
         'Content-Type': mimeTypes[extension] || 'application/octet-stream',
-        'Cache-Control': path === '/index.html' ? 'no-cache' : 'public, max-age=31536000, immutable'
+        'Cache-Control': path === '/index.html'
+          ? 'no-store, no-cache, must-revalidate, max-age=0'
+          : 'public, max-age=31536000, immutable',
+        ...(path === '/index.html' ? { 'Pragma': 'no-cache', 'Expires': '0' } : {})
       }
     });
   }
