@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { ATLAS_RECORDS } from '../../src/atlas/catalog.js';
+import { loadPublishedRecords } from '../../src/atlas/published.js';
 import { assessSubmission, packingProblemIdentity } from '../../src/atlas/submission.js';
+import { RESEARCH_RECORDS } from '../../src/research/dataset.js';
 
 function asCandidate(record, overrides = {}) {
   return {
@@ -68,4 +70,17 @@ test('homogeneous experiment identity permits a higher piece-count challenger', 
     packingProblemIdentity({ ...base, triangles: [triangle] }),
     packingProblemIdentity({ ...base, triangles: [triangle, { ...triangle, id: 'extra' }] })
   );
+});
+
+test('submission comparison uses adaptive canonical incumbents', async () => {
+  const published = await loadPublishedRecords();
+  const improved = published.find(record => record.adaptiveImprovement);
+  assert.ok(improved, 'canonical release should include an adaptive incumbent');
+  const staleBaseline = RESEARCH_RECORDS.find(record => record.id === improved.id);
+  assert.ok(staleBaseline.verification.utilization < improved.verification.utilization);
+
+  const report = assessSubmission(asCandidate(staleBaseline), published);
+  assert.equal(report.disposition, 'reject_inferior');
+  assert.equal(report.comparison.bestKnownId, improved.id);
+  assert.ok(report.comparison.improvement < 0);
 });
