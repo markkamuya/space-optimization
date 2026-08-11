@@ -36,3 +36,14 @@ test('scientific audit catches experiment identity drift', () => {
   assert.equal(report.passed, false);
   assert.ok(report.findings.some(finding => finding.code === 'EXPERIMENT_ID_DRIFT'));
 });
+
+test('scientific audit catches duplicate canonical experiments', () => {
+  const original = canonicalRecord(RESEARCH_RECORDS[0]);
+  const duplicate = canonicalRecord({
+    ...RESEARCH_RECORDS[0],
+    id: `${RESEARCH_RECORDS[0].id}-duplicate`
+  });
+  const report = auditRecords([original, duplicate]);
+  assert.equal(report.passed, false);
+  assert.ok(report.findings.some(finding => finding.code === 'DUPLICATE_EXPERIMENT'));
+});

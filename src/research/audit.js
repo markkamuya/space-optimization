@@ -9,6 +9,7 @@ export function auditRecords(records, options = {}) {
   const discontinuityThreshold = options.discontinuityThreshold ?? 0.12;
   const registry = validateCanonicalRecords(records);
   const findings = [];
+  const seenExperiments = new Map();
   let replayed = 0;
 
   for (const record of records) {
@@ -20,6 +21,18 @@ export function auditRecords(records, options = {}) {
         expected: experimentId(record),
         actual: record.experimentId
       });
+    }
+    const duplicateExperiment = seenExperiments.get(record.experimentId);
+    if (duplicateExperiment) {
+      findings.push({
+        severity: 'critical',
+        code: 'DUPLICATE_EXPERIMENT',
+        recordId: record.id,
+        incumbent: duplicateExperiment,
+        experimentId: record.experimentId
+      });
+    } else {
+      seenExperiments.set(record.experimentId, record.id);
     }
     const replay = verifyPacking(record.problem, record.solution.placements);
     replayed += Number(replay.valid);

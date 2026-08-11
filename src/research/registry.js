@@ -89,6 +89,14 @@ export function validateCanonicalRecords(records) {
     }
     if (!record.reproducibility?.command) errors.push({ code: 'MISSING_REPRODUCTION', recordId: record.id });
     const incumbent = experiments.get(record.experimentId);
+    if (incumbent) {
+      errors.push({
+        code: 'DUPLICATE_EXPERIMENT',
+        recordId: record.id,
+        incumbent: incumbent.id,
+        experimentId: record.experimentId
+      });
+    }
     if (incumbent && incumbent.verification.utilization < record.verification.utilization) {
       errors.push({ code: 'INFERIOR_INCUMBENT', recordId: incumbent.id, challenger: record.id });
     }

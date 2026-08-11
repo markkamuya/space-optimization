@@ -6,7 +6,8 @@ import {
   compareCandidate,
   detectPhaseTransitions,
   experimentId,
-  validateCanonicalRecords
+  validateCanonicalRecords,
+  verificationCertificate
 } from '../../src/research/registry.js';
 
 const records = RESEARCH_RECORDS.map(canonicalRecord);
@@ -33,6 +34,20 @@ test('canonical registry rejects a stored experiment identity that drifts from p
   const result = validateCanonicalRecords([record]);
   assert.equal(result.valid, false);
   assert.ok(result.errors.some(error => error.code === 'EXPERIMENT_ID_DRIFT'));
+});
+
+test('canonical registry rejects multiple incumbents for one experiment', () => {
+  const original = records[0];
+  const duplicate = structuredClone(original);
+  duplicate.id = `${original.id}-duplicate`;
+  duplicate.verification.certificate = verificationCertificate(
+    duplicate.id,
+    duplicate.verification.fingerprint,
+    duplicate.verification.utilization
+  );
+  const result = validateCanonicalRecords([original, duplicate]);
+  assert.equal(result.valid, false);
+  assert.ok(result.errors.some(error => error.code === 'DUPLICATE_EXPERIMENT'));
 });
 
 test('stable experiment ids encode family, shape, and container', () => {
