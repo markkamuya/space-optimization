@@ -47,3 +47,22 @@ test('scientific audit catches duplicate canonical experiments', () => {
   assert.equal(report.passed, false);
   assert.ok(report.findings.some(finding => finding.code === 'DUPLICATE_EXPERIMENT'));
 });
+
+test('scientific audit recomputes lower bounds and optimality gaps', () => {
+  const record = canonicalRecord(RESEARCH_RECORDS.find(item => item.bounds.optimalityGap > 0));
+  record.bounds.lowerBound += 0.01;
+  record.bounds.optimalityGap = 0;
+  const report = auditRecords([record]);
+  assert.equal(report.passed, false);
+  assert.ok(report.findings.some(finding => finding.code === 'LOWER_BOUND_DRIFT'));
+  assert.ok(report.findings.some(finding => finding.code === 'OPTIMALITY_GAP_DRIFT'));
+});
+
+test('scientific audit requires an upper bound supported by a rigorous method', () => {
+  const record = canonicalRecord(RESEARCH_RECORDS[0]);
+  record.bounds.upperBound -= 0.01;
+  record.bounds.optimalityGap = Math.max(0, record.bounds.upperBound - record.bounds.lowerBound);
+  const report = auditRecords([record]);
+  assert.equal(report.passed, false);
+  assert.ok(report.findings.some(finding => finding.code === 'UNSUPPORTED_UPPER_BOUND'));
+});

@@ -43,6 +43,27 @@ export function auditRecords(records, options = {}) {
     if (Math.abs(replay.metrics.utilization - record.verification.utilization) > 1e-10) {
       findings.push({ severity: 'critical', code: 'METRIC_DRIFT', recordId: record.id });
     }
+    if (!Number.isFinite(record.bounds.lowerBound) ||
+      Math.abs(record.bounds.lowerBound - replay.metrics.utilization) > 1e-10) {
+      findings.push({ severity: 'critical', code: 'LOWER_BOUND_DRIFT', recordId: record.id });
+    }
+    if (!Number.isFinite(record.bounds.upperBound) ||
+      record.bounds.upperBound < record.bounds.lowerBound - 1e-10 ||
+      record.bounds.upperBound > 1 + 1e-10) {
+      findings.push({ severity: 'critical', code: 'INVALID_UPPER_BOUND', recordId: record.id });
+    }
+    const rigorousUpperBounds = record.bounds.methods
+      .filter(method => method.rigorous && Number.isFinite(method.utilization))
+      .map(method => method.utilization);
+    if (rigorousUpperBounds.length === 0 ||
+      Math.abs(Math.min(...rigorousUpperBounds) - record.bounds.upperBound) > 1e-10) {
+      findings.push({ severity: 'critical', code: 'UNSUPPORTED_UPPER_BOUND', recordId: record.id });
+    }
+    const expectedGap = Math.max(0, record.bounds.upperBound - record.bounds.lowerBound);
+    if (!Number.isFinite(record.bounds.optimalityGap) ||
+      Math.abs(record.bounds.optimalityGap - expectedGap) > 1e-10) {
+      findings.push({ severity: 'critical', code: 'OPTIMALITY_GAP_DRIFT', recordId: record.id });
+    }
     if (record.verification.certificate !== verificationCertificate(
       record.id,
       record.verification.fingerprint,
@@ -60,9 +81,6 @@ export function auditRecords(records, options = {}) {
         proven,
         boundMatched
       });
-    }
-    if (record.bounds.lowerBound > record.bounds.upperBound + 1e-10) {
-      findings.push({ severity: 'critical', code: 'INVERTED_BOUNDS', recordId: record.id });
     }
   }
 
