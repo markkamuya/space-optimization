@@ -1,4 +1,5 @@
 import { verifyPacking } from '../atlas/verifier.js';
+import { buildWorkQueue } from './distributed.js';
 import {
   detectPhaseTransitions,
   experimentId,
@@ -129,6 +130,17 @@ export function auditRecords(records, options = {}) {
         code: 'TRANSITION_INDEX_DRIFT',
         expectedCount: expectedTransitions.length,
         actualCount: Array.isArray(options.transitions) ? options.transitions.length : null
+      });
+    }
+  }
+  if (options.workQueue !== undefined) {
+    const expectedQueue = buildWorkQueue(records);
+    if (JSON.stringify(options.workQueue) !== JSON.stringify(expectedQueue)) {
+      findings.push({
+        severity: 'critical',
+        code: 'WORK_QUEUE_DRIFT',
+        expectedCount: expectedQueue.length,
+        actualCount: Array.isArray(options.workQueue) ? options.workQueue.length : null
       });
     }
   }

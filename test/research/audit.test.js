@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { RESEARCH_RECORDS } from '../../src/research/dataset.js';
 import { canonicalRecord, detectPhaseTransitions } from '../../src/research/registry.js';
 import { auditRecords } from '../../src/research/audit.js';
+import { buildWorkQueue } from '../../src/research/distributed.js';
 
 test('scientific audit independently replays the canonical registry', () => {
   const report = auditRecords(RESEARCH_RECORDS.map(canonicalRecord));
@@ -99,4 +100,13 @@ test('scientific audit links reproduction metadata to solver provenance', () => 
   assert.equal(report.passed, false);
   const finding = report.findings.find(item => item.code === 'REPRODUCIBILITY_DRIFT');
   assert.deepEqual(finding.fields, ['command', 'seed', 'algorithmVersion', 'deterministic']);
+});
+
+test('scientific audit recomputes the public distributed work queue', () => {
+  const record = canonicalRecord(RESEARCH_RECORDS.find(item => item.bounds.optimalityGap > 0));
+  const workQueue = buildWorkQueue([record]);
+  workQueue[0] = { ...workQueue[0], baselineUtilization: 1 };
+  const report = auditRecords([record], { workQueue });
+  assert.equal(report.passed, false);
+  assert.ok(report.findings.some(finding => finding.code === 'WORK_QUEUE_DRIFT'));
 });

@@ -1,8 +1,14 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { auditRecords } from '../src/research/audit.js';
 
-const release = JSON.parse(await readFile(new URL('../public/atlas-v2.json', import.meta.url), 'utf8'));
-const report = auditRecords(release.records, { transitions: release.transitions });
+const [release, queue] = await Promise.all([
+  readFile(new URL('../public/atlas-v2.json', import.meta.url), 'utf8').then(JSON.parse),
+  readFile(new URL('../public/work-queue-v2.json', import.meta.url), 'utf8').then(JSON.parse)
+]);
+const report = auditRecords(release.records, {
+  transitions: release.transitions,
+  workQueue: queue.tasks
+});
 await writeFile(new URL('../public/audit-v2.json', import.meta.url), `${JSON.stringify(report, null, 2)}\n`);
 console.log(JSON.stringify({
   passed: report.passed,
