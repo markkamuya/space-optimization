@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { RESEARCH_RECORDS } from '../../src/research/dataset.js';
-import { canonicalRecord } from '../../src/research/registry.js';
+import { canonicalRecord, detectPhaseTransitions } from '../../src/research/registry.js';
 import { auditRecords } from '../../src/research/audit.js';
 
 test('scientific audit independently replays the canonical registry', () => {
@@ -76,4 +76,13 @@ test('scientific audit replays the claimed piece count', () => {
   assert.ok(finding);
   assert.equal(finding.expected, record.solution.placements.length);
   assert.equal(finding.actual, record.verification.pieceCount);
+});
+
+test('scientific audit recomputes the published phase-transition index', () => {
+  const records = RESEARCH_RECORDS.map(canonicalRecord);
+  const transitions = detectPhaseTransitions(records);
+  transitions[0] = { ...transitions[0], from: 'tampered pattern' };
+  const report = auditRecords(records, { transitions });
+  assert.equal(report.passed, false);
+  assert.ok(report.findings.some(finding => finding.code === 'TRANSITION_INDEX_DRIFT'));
 });

@@ -1,5 +1,10 @@
 import { verifyPacking } from '../atlas/verifier.js';
-import { experimentId, validateCanonicalRecords, verificationCertificate } from './registry.js';
+import {
+  detectPhaseTransitions,
+  experimentId,
+  validateCanonicalRecords,
+  verificationCertificate
+} from './registry.js';
 
 function key(record) {
   return `${record.family}:${record.parameters.apexAngle}`;
@@ -90,6 +95,18 @@ export function auditRecords(records, options = {}) {
         recordId: record.id,
         proven,
         boundMatched
+      });
+    }
+  }
+
+  if (options.transitions !== undefined) {
+    const expectedTransitions = detectPhaseTransitions(records);
+    if (JSON.stringify(options.transitions) !== JSON.stringify(expectedTransitions)) {
+      findings.push({
+        severity: 'critical',
+        code: 'TRANSITION_INDEX_DRIFT',
+        expectedCount: expectedTransitions.length,
+        actualCount: Array.isArray(options.transitions) ? options.transitions.length : null
       });
     }
   }
