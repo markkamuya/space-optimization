@@ -2,6 +2,7 @@ import { normalizeProblem, serializableProblem } from '../core/problem.js';
 import { evaluate } from '../solvers/scoring.js';
 import { ATLAS_FORMAT, EVIDENCE_STATES, VERIFICATION_TOLERANCE } from './constants.js';
 import { packingFingerprint } from './fingerprint.js';
+import { validateRecordShape } from './schema.js';
 
 function issue(code, message, path = '') {
   return { code, message, path };
@@ -90,6 +91,8 @@ export function verifyPacking(problemInput, stateInput) {
 
 export function verifyAtlasRecord(record) {
   const errors = [];
+  const schema = validateRecordShape(record);
+  errors.push(...schema.errors.map(error => issue('INVALID_SCHEMA', error.message, error.path)));
   if (record?.format !== ATLAS_FORMAT) {
     errors.push(issue('INVALID_FORMAT', `Expected format ${ATLAS_FORMAT}`, 'format'));
   }

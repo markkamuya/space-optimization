@@ -61,6 +61,25 @@ test('proven status requires proof metadata', () => {
   assert.ok(report.errors.some(error => error.code === 'MISSING_PROOF'));
 });
 
+test('standalone record verification enforces required record metadata', () => {
+  const report = verifyAtlasRecord({
+    format: 'triangle-packing-atlas/v1',
+    id: 'missing-metadata',
+    problem: {
+      ...DEFAULT_PROBLEM,
+      fillSheet: false,
+      triangles: [DEFAULT_PROBLEM.triangles[2]]
+    },
+    solution: { placements: [{ x: 1, y: 1, angle: 0 }] },
+    evidence: { status: 'candidate' }
+  });
+  assert.equal(report.valid, false);
+  assert.ok(report.errors.some(error =>
+    error.code === 'INVALID_SCHEMA' && error.path === 'solution.construction'));
+  assert.ok(report.errors.some(error =>
+    error.code === 'INVALID_SCHEMA' && error.path === 'provenance.generator'));
+});
+
 test('proven status rejects unrecognized proof types', () => {
   const record = {
     format: 'triangle-packing-atlas/v1',
