@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { verifyPacking } from '../atlas/verifier.js';
 
 export const CANONICAL_FORMAT = 'triangle-packing-atlas/v2';
 export const VERIFIER_VERSION = 'geometry-verifier/2.0.0';
@@ -131,12 +132,37 @@ export function detectPhaseTransitions(records) {
 }
 
 export function compareCandidate(candidate, records) {
-  const duplicate = records.find(record => record.verification.fingerprint === candidate.verification?.fingerprint);
+  const replay = verifyPacking(candidate?.problem, candidate?.solution?.placements);
+  if (!replay.valid) {
+    return {
+      decision: 'invalid_geometry',
+      incumbent: null,
+      delta: null,
+      errors: replay.errors.map(error => error.code)
+    };
+  }
+  const derivedExperimentId = experimentId(candidate);
+  const claimErrors = [];
+  if (candidate.experimentId !== derivedExperimentId) claimErrors.push('experiment_id_mismatch');
+  if (candidate.verification?.fingerprint !== replay.fingerprint) claimErrors.push('fingerprint_mismatch');
+  if (!Number.isFinite(candidate.verification?.utilization) ||
+    Math.abs(candidate.verification.utilization - replay.metrics.utilization) > 1e-10) {
+    claimErrors.push('utilization_mismatch');
+  }
+  if (claimErrors.length > 0) {
+    return {
+      decision: 'invalid_claim',
+      incumbent: null,
+      delta: null,
+      errors: claimErrors
+    };
+  }
+  const duplicate = records.find(record => record.verification.fingerprint === replay.fingerprint);
   if (duplicate) return { decision: 'duplicate', incumbent: duplicate.id, delta: 0 };
   const incumbent = records
-    .filter(record => record.experimentId === candidate.experimentId)
+    .filter(record => record.experimentId === derivedExperimentId)
     .sort((a, b) => b.verification.utilization - a.verification.utilization)[0];
-  if (!incumbent) return { decision: 'new_experiment', incumbent: null, delta: candidate.verification.utilization };
-  const delta = candidate.verification.utilization - incumbent.verification.utilization;
+  if (!incumbent) return { decision: 'new_experiment', incumbent: null, delta: replay.metrics.utilization };
+  const delta = replay.metrics.utilization - incumbent.verification.utilization;
   return { decision: delta > 1e-10 ? 'record_improvement' : 'inferior', incumbent: incumbent.id, delta };
 }

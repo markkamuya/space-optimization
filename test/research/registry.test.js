@@ -65,3 +65,19 @@ test('candidate comparison rejects duplicate fingerprints', () => {
     delta: 0
   });
 });
+
+test('candidate comparison rejects a forged utilization claim', () => {
+  const candidate = structuredClone(records[0]);
+  candidate.verification.utilization += 0.1;
+  const result = compareCandidate(candidate, records.slice(1));
+  assert.equal(result.decision, 'invalid_claim');
+  assert.ok(result.errors.includes('utilization_mismatch'));
+});
+
+test('candidate comparison derives experiment identity instead of trusting the claim', () => {
+  const candidate = structuredClone(records[0]);
+  candidate.experimentId = 'isosceles/apex-999/rectangle-999';
+  const result = compareCandidate(candidate, records.slice(1));
+  assert.equal(result.decision, 'invalid_claim');
+  assert.ok(result.errors.includes('experiment_id_mismatch'));
+});
