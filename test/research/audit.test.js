@@ -128,3 +128,14 @@ test('scientific audit links the winning solver result to replayed geometry', ()
   assert.equal(report.passed, false);
   assert.ok(report.findings.some(finding => finding.code === 'SOLVER_RESULT_DRIFT'));
 });
+
+test('scientific audit recomputes solver budget accounting', () => {
+  const record = structuredClone(canonicalRecord(RESEARCH_RECORDS[0]));
+  record.solver.budget.strategies += 1;
+  record.solver.budget.orientationEvaluations += 1;
+  record.solver.budget.adaptiveAttempts = 999;
+  const report = auditRecords([record]);
+  assert.equal(report.passed, false);
+  const finding = report.findings.find(item => item.code === 'SOLVER_BUDGET_DRIFT');
+  assert.deepEqual(finding.fields, ['strategies', 'orientationEvaluations', 'adaptiveAttempts']);
+});

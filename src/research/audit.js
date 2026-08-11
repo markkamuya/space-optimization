@@ -78,6 +78,33 @@ export function auditRecords(records, options = {}) {
         winner: record.solver.winner
       });
     }
+    const basePortfolio = record.solver.portfolio.filter(entry => entry.solver !== 'adaptive-boundary-search');
+    const adaptiveEntries = record.solver.portfolio.filter(entry => entry.solver === 'adaptive-boundary-search');
+    const solverBudgetDrift = [];
+    if (record.solver.budget.strategies !== basePortfolio.length) {
+      solverBudgetDrift.push('strategies');
+    }
+    const expectedOrientationEvaluations = basePortfolio.reduce(
+      (total, entry) => total + entry.iterations,
+      0
+    );
+    if (record.solver.budget.orientationEvaluations !== expectedOrientationEvaluations) {
+      solverBudgetDrift.push('orientationEvaluations');
+    }
+    const expectedAdaptiveAttempts = adaptiveEntries.length === 1
+      ? adaptiveEntries[0].iterations
+      : undefined;
+    if (record.solver.budget.adaptiveAttempts !== expectedAdaptiveAttempts) {
+      solverBudgetDrift.push('adaptiveAttempts');
+    }
+    if (solverBudgetDrift.length > 0) {
+      findings.push({
+        severity: 'critical',
+        code: 'SOLVER_BUDGET_DRIFT',
+        recordId: record.id,
+        fields: solverBudgetDrift
+      });
+    }
     if (!Number.isFinite(record.bounds.lowerBound) ||
       Math.abs(record.bounds.lowerBound - replay.metrics.utilization) > 1e-10) {
       findings.push({ severity: 'critical', code: 'LOWER_BOUND_DRIFT', recordId: record.id });
