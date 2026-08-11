@@ -157,7 +157,7 @@ test('independent verifier enforces nonzero kerf between pieces', async () => {
   assert.ok(result.report.failures[0].errors.includes('spacing_violation:0:1'));
 });
 
-test('independent verifier reports malformed records without crashing', async () => {
+test('independent verifier reports field-level errors for malformed records', async () => {
   const result = await crossVerify({
     id: 'malformed-placement-fixture',
     problem: {
@@ -174,5 +174,23 @@ test('independent verifier reports malformed records without crashing', async ()
   assert.equal(result.report.records, 1);
   assert.equal(result.report.passed, 0);
   assert.equal(result.report.failures[0].id, 'malformed-placement-fixture');
-  assert.ok(result.report.failures[0].errors.includes('verifier_exception:KeyError'));
+  assert.ok(result.report.failures[0].errors.includes('invalid_placement_x:0'));
+});
+
+test('independent verifier rejects impossible triangle definitions before geometry', async () => {
+  const result = await crossVerify({
+    id: 'impossible-triangle-fixture',
+    problem: {
+      width: 4,
+      height: 4,
+      margin: 0,
+      kerf: 0,
+      triangles: [{ id: 'impossible', sides: [1, 1, 3] }]
+    },
+    solution: { placements: [{ x: 1, y: 1, angle: 0, reflect: false }] },
+    verification: { fingerprint: 'tpa1-invalid', utilization: 0 }
+  });
+  assert.equal(result.status, 1);
+  assert.ok(result.report.failures[0].errors.includes('invalid_triangle_sides:0'));
+  assert.ok(!result.report.failures[0].errors.some(error => error.startsWith('verifier_exception:')));
 });

@@ -9,6 +9,68 @@ from pathlib import Path
 EPSILON = 1e-7
 
 
+def finite_number(value):
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
+
+
+def validate_record(record):
+    if not isinstance(record, dict):
+        return ["record_not_object"]
+    errors = []
+    problem = record.get("problem")
+    solution = record.get("solution")
+    verification = record.get("verification")
+    if not isinstance(record.get("id"), str) or not record["id"]:
+        errors.append("invalid_id")
+    if not isinstance(problem, dict):
+        errors.append("invalid_problem")
+        return errors
+    for key in ("width", "height"):
+        if not finite_number(problem.get(key)) or problem[key] <= 0:
+            errors.append(f"invalid_problem_{key}")
+    for key in ("margin", "kerf"):
+        value = problem.get(key, 0)
+        if not finite_number(value) or value < 0:
+            errors.append(f"invalid_problem_{key}")
+    for key in ("allowRotation", "allowReflection"):
+        if key in problem and not isinstance(problem[key], bool):
+            errors.append(f"invalid_problem_{key}")
+    pieces = [problem.get("homogeneousPiece")] if problem.get("homogeneousPiece") else problem.get("triangles")
+    if not isinstance(pieces, list) or not pieces:
+        errors.append("missing_triangle_inventory")
+    else:
+        for index, piece in enumerate(pieces):
+            sides = piece.get("sides") if isinstance(piece, dict) else None
+            if (not isinstance(sides, list) or len(sides) != 3
+                    or not all(finite_number(side) and side > 0 for side in sides)
+                    or any(sides[index] + sides[(index + 1) % 3] <= sides[(index + 2) % 3]
+                           for index in range(3))):
+                errors.append(f"invalid_triangle_sides:{index}")
+    placements = solution.get("placements") if isinstance(solution, dict) else None
+    if not isinstance(placements, list):
+        errors.append("invalid_placements")
+        return errors
+    if not problem.get("homogeneousPiece") and isinstance(pieces, list) and len(placements) != len(pieces):
+        errors.append("placement_count_mismatch")
+    for index, placement in enumerate(placements):
+        if not isinstance(placement, dict):
+            errors.append(f"invalid_placement:{index}")
+            continue
+        for key in ("x", "y", "angle"):
+            if key not in placement or not finite_number(placement[key]):
+                errors.append(f"invalid_placement_{key}:{index}")
+        if "reflect" in placement and not isinstance(placement["reflect"], bool):
+            errors.append(f"invalid_placement_reflect:{index}")
+    if not isinstance(verification, dict):
+        errors.append("invalid_verification")
+    else:
+        if not isinstance(verification.get("fingerprint"), str):
+            errors.append("invalid_verification_fingerprint")
+        if not finite_number(verification.get("utilization")):
+            errors.append("invalid_verification_utilization")
+    return errors
+
+
 def triangle_from_sides(a, b, c):
     x = (b * b + c * c - a * a) / (2 * c)
     height = math.sqrt(max(0.0, b * b - x * x))
@@ -136,6 +198,9 @@ def fingerprint(record):
 
 
 def verify(record):
+    errors = validate_record(record)
+    if errors:
+        return errors
     problem = record["problem"]
     placements = record["solution"]["placements"]
     pieces = [
