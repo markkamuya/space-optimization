@@ -19,6 +19,9 @@ export function validateRecordShape(record) {
     for (const key of ['x', 'y', 'angle']) {
       if (!Number.isFinite(placement?.[key])) add(`solution.placements.${index}.${key}`, 'Must be finite');
     }
+    if (placement?.reflect !== undefined && typeof placement.reflect !== 'boolean') {
+      add(`solution.placements.${index}.reflect`, 'Must be a boolean when provided');
+    }
   }
   return { valid: errors.length === 0, errors };
 }

@@ -31,6 +31,19 @@ test('verifier rejects overlapping placements independently of solver claims', (
   assert.ok(report.errors.some(error => error.code === 'OVERLAP'));
 });
 
+test('verifier rejects placement values that require type coercion', () => {
+  const problem = normalizeProblem({
+    ...DEFAULT_PROBLEM,
+    fillSheet: false,
+    triangles: [DEFAULT_PROBLEM.triangles[2]]
+  });
+  const report = verifyPacking(serializableProblem(problem), [
+    { x: '1', y: 1, angle: 0, reflect: 'false' }
+  ]);
+  assert.equal(report.valid, false);
+  assert.ok(report.errors.some(error => error.code === 'INVALID_PLACEMENT'));
+});
+
 test('proven status requires proof metadata', () => {
   const report = verifyAtlasRecord({
     format: 'triangle-packing-atlas/v1',

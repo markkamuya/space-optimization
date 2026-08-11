@@ -38,15 +38,22 @@ export function verifyPacking(problemInput, stateInput) {
     };
   }
   const state = stateInput.map((placement, index) => {
-    const normalized = {
-      x: Number(placement.x),
-      y: Number(placement.y),
-      angle: Number(placement.angle ?? 0),
-      reflect: Boolean(placement.reflect)
-    };
-    if (![normalized.x, normalized.y, normalized.angle].every(Number.isFinite)) {
-      errors.push(issue('INVALID_PLACEMENT', 'Placement coordinates and angle must be finite', `solution.placements.${index}`));
+    if (!placement || typeof placement !== 'object' || Array.isArray(placement)) {
+      errors.push(issue('INVALID_PLACEMENT', 'Placement must be an object', `solution.placements.${index}`));
+      return { x: NaN, y: NaN, angle: NaN, reflect: false };
     }
+    if (![placement.x, placement.y, placement.angle ?? 0].every(Number.isFinite)) {
+      errors.push(issue('INVALID_PLACEMENT', 'Placement coordinates and angle must be finite numbers', `solution.placements.${index}`));
+    }
+    if (placement.reflect !== undefined && typeof placement.reflect !== 'boolean') {
+      errors.push(issue('INVALID_PLACEMENT', 'Placement reflection flag must be a boolean', `solution.placements.${index}.reflect`));
+    }
+    const normalized = {
+      x: placement.x,
+      y: placement.y,
+      angle: placement.angle ?? 0,
+      reflect: placement.reflect ?? false
+    };
     if (normalized.reflect && !problem.allowReflection) {
       errors.push(issue('REFLECTION_NOT_ALLOWED', 'Placement uses reflection but the problem forbids it', `solution.placements.${index}`));
     }
