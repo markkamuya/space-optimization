@@ -27,7 +27,7 @@
     "atlas:certificate": "node cli/certificates.js",
     "atlas:beta": "node scripts/community-beta.js",
     "atlas:v1-rc": "sh scripts/package-v1-rc.sh",
-    "check": "npm test && npm run atlas:v2 && npm run atlas:audit && npm run atlas:challenges && npm run build"
+    "check": "npm test && npm run atlas:v2 && npm run atlas:audit && npm run atlas:cross-verify && npm run atlas:beta && npm run atlas:challenges && npm run build"
   },
   "devDependencies": {
     "vite": "^7.0.0"
