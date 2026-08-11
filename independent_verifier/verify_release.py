@@ -86,17 +86,17 @@ def stable(value):
 
 def fingerprint(record):
     problem, placements = record["problem"], record["solution"]["placements"]
-    piece = problem.get("homogeneousPiece") or problem["triangles"][0]
-    sides = sorted(rounded(value) for value in piece["sides"])
     triangles = [{
-        "sides": sides,
+        "sides": sorted(rounded(value) for value in (
+            problem.get("homogeneousPiece") or problem["triangles"][index]
+        )["sides"]),
         "placement": {
             "x": rounded(placement["x"]),
             "y": rounded(placement["y"]),
             "angle": rounded(placement.get("angle", 0.0) % (math.pi * 2)),
             "reflect": bool(placement.get("reflect", False)),
         },
-    } for placement in placements]
+    } for index, placement in enumerate(placements)]
     triangles.sort(key=stable)
     canonical = {
         "container": [rounded(problem["width"]), rounded(problem["height"])],
@@ -115,9 +115,12 @@ def fingerprint(record):
 def verify(record):
     problem = record["problem"]
     placements = record["solution"]["placements"]
-    piece = problem.get("homogeneousPiece") or problem["triangles"][0]
-    template = triangle_from_sides(*piece["sides"])
-    placed = [transform(template, placement) for placement in placements]
+    pieces = [
+        problem.get("homogeneousPiece") or problem["triangles"][index]
+        for index in range(len(placements))
+    ]
+    templates = [triangle_from_sides(*piece["sides"]) for piece in pieces]
+    placed = [transform(template, placement) for template, placement in zip(templates, placements)]
     errors = []
     for index, points in enumerate(placed):
         for x, y in points:
@@ -140,7 +143,7 @@ def verify(record):
                 continue
             if overlaps(placed[left], placed[right]):
                 errors.append(f"overlap:{left}:{right}")
-    utilization = len(placements) * area(template) / (problem["width"] * problem["height"])
+    utilization = sum(area(template) for template in templates) / (problem["width"] * problem["height"])
     actual_fingerprint = fingerprint(record)
     if actual_fingerprint != record["verification"]["fingerprint"]:
         errors.append("fingerprint_mismatch")
