@@ -56,6 +56,29 @@ def overlaps(left, right):
     return True
 
 
+def point_segment_distance(point, start, end):
+    dx, dy = end[0] - start[0], end[1] - start[1]
+    length_squared = dx * dx + dy * dy
+    if length_squared == 0:
+        return math.hypot(point[0] - start[0], point[1] - start[1])
+    projection = max(0.0, min(1.0, (
+        (point[0] - start[0]) * dx + (point[1] - start[1]) * dy
+    ) / length_squared))
+    nearest = (start[0] + projection * dx, start[1] + projection * dy)
+    return math.hypot(point[0] - nearest[0], point[1] - nearest[1])
+
+
+def polygon_distance(left, right):
+    distances = []
+    for source, target in ((left, right), (right, left)):
+        for point in source:
+            for index in range(3):
+                distances.append(point_segment_distance(
+                    point, target[index], target[(index + 1) % 3]
+                ))
+    return min(distances)
+
+
 def rounded(value):
     result = round(value * 1_000_000_000) / 1_000_000_000
     return 0 if result == 0 else result
@@ -123,6 +146,7 @@ def verify(record):
     placed = [transform(template, placement) for template, placement in zip(templates, placements)]
     errors = []
     margin = problem.get("margin", 0.0)
+    kerf = problem.get("kerf", 0.0)
     allow_rotation = problem.get("allowRotation", True)
     allow_reflection = problem.get("allowReflection", False)
     for index, placement in enumerate(placements):
@@ -147,12 +171,15 @@ def verify(record):
                 min(point[0] for point in placed[right]), min(point[1] for point in placed[right]),
                 max(point[0] for point in placed[right]), max(point[1] for point in placed[right]),
             )
-            if left_box[2] <= right_box[0] + 1e-9 or right_box[2] <= left_box[0] + 1e-9:
-                continue
-            if left_box[3] <= right_box[1] + 1e-9 or right_box[3] <= left_box[1] + 1e-9:
-                continue
-            if overlaps(placed[left], placed[right]):
+            boxes_overlap = not (
+                left_box[2] <= right_box[0] + 1e-9 or right_box[2] <= left_box[0] + 1e-9
+                or left_box[3] <= right_box[1] + 1e-9 or right_box[3] <= left_box[1] + 1e-9
+            )
+            polygons_overlap = boxes_overlap and overlaps(placed[left], placed[right])
+            if polygons_overlap:
                 errors.append(f"overlap:{left}:{right}")
+            elif kerf > 0 and polygon_distance(placed[left], placed[right]) < kerf - EPSILON:
+                errors.append(f"spacing_violation:{left}:{right}")
     utilization = sum(area(template) for template in templates) / (problem["width"] * problem["height"])
     actual_fingerprint = fingerprint(record)
     if actual_fingerprint != record["verification"]["fingerprint"]:

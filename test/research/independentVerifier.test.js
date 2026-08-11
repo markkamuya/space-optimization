@@ -118,3 +118,41 @@ test('independent verifier enforces the usable margin boundary', async () => {
   assert.equal(result.status, 1);
   assert.ok(result.report.failures[0].errors.includes('out_of_bounds:0'));
 });
+
+test('independent verifier enforces nonzero kerf between pieces', async () => {
+  const problem = normalizeProblem({
+    name: 'kerf fixture',
+    width: 5,
+    height: 3,
+    margin: 0,
+    kerf: 1,
+    fillSheet: false,
+    maxPieces: 2,
+    allowRotation: true,
+    allowReflection: false,
+    seed: 'cross-verifier-kerf',
+    triangles: [
+      { id: 'right-1', sides: [1, 1, Math.SQRT2] },
+      { id: 'right-2', sides: [1, 1, Math.SQRT2] }
+    ]
+  });
+  const placements = [
+    { x: 0, y: 0, angle: 0, reflect: false },
+    { x: 2, y: 0, angle: 0, reflect: false }
+  ];
+  const serialized = serializableProblem(problem);
+  const verification = verifyPacking(serialized, placements);
+  assert.equal(verification.valid, false);
+  assert.ok(verification.errors.some(error => error.code === 'SPACING_VIOLATION'));
+  const result = await crossVerify({
+    id: 'kerf-fixture',
+    problem: serialized,
+    solution: { placements },
+    verification: {
+      fingerprint: packingFingerprint(serialized, placements),
+      utilization: verification.metrics.utilization
+    }
+  });
+  assert.equal(result.status, 1);
+  assert.ok(result.report.failures[0].errors.includes('spacing_violation:0:1'));
+});
