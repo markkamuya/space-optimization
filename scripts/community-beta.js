@@ -15,19 +15,25 @@ const duplicate = {
 const invalid = structuredClone(template);
 invalid.id = 'beta-invalid-overlap';
 invalid.solution.placements[1] = { ...invalid.solution.placements[0] };
-const proof = structuredClone(template);
+const proof = structuredClone(duplicate);
 proof.id = 'beta-proof-review';
-proof.evidence = { status: 'proven_optimal', proof: { type: 'candidate proof' } };
+proof.evidence = {
+  status: 'proven_optimal',
+  proof: {
+    type: 'area_bound',
+    statement: 'The independently verified construction attains the container-area bound.'
+  }
+};
 
 const scenarios = [
   { id: 'new-problem', candidate: template, expected: 'new_problem' },
   { id: 'duplicate', candidate: duplicate, expected: 'reject_duplicate' },
   { id: 'invalid-overlap', candidate: invalid, expected: 'reject_invalid' },
-  { id: 'proof-human-review', candidate: proof, expected: 'new_problem', review: true }
+  { id: 'proof-human-review', candidate: proof, published: [], expected: 'new_problem', review: true }
 ];
 
 const results = scenarios.map(scenario => {
-  const report = assessSubmission(scenario.candidate, ATLAS_RECORDS);
+  const report = assessSubmission(scenario.candidate, scenario.published ?? ATLAS_RECORDS);
   return {
     id: scenario.id,
     disposition: report.disposition,

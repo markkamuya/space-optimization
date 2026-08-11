@@ -42,6 +42,21 @@ test('proof claims are flagged for human review', () => {
   assert.equal(report.humanReviewRequired, true);
 });
 
+test('recognized optimal proof enters human review after automated verification', () => {
+  const record = ATLAS_RECORDS.find(candidate =>
+    candidate.status === 'proven_optimal' && candidate.verification.utilization === 1);
+  const report = assessSubmission(asCandidate(record, {
+    evidence: {
+      status: 'proven_optimal',
+      proof: { type: 'area_bound', statement: 'Construction attains the area bound.' }
+    }
+  }), []);
+  assert.equal(report.schema.valid, true);
+  assert.equal(report.verification.valid, true);
+  assert.equal(report.disposition, 'new_problem');
+  assert.equal(report.humanReviewRequired, true);
+});
+
 test('problem identity distinguishes reflection and rotation permissions', () => {
   const problem = ATLAS_RECORDS[0].problem;
   assert.notEqual(
