@@ -13,13 +13,48 @@ test('distributed queue is prioritized and contains reproducibility contracts', 
 });
 
 test('worker results must improve the assigned baseline', () => {
-  const [task] = buildWorkQueue(RESEARCH_RECORDS.map(canonicalRecord));
+  const records = RESEARCH_RECORDS.map(canonicalRecord);
+  const [task] = buildWorkQueue(records);
+  const record = records.find(candidate => candidate.id === task.recordId);
   const result = validateWorkerResult(task, {
     recordId: task.recordId,
     seed: 'worker-1',
-    placements: [],
+    problem: record.problem,
+    placements: record.solution.placements,
     utilization: task.baselineUtilization
-  });
+  }, record);
   assert.equal(result.valid, false);
   assert.ok(result.errors.includes('does_not_improve_baseline'));
+});
+
+test('worker results cannot forge utilization independently of coordinates', () => {
+  const records = RESEARCH_RECORDS.map(canonicalRecord);
+  const [task] = buildWorkQueue(records);
+  const record = records.find(candidate => candidate.id === task.recordId);
+  const result = validateWorkerResult(task, {
+    recordId: task.recordId,
+    seed: 'worker-forged-score',
+    problem: record.problem,
+    placements: record.solution.placements,
+    utilization: 1
+  }, record);
+  assert.equal(result.valid, false);
+  assert.ok(result.errors.includes('utilization_mismatch'));
+  assert.ok(result.errors.includes('does_not_improve_baseline'));
+  assert.equal(result.verification.valid, true);
+});
+
+test('worker results are verified against the assigned problem identity', () => {
+  const records = RESEARCH_RECORDS.map(canonicalRecord);
+  const [task] = buildWorkQueue(records);
+  const record = records.find(candidate => candidate.id === task.recordId);
+  const result = validateWorkerResult(task, {
+    recordId: task.recordId,
+    seed: 'worker-wrong-container',
+    problem: { ...record.problem, width: record.problem.width * 2 },
+    placements: record.solution.placements,
+    utilization: record.verification.utilization
+  }, record);
+  assert.equal(result.valid, false);
+  assert.ok(result.errors.includes('problem_identity_mismatch'));
 });
