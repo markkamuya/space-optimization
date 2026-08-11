@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { ATLAS_RECORDS } from '../../src/atlas/catalog.js';
-import { assessSubmission } from '../../src/atlas/submission.js';
+import { assessSubmission, packingProblemIdentity } from '../../src/atlas/submission.js';
 
 function asCandidate(record, overrides = {}) {
   return {
@@ -38,4 +38,34 @@ test('proof claims are flagged for human review', () => {
     evidence: { status: 'proven_optimal', proof: { type: 'submitted proof' } }
   }), []);
   assert.equal(report.humanReviewRequired, true);
+});
+
+test('problem identity distinguishes reflection and rotation permissions', () => {
+  const problem = ATLAS_RECORDS[0].problem;
+  assert.notEqual(
+    packingProblemIdentity(problem),
+    packingProblemIdentity({ ...problem, allowReflection: !problem.allowReflection })
+  );
+  assert.notEqual(
+    packingProblemIdentity(problem),
+    packingProblemIdentity({ ...problem, allowRotation: !problem.allowRotation })
+  );
+});
+
+test('problem identity preserves heterogeneous inventory multiplicity', () => {
+  const base = ATLAS_RECORDS[0].problem;
+  const first = { id: 'A', sides: [1, 1, Math.SQRT2] };
+  const second = { id: 'B', sides: [1, 1, 1] };
+  const left = { ...base, triangles: [first, second] };
+  const right = { ...base, triangles: [first, second, { ...second, id: 'C' }] };
+  assert.notEqual(packingProblemIdentity(left), packingProblemIdentity(right));
+});
+
+test('homogeneous experiment identity permits a higher piece-count challenger', () => {
+  const base = ATLAS_RECORDS[0].problem;
+  const triangle = base.triangles[0];
+  assert.equal(
+    packingProblemIdentity({ ...base, triangles: [triangle] }),
+    packingProblemIdentity({ ...base, triangles: [triangle, { ...triangle, id: 'extra' }] })
+  );
 });
