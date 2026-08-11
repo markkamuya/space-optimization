@@ -110,3 +110,21 @@ test('scientific audit recomputes the public distributed work queue', () => {
   assert.equal(report.passed, false);
   assert.ok(report.findings.some(finding => finding.code === 'WORK_QUEUE_DRIFT'));
 });
+
+test('scientific audit requires exactly one matching solver winner trace', () => {
+  const record = structuredClone(canonicalRecord(RESEARCH_RECORDS[0]));
+  record.solver.winner = 'nonexistent-solver';
+  const report = auditRecords([record]);
+  assert.equal(report.passed, false);
+  assert.ok(report.findings.some(finding => finding.code === 'SOLVER_WINNER_TRACE_INVALID'));
+});
+
+test('scientific audit links the winning solver result to replayed geometry', () => {
+  const record = structuredClone(canonicalRecord(RESEARCH_RECORDS[0]));
+  const winner = record.solver.portfolio.find(entry => entry.solver === record.solver.winner);
+  winner.pieceCount += 1;
+  winner.utilization = 1;
+  const report = auditRecords([record]);
+  assert.equal(report.passed, false);
+  assert.ok(report.findings.some(finding => finding.code === 'SOLVER_RESULT_DRIFT'));
+});

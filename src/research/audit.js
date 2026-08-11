@@ -59,6 +59,25 @@ export function auditRecords(records, options = {}) {
         actual: record.verification.pieceCount
       });
     }
+    const winnerEntries = record.solver.portfolio.filter(entry => entry.solver === record.solver.winner);
+    if (winnerEntries.length !== 1) {
+      findings.push({
+        severity: 'critical',
+        code: 'SOLVER_WINNER_TRACE_INVALID',
+        recordId: record.id,
+        winner: record.solver.winner,
+        matchingEntries: winnerEntries.length
+      });
+    } else if (winnerEntries[0].pieceCount !== record.solution.placements.length ||
+      !Number.isFinite(winnerEntries[0].utilization) ||
+      Math.abs(winnerEntries[0].utilization - replay.metrics.utilization) > 1e-10) {
+      findings.push({
+        severity: 'critical',
+        code: 'SOLVER_RESULT_DRIFT',
+        recordId: record.id,
+        winner: record.solver.winner
+      });
+    }
     if (!Number.isFinite(record.bounds.lowerBound) ||
       Math.abs(record.bounds.lowerBound - replay.metrics.utilization) > 1e-10) {
       findings.push({ severity: 'critical', code: 'LOWER_BOUND_DRIFT', recordId: record.id });
