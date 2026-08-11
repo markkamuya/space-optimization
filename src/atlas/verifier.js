@@ -101,8 +101,19 @@ export function verifyAtlasRecord(record) {
   }
   const packing = verifyPacking(record?.problem, record?.solution?.placements);
   errors.push(...packing.errors);
-  if (record?.evidence?.status === 'proven_optimal' && !record?.evidence?.proof) {
-    errors.push(issue('MISSING_PROOF', 'Proven-optimal records require proof metadata', 'evidence.proof'));
+  if (record?.evidence?.status === 'proven_optimal') {
+    const proof = record?.evidence?.proof;
+    if (!proof || typeof proof !== 'object' || Array.isArray(proof)) {
+      errors.push(issue('MISSING_PROOF', 'Proven-optimal records require proof metadata', 'evidence.proof'));
+    } else if (proof.type !== 'area_bound') {
+      errors.push(issue('UNSUPPORTED_PROOF', `Unsupported proof type: ${proof.type ?? 'missing'}`, 'evidence.proof.type'));
+    } else if (packing.valid && packing.optimalityGap > VERIFICATION_TOLERANCE.overlapAreaEpsilon) {
+      errors.push(issue(
+        'UNATTAINED_AREA_BOUND',
+        `Area-bound proof requires full utilization; gap is ${packing.optimalityGap}`,
+        'evidence.proof'
+      ));
+    }
   }
   return { ...packing, valid: errors.length === 0, errors };
 }

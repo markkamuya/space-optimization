@@ -60,3 +60,38 @@ test('proven status requires proof metadata', () => {
   assert.equal(report.valid, false);
   assert.ok(report.errors.some(error => error.code === 'MISSING_PROOF'));
 });
+
+test('proven status rejects unrecognized proof types', () => {
+  const record = {
+    format: 'triangle-packing-atlas/v1',
+    id: 'unsupported-proof',
+    problem: {
+      ...DEFAULT_PROBLEM,
+      fillSheet: false,
+      triangles: [DEFAULT_PROBLEM.triangles[2]]
+    },
+    solution: { construction: 'candidate', placements: [{ x: 1, y: 1, angle: 0 }] },
+    evidence: { status: 'proven_optimal', proof: { type: 'trust_me' } },
+    provenance: { generator: 'test', createdAt: new Date(0).toISOString() }
+  };
+  const report = verifyAtlasRecord(record);
+  assert.equal(report.valid, false);
+  assert.ok(report.errors.some(error => error.code === 'UNSUPPORTED_PROOF'));
+});
+
+test('area-bound proof must attain the independently computed bound', () => {
+  const report = verifyAtlasRecord({
+    format: 'triangle-packing-atlas/v1',
+    id: 'unattained-area-bound',
+    problem: {
+      ...DEFAULT_PROBLEM,
+      fillSheet: false,
+      triangles: [DEFAULT_PROBLEM.triangles[2]]
+    },
+    solution: { construction: 'candidate', placements: [{ x: 1, y: 1, angle: 0 }] },
+    evidence: { status: 'proven_optimal', proof: { type: 'area_bound' } },
+    provenance: { generator: 'test', createdAt: new Date(0).toISOString() }
+  });
+  assert.equal(report.valid, false);
+  assert.ok(report.errors.some(error => error.code === 'UNATTAINED_AREA_BOUND'));
+});
