@@ -58,3 +58,63 @@ test('independent verifier handles heterogeneous triangle inventories', async ()
   assert.equal(result.status, 0, result.stderr || result.stdout);
   assert.equal(result.report.passed, 1);
 });
+
+test('independent verifier enforces rotation and reflection permissions', async () => {
+  const problem = normalizeProblem({
+    name: 'transformation policy fixture',
+    width: 4,
+    height: 4,
+    margin: 0,
+    kerf: 0,
+    fillSheet: false,
+    maxPieces: 1,
+    allowRotation: false,
+    allowReflection: false,
+    seed: 'cross-verifier-policy',
+    triangles: [{ id: 'right', sides: [1, 1, Math.SQRT2] }]
+  });
+  const placements = [{ x: 1, y: 1, angle: 0.2, reflect: true }];
+  const serialized = serializableProblem(problem);
+  const result = await crossVerify({
+    id: 'transformation-policy-fixture',
+    problem: serialized,
+    solution: { placements },
+    verification: {
+      fingerprint: packingFingerprint(serialized, placements),
+      utilization: 0.5 / (problem.width * problem.height)
+    }
+  });
+  assert.equal(result.status, 1);
+  assert.ok(result.report.failures[0].errors.includes('rotation_not_allowed:0'));
+  assert.ok(result.report.failures[0].errors.includes('reflection_not_allowed:0'));
+});
+
+test('independent verifier enforces the usable margin boundary', async () => {
+  const problem = normalizeProblem({
+    name: 'margin fixture',
+    width: 4,
+    height: 4,
+    margin: 0.5,
+    kerf: 0,
+    fillSheet: false,
+    maxPieces: 1,
+    allowRotation: true,
+    allowReflection: false,
+    seed: 'cross-verifier-margin',
+    triangles: [{ id: 'small', sides: [0.5, 0.5, 0.5] }]
+  });
+  const placements = [{ x: 0, y: 0, angle: 0, reflect: false }];
+  const serialized = serializableProblem(problem);
+  const verification = verifyPacking(serialized, placements);
+  const result = await crossVerify({
+    id: 'margin-fixture',
+    problem: serialized,
+    solution: { placements },
+    verification: {
+      fingerprint: packingFingerprint(serialized, placements),
+      utilization: verification.metrics.utilization
+    }
+  });
+  assert.equal(result.status, 1);
+  assert.ok(result.report.failures[0].errors.includes('out_of_bounds:0'));
+});

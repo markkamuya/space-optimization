@@ -122,9 +122,19 @@ def verify(record):
     templates = [triangle_from_sides(*piece["sides"]) for piece in pieces]
     placed = [transform(template, placement) for template, placement in zip(templates, placements)]
     errors = []
+    margin = problem.get("margin", 0.0)
+    allow_rotation = problem.get("allowRotation", True)
+    allow_reflection = problem.get("allowReflection", False)
+    for index, placement in enumerate(placements):
+        if not allow_rotation and abs(placement.get("angle", 0.0)) > 1e-9:
+            errors.append(f"rotation_not_allowed:{index}")
+        if not allow_reflection and placement.get("reflect", False):
+            errors.append(f"reflection_not_allowed:{index}")
     for index, points in enumerate(placed):
         for x, y in points:
-            if x < -EPSILON or y < -EPSILON or x > problem["width"] + EPSILON or y > problem["height"] + EPSILON:
+            if (x < margin - EPSILON or y < margin - EPSILON
+                    or x > problem["width"] - margin + EPSILON
+                    or y > problem["height"] - margin + EPSILON):
                 errors.append(f"out_of_bounds:{index}")
                 break
     for left in range(len(placed)):
