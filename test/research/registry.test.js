@@ -27,6 +27,14 @@ test('canonical registry rejects stale verification certificates', () => {
   assert.ok(result.errors.some(error => error.code === 'CERTIFICATE_DRIFT'));
 });
 
+test('canonical registry rejects a stored experiment identity that drifts from parameters', () => {
+  const record = structuredClone(records[0]);
+  record.experimentId = 'isosceles/apex-999/rectangle-999';
+  const result = validateCanonicalRecords([record]);
+  assert.equal(result.valid, false);
+  assert.ok(result.errors.some(error => error.code === 'EXPERIMENT_ID_DRIFT'));
+});
+
 test('stable experiment ids encode family, shape, and container', () => {
   assert.equal(experimentId(RESEARCH_RECORDS[0]), 'isosceles/apex-35/rectangle-0.75');
 });

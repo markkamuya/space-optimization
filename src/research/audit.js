@@ -1,5 +1,5 @@
 import { verifyPacking } from '../atlas/verifier.js';
-import { validateCanonicalRecords, verificationCertificate } from './registry.js';
+import { experimentId, validateCanonicalRecords, verificationCertificate } from './registry.js';
 
 function key(record) {
   return `${record.family}:${record.parameters.apexAngle}`;
@@ -12,6 +12,15 @@ export function auditRecords(records, options = {}) {
   let replayed = 0;
 
   for (const record of records) {
+    if (record.experimentId !== experimentId(record)) {
+      findings.push({
+        severity: 'critical',
+        code: 'EXPERIMENT_ID_DRIFT',
+        recordId: record.id,
+        expected: experimentId(record),
+        actual: record.experimentId
+      });
+    }
     const replay = verifyPacking(record.problem, record.solution.placements);
     replayed += Number(replay.valid);
     if (!replay.valid) findings.push({ severity: 'critical', code: 'INVALID_GEOMETRY', recordId: record.id });

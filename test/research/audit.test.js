@@ -28,3 +28,11 @@ test('scientific audit catches a forged verification certificate', () => {
   assert.equal(report.passed, false);
   assert.ok(report.findings.some(finding => finding.code === 'CERTIFICATE_DRIFT'));
 });
+
+test('scientific audit catches experiment identity drift', () => {
+  const record = canonicalRecord(RESEARCH_RECORDS[0]);
+  record.experimentId = 'isosceles/apex-999/rectangle-999';
+  const report = auditRecords([record]);
+  assert.equal(report.passed, false);
+  assert.ok(report.findings.some(finding => finding.code === 'EXPERIMENT_ID_DRIFT'));
+});

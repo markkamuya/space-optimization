@@ -70,6 +70,14 @@ export function validateCanonicalRecords(records) {
     if (ids.has(record.id)) errors.push({ code: 'DUPLICATE_ID', recordId: record.id });
     ids.add(record.id);
     if (!record.verification?.valid) errors.push({ code: 'UNVERIFIED_RECORD', recordId: record.id });
+    if (record.experimentId !== experimentId(record)) {
+      errors.push({
+        code: 'EXPERIMENT_ID_DRIFT',
+        recordId: record.id,
+        expected: experimentId(record),
+        actual: record.experimentId
+      });
+    }
     if (!record.verification?.certificate) {
       errors.push({ code: 'MISSING_CERTIFICATE', recordId: record.id });
     } else if (record.verification.certificate !== verificationCertificate(
