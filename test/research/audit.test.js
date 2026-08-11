@@ -66,3 +66,14 @@ test('scientific audit requires an upper bound supported by a rigorous method', 
   assert.equal(report.passed, false);
   assert.ok(report.findings.some(finding => finding.code === 'UNSUPPORTED_UPPER_BOUND'));
 });
+
+test('scientific audit replays the claimed piece count', () => {
+  const record = canonicalRecord(RESEARCH_RECORDS[0]);
+  record.verification.pieceCount += 1;
+  const report = auditRecords([record]);
+  assert.equal(report.passed, false);
+  const finding = report.findings.find(item => item.code === 'PIECE_COUNT_DRIFT');
+  assert.ok(finding);
+  assert.equal(finding.expected, record.solution.placements.length);
+  assert.equal(finding.actual, record.verification.pieceCount);
+});

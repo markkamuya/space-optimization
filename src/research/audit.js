@@ -43,6 +43,16 @@ export function auditRecords(records, options = {}) {
     if (Math.abs(replay.metrics.utilization - record.verification.utilization) > 1e-10) {
       findings.push({ severity: 'critical', code: 'METRIC_DRIFT', recordId: record.id });
     }
+    if (!Number.isInteger(record.verification.pieceCount) ||
+      record.verification.pieceCount !== record.solution.placements.length) {
+      findings.push({
+        severity: 'critical',
+        code: 'PIECE_COUNT_DRIFT',
+        recordId: record.id,
+        expected: record.solution.placements.length,
+        actual: record.verification.pieceCount
+      });
+    }
     if (!Number.isFinite(record.bounds.lowerBound) ||
       Math.abs(record.bounds.lowerBound - replay.metrics.utilization) > 1e-10) {
       findings.push({ severity: 'critical', code: 'LOWER_BOUND_DRIFT', recordId: record.id });
