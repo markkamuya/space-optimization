@@ -20,3 +20,11 @@ test('scientific audit catches evidence that exceeds its bound support', () => {
   assert.equal(report.passed, false);
   assert.ok(report.findings.some(finding => finding.code === 'EVIDENCE_BOUND_MISMATCH'));
 });
+
+test('scientific audit catches a forged verification certificate', () => {
+  const record = canonicalRecord(RESEARCH_RECORDS[0]);
+  record.verification.certificate = 'sha256:forged';
+  const report = auditRecords([record]);
+  assert.equal(report.passed, false);
+  assert.ok(report.findings.some(finding => finding.code === 'CERTIFICATE_DRIFT'));
+});

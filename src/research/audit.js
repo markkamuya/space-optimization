@@ -1,5 +1,5 @@
 import { verifyPacking } from '../atlas/verifier.js';
-import { validateCanonicalRecords } from './registry.js';
+import { validateCanonicalRecords, verificationCertificate } from './registry.js';
 
 function key(record) {
   return `${record.family}:${record.parameters.apexAngle}`;
@@ -20,6 +20,13 @@ export function auditRecords(records, options = {}) {
     }
     if (Math.abs(replay.metrics.utilization - record.verification.utilization) > 1e-10) {
       findings.push({ severity: 'critical', code: 'METRIC_DRIFT', recordId: record.id });
+    }
+    if (record.verification.certificate !== verificationCertificate(
+      record.id,
+      record.verification.fingerprint,
+      record.verification.utilization
+    )) {
+      findings.push({ severity: 'critical', code: 'CERTIFICATE_DRIFT', recordId: record.id });
     }
     const proven = record.evidence.state === 'proven_optimal';
     const boundMatched = record.bounds.optimalityGap <= 1e-10;

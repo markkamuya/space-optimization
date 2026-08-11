@@ -3,6 +3,12 @@ import { createHash } from 'node:crypto';
 export const CANONICAL_FORMAT = 'triangle-packing-atlas/v2';
 export const VERIFIER_VERSION = 'geometry-verifier/2.0.0';
 
+export function verificationCertificate(recordId, fingerprint, utilization) {
+  return `sha256:${createHash('sha256')
+    .update(`${recordId}:${fingerprint}:${utilization}`)
+    .digest('hex')}`;
+}
+
 export function experimentId(record) {
   const shape = record.family === 'scalene'
     ? record.id.split('-r')[0]
@@ -21,9 +27,11 @@ export function canonicalRecord(record) {
     ...record.verification,
     verifier: VERIFIER_VERSION,
     tolerancePolicy: 'docs/NUMERICAL_POLICY.md',
-    certificate: `sha256:${createHash('sha256')
-      .update(`${record.id}:${record.verification.fingerprint}:${record.verification.utilization}`)
-      .digest('hex')}`
+    certificate: verificationCertificate(
+      record.id,
+      record.verification.fingerprint,
+      record.verification.utilization
+    )
   };
   return {
     ...record,
@@ -62,7 +70,15 @@ export function validateCanonicalRecords(records) {
     if (ids.has(record.id)) errors.push({ code: 'DUPLICATE_ID', recordId: record.id });
     ids.add(record.id);
     if (!record.verification?.valid) errors.push({ code: 'UNVERIFIED_RECORD', recordId: record.id });
-    if (!record.verification?.certificate) errors.push({ code: 'MISSING_CERTIFICATE', recordId: record.id });
+    if (!record.verification?.certificate) {
+      errors.push({ code: 'MISSING_CERTIFICATE', recordId: record.id });
+    } else if (record.verification.certificate !== verificationCertificate(
+      record.id,
+      record.verification.fingerprint,
+      record.verification.utilization
+    )) {
+      errors.push({ code: 'CERTIFICATE_DRIFT', recordId: record.id });
+    }
     if (!record.reproducibility?.command) errors.push({ code: 'MISSING_REPRODUCTION', recordId: record.id });
     const incumbent = experiments.get(record.experimentId);
     if (incumbent && incumbent.verification.utilization < record.verification.utilization) {

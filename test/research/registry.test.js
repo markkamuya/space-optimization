@@ -19,6 +19,14 @@ test('canonical registry is unique, certified, and reproducible', () => {
   assert.ok(records.every(record => record.reproducibility.command.includes(record.id)));
 });
 
+test('canonical registry rejects stale verification certificates', () => {
+  const record = structuredClone(records[0]);
+  record.verification.certificate = 'sha256:forged';
+  const result = validateCanonicalRecords([record]);
+  assert.equal(result.valid, false);
+  assert.ok(result.errors.some(error => error.code === 'CERTIFICATE_DRIFT'));
+});
+
 test('stable experiment ids encode family, shape, and container', () => {
   assert.equal(experimentId(RESEARCH_RECORDS[0]), 'isosceles/apex-35/rectangle-0.75');
 });
