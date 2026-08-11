@@ -33,6 +33,24 @@ test('problem normalization rejects impossible input', () => {
   );
 });
 
+test('problem normalization rejects values that require type coercion', () => {
+  assert.throws(
+    () => normalizeProblem({ ...DEFAULT_PROBLEM, width: '30' }),
+    /finite numbers/
+  );
+  assert.throws(
+    () => normalizeProblem({ ...DEFAULT_PROBLEM, allowReflection: 'false' }),
+    /allowReflection must be a boolean/
+  );
+  assert.throws(
+    () => normalizeProblem({
+      ...DEFAULT_PROBLEM,
+      triangles: [{ id: 'string-side', sides: [3, 4, '5'] }]
+    }),
+    /sides must be finite numbers/
+  );
+});
+
 test('scoring distinguishes valid and invalid placements', () => {
   const problem = normalizeProblem({
     ...DEFAULT_PROBLEM,

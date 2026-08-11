@@ -22,13 +22,21 @@ export const DEFAULT_PROBLEM = Object.freeze({
 });
 
 export function normalizeProblem(input) {
-  const width = Number(input.width);
-  const height = Number(input.height);
-  const margin = Number(input.margin ?? 0);
-  const kerf = Number(input.kerf ?? 0);
-  const maxPieces = Number(input.maxPieces ?? 80);
+  if (!input || typeof input !== 'object' || Array.isArray(input)) {
+    throw new TypeError('Problem must be an object');
+  }
+  const width = input.width;
+  const height = input.height;
+  const margin = input.margin ?? 0;
+  const kerf = input.kerf ?? 0;
+  const maxPieces = input.maxPieces ?? 80;
   if (![width, height, margin, kerf, maxPieces].every(Number.isFinite)) {
     throw new TypeError('Container dimensions, margin, and kerf must be finite numbers');
+  }
+  for (const key of ['fillSheet', 'allowRotation', 'allowReflection']) {
+    if (input[key] !== undefined && typeof input[key] !== 'boolean') {
+      throw new TypeError(`${key} must be a boolean`);
+    }
   }
   if (width <= 0 || height <= 0 || margin < 0 || kerf < 0) {
     throw new RangeError('Container dimensions must be positive; margin and kerf cannot be negative');
@@ -44,8 +52,9 @@ export function normalizeProblem(input) {
   }
 
   const triangles = input.triangles.map((definition, index) => {
-    const sides = definition.sides?.map(Number);
+    const sides = definition?.sides;
     if (!sides || sides.length !== 3) throw new TypeError(`Triangle ${index + 1} needs three sides`);
+    if (!sides.every(Number.isFinite)) throw new TypeError(`Triangle ${index + 1} sides must be finite numbers`);
     const shape = fromSSS(...sides);
     return {
       id: String(definition.id ?? index + 1),
