@@ -1,5 +1,6 @@
 import { verifyPacking } from '../atlas/verifier.js';
 import { buildWorkQueue } from './distributed.js';
+import { buildCommunityChallenges } from './challenges.js';
 import {
   detectPhaseTransitions,
   experimentId,
@@ -187,6 +188,17 @@ export function auditRecords(records, options = {}) {
         code: 'WORK_QUEUE_DRIFT',
         expectedCount: expectedQueue.length,
         actualCount: Array.isArray(options.workQueue) ? options.workQueue.length : null
+      });
+    }
+  }
+  if (options.challenges !== undefined) {
+    const expectedChallenges = buildCommunityChallenges(buildWorkQueue(records));
+    if (JSON.stringify(options.challenges) !== JSON.stringify(expectedChallenges)) {
+      findings.push({
+        severity: 'critical',
+        code: 'CHALLENGE_BOARD_DRIFT',
+        expectedCount: expectedChallenges.length,
+        actualCount: Array.isArray(options.challenges) ? options.challenges.length : null
       });
     }
   }

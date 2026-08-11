@@ -4,6 +4,7 @@ import { RESEARCH_RECORDS } from '../../src/research/dataset.js';
 import { canonicalRecord, detectPhaseTransitions } from '../../src/research/registry.js';
 import { auditRecords } from '../../src/research/audit.js';
 import { buildWorkQueue } from '../../src/research/distributed.js';
+import { buildCommunityChallenges } from '../../src/research/challenges.js';
 
 test('scientific audit independently replays the canonical registry', () => {
   const report = auditRecords(RESEARCH_RECORDS.map(canonicalRecord));
@@ -138,4 +139,16 @@ test('scientific audit recomputes solver budget accounting', () => {
   assert.equal(report.passed, false);
   const finding = report.findings.find(item => item.code === 'SOLVER_BUDGET_DRIFT');
   assert.deepEqual(finding.fields, ['strategies', 'orientationEvaluations', 'adaptiveAttempts']);
+});
+
+test('scientific audit recomputes the public challenge board', () => {
+  const record = canonicalRecord(RESEARCH_RECORDS.find(item => item.bounds.optimalityGap > 0.1));
+  const challenges = buildCommunityChallenges(buildWorkQueue([record]));
+  challenges[0] = {
+    ...challenges[0],
+    baseline: { ...challenges[0].baseline, utilization: 1 }
+  };
+  const report = auditRecords([record], { challenges });
+  assert.equal(report.passed, false);
+  assert.ok(report.findings.some(finding => finding.code === 'CHALLENGE_BOARD_DRIFT'));
 });
