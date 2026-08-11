@@ -86,3 +86,17 @@ test('scientific audit recomputes the published phase-transition index', () => {
   assert.equal(report.passed, false);
   assert.ok(report.findings.some(finding => finding.code === 'TRANSITION_INDEX_DRIFT'));
 });
+
+test('scientific audit links reproduction metadata to solver provenance', () => {
+  const record = canonicalRecord(RESEARCH_RECORDS[0]);
+  record.reproducibility = {
+    command: 'npm run atlas:experiment -- --record another-record',
+    seed: 'tampered-seed',
+    algorithmVersion: 'tampered-solver/v999',
+    deterministic: false
+  };
+  const report = auditRecords([record]);
+  assert.equal(report.passed, false);
+  const finding = report.findings.find(item => item.code === 'REPRODUCIBILITY_DRIFT');
+  assert.deepEqual(finding.fields, ['command', 'seed', 'algorithmVersion', 'deterministic']);
+});

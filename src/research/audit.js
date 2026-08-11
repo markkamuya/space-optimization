@@ -86,6 +86,28 @@ export function auditRecords(records, options = {}) {
     )) {
       findings.push({ severity: 'critical', code: 'CERTIFICATE_DRIFT', recordId: record.id });
     }
+    const reproducibilityDrift = [];
+    if (record.reproducibility?.command !== `npm run atlas:experiment -- --record ${record.id}`) {
+      reproducibilityDrift.push('command');
+    }
+    if (record.reproducibility?.seed !== record.provenance.seed) {
+      reproducibilityDrift.push('seed');
+    }
+    if (record.reproducibility?.algorithmVersion !== record.solver.environment.algorithmVersion) {
+      reproducibilityDrift.push('algorithmVersion');
+    }
+    if (record.reproducibility?.deterministic !== record.solver.budget.deterministic ||
+      record.reproducibility?.deterministic !== true) {
+      reproducibilityDrift.push('deterministic');
+    }
+    if (reproducibilityDrift.length > 0) {
+      findings.push({
+        severity: 'critical',
+        code: 'REPRODUCIBILITY_DRIFT',
+        recordId: record.id,
+        fields: reproducibilityDrift
+      });
+    }
     const proven = record.evidence.state === 'proven_optimal';
     const boundMatched = record.bounds.optimalityGap <= 1e-10;
     if (proven !== boundMatched) {
