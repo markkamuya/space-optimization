@@ -194,9 +194,13 @@ def main():
     release = json.loads(source.read_text())
     failures = []
     for record in release["records"]:
-        errors = verify(record)
+        try:
+            errors = verify(record)
+        except (IndexError, KeyError, OverflowError, TypeError, ValueError) as error:
+            errors = [f"verifier_exception:{type(error).__name__}"]
         if errors:
-            failures.append({"id": record["id"], "errors": errors[:10]})
+            record_id = record.get("id", "<missing>") if isinstance(record, dict) else "<invalid>"
+            failures.append({"id": record_id, "errors": errors[:10]})
     report = {
         "format": "triangle-packing-cross-verification/v1",
         "implementation": "python-stdlib-independent",

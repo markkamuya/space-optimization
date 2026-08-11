@@ -156,3 +156,23 @@ test('independent verifier enforces nonzero kerf between pieces', async () => {
   assert.equal(result.status, 1);
   assert.ok(result.report.failures[0].errors.includes('spacing_violation:0:1'));
 });
+
+test('independent verifier reports malformed records without crashing', async () => {
+  const result = await crossVerify({
+    id: 'malformed-placement-fixture',
+    problem: {
+      width: 4,
+      height: 4,
+      margin: 0,
+      kerf: 0,
+      triangles: [{ id: 'right', sides: [1, 1, Math.SQRT2] }]
+    },
+    solution: { placements: [{ y: 1, angle: 0, reflect: false }] },
+    verification: { fingerprint: 'tpa1-invalid', utilization: 0 }
+  });
+  assert.equal(result.status, 1);
+  assert.equal(result.report.records, 1);
+  assert.equal(result.report.passed, 0);
+  assert.equal(result.report.failures[0].id, 'malformed-placement-fixture');
+  assert.ok(result.report.failures[0].errors.includes('verifier_exception:KeyError'));
+});
