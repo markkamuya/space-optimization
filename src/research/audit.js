@@ -1,6 +1,7 @@
 import { verifyPacking } from '../atlas/verifier.js';
 import { buildWorkQueue } from './distributed.js';
 import { buildCommunityChallenges } from './challenges.js';
+import { canonicalCoverage } from './release.js';
 import {
   detectPhaseTransitions,
   experimentId,
@@ -201,6 +202,13 @@ export function auditRecords(records, options = {}) {
         actualCount: Array.isArray(options.challenges) ? options.challenges.length : null
       });
     }
+  }
+  if (options.coverage !== undefined &&
+    JSON.stringify(options.coverage) !== JSON.stringify(canonicalCoverage(records))) {
+    findings.push({
+      severity: 'critical',
+      code: 'COVERAGE_SUMMARY_DRIFT'
+    });
   }
 
   const slices = Map.groupBy(records.filter(record => record.family !== 'scalene'), key);

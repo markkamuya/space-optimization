@@ -5,6 +5,7 @@ import { canonicalRecord, detectPhaseTransitions } from '../../src/research/regi
 import { auditRecords } from '../../src/research/audit.js';
 import { buildWorkQueue } from '../../src/research/distributed.js';
 import { buildCommunityChallenges } from '../../src/research/challenges.js';
+import { canonicalCoverage } from '../../src/research/release.js';
 
 test('scientific audit independently replays the canonical registry', () => {
   const report = auditRecords(RESEARCH_RECORDS.map(canonicalRecord));
@@ -151,4 +152,13 @@ test('scientific audit recomputes the public challenge board', () => {
   const report = auditRecords([record], { challenges });
   assert.equal(report.passed, false);
   assert.ok(report.findings.some(finding => finding.code === 'CHALLENGE_BOARD_DRIFT'));
+});
+
+test('scientific audit recomputes the release coverage summary', () => {
+  const records = RESEARCH_RECORDS.map(canonicalRecord);
+  const coverage = canonicalCoverage(records);
+  coverage.provenOptimal += 1;
+  const report = auditRecords(records, { coverage });
+  assert.equal(report.passed, false);
+  assert.ok(report.findings.some(finding => finding.code === 'COVERAGE_SUMMARY_DRIFT'));
 });

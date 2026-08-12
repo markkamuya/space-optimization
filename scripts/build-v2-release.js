@@ -10,6 +10,7 @@ import {
   validateCanonicalRecords
 } from '../src/research/registry.js';
 import { buildWorkQueue } from '../src/research/distributed.js';
+import { canonicalCoverage } from '../src/research/release.js';
 
 const adaptiveTargets = new Set([...RESEARCH_RECORDS]
   .filter(record => record.bounds.optimalityGap > 0 && record.verification.pieceCount < 300)
@@ -104,16 +105,7 @@ const release = {
     tolerancePolicy: 'docs/NUMERICAL_POLICY.md',
     certificateRequired: true
   },
-  coverage: {
-    records: records.length,
-    verified: records.filter(record => record.verification.valid).length,
-    provenOptimal: records.filter(record => record.evidence.state === 'proven_optimal').length,
-    families: Object.fromEntries([...Map.groupBy(records, record => record.family)]
-      .map(([family, values]) => [family, values.length])),
-    openDistributedTasks: queue.length,
-    phaseTransitions: transitions.length,
-    adaptivelyImproved: records.filter(record => record.adaptiveImprovement).length
-  },
+  coverage: canonicalCoverage(records),
   transitions,
   records
 };

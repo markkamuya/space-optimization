@@ -9,7 +9,8 @@ const [release, queue, challengeBoard] = await Promise.all([
 const report = auditRecords(release.records, {
   transitions: release.transitions,
   workQueue: queue.tasks,
-  challenges: challengeBoard.challenges
+  challenges: challengeBoard.challenges,
+  coverage: release.coverage
 });
 await writeFile(new URL('../public/audit-v2.json', import.meta.url), `${JSON.stringify(report, null, 2)}\n`);
 console.log(JSON.stringify({
