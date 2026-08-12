@@ -11,7 +11,21 @@ const record = {
 };
 
 test('public release validation accepts the required rendering contract', () => {
-  assert.equal(validatePublicRelease({ records: [record], transitions: [], coverage: {} }).valid, true);
+  assert.equal(validatePublicRelease({
+    records: [record], transitions: [], coverage: { records: 1, verified: 1, phaseTransitions: 0 }
+  }).valid, true);
+});
+
+test('public release validation recomputes displayed coverage totals', () => {
+  const report = validatePublicRelease({
+    records: [record],
+    transitions: [],
+    coverage: { records: 2, verified: 0, phaseTransitions: 1 }
+  });
+  assert.equal(report.valid, false);
+  assert.ok(report.errors.includes('coverage_records_mismatch'));
+  assert.ok(report.errors.includes('coverage_verified_mismatch'));
+  assert.ok(report.errors.includes('coverage_transitions_mismatch'));
 });
 
 test('public release validation rejects unverified and incomplete records', () => {
