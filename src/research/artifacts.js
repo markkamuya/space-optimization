@@ -107,6 +107,17 @@ export function auditTarInventory(entries, requiredPaths, options = {}) {
   return { valid: errors.length === 0, errors, entries: entries.length };
 }
 
+export function auditTarEntryTypes(entries, requiredPaths) {
+  const errors = [];
+  const byPath = new Map(entries.map(entry => [entry.path, entry.type]));
+  for (const path of requiredPaths) {
+    if (byPath.has(path) && byPath.get(path) !== '-') {
+      errors.push(`TARBALL_NOT_REGULAR_FILE:${path}`);
+    }
+  }
+  return { valid: errors.length === 0, errors, entries: entries.length };
+}
+
 export function auditArchivedControlFiles(archived, expected) {
   const errors = [];
   for (const [path, payload] of expected) {

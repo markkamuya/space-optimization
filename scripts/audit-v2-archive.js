@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import {
   auditArchivedControlFiles,
   auditArchiveManifest,
+  auditTarEntryTypes,
   auditTarInventory
 } from '../src/research/artifacts.js';
 import { V2_ARCHIVE_PATHS } from '../src/research/archiveInventory.js';
@@ -32,6 +33,13 @@ const listing = spawnSync('tar', ['-tzf', archivePath], { encoding: 'utf8' });
 if (listing.status !== 0) throw new Error(`Unable to list archive: ${listing.stderr}`);
 const entries = listing.stdout.trim().split('\n').filter(Boolean);
 const inventory = auditTarInventory(entries, V2_ARCHIVE_PATHS, { exact: true });
+const verboseListing = spawnSync('tar', ['-tvzf', archivePath], { encoding: 'utf8' });
+if (verboseListing.status !== 0) throw new Error(`Unable to inspect archive types: ${verboseListing.stderr}`);
+const typedEntries = verboseListing.stdout.trim().split('\n').filter(Boolean).map((line, index) => ({
+  path: entries[index],
+  type: line[0]
+}));
+const entryTypes = auditTarEntryTypes(typedEntries, V2_ARCHIVE_PATHS);
 const archivedFiles = new Map();
 for (const entry of manifest.files) {
   const extracted = spawnSync('tar', ['-xOzf', archivePath, entry.path], {
@@ -54,9 +62,10 @@ for (const path of controlPaths.keys()) {
 }
 const controls = auditArchivedControlFiles(archivedControls, controlPaths);
 const combined = {
-  valid: report.valid && inventory.valid && archivedManifestFiles.valid && controls.valid,
+  valid: report.valid && inventory.valid && entryTypes.valid && archivedManifestFiles.valid && controls.valid,
   manifest: report,
   inventory,
+  entryTypes,
   archivedFiles: archivedManifestFiles,
   controls
 };

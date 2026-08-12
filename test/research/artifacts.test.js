@@ -8,6 +8,7 @@ import {
   auditArchiveManifest,
   auditArtifactChecksum,
   auditReleaseManifest,
+  auditTarEntryTypes,
   auditTarInventory
 } from '../../src/research/artifacts.js';
 import { validateCanonicalRecords } from '../../src/research/registry.js';
@@ -103,6 +104,15 @@ test('strict tarball inventory rejects undeclared payloads', () => {
   );
   assert.equal(report.valid, false);
   assert.ok(report.errors.includes('TARBALL_UNDECLARED_PATH:unreviewed.bin'));
+});
+
+test('tarball type audit rejects links and special entries', () => {
+  const report = auditTarEntryTypes([
+    { path: 'public/data.json', type: 'l' },
+    { path: 'public/other.json', type: '-' }
+  ], ['public/data.json', 'public/other.json']);
+  assert.equal(report.valid, false);
+  assert.deepEqual(report.errors, ['TARBALL_NOT_REGULAR_FILE:public/data.json']);
 });
 
 test('archive audit compares embedded control files byte-for-byte', () => {
