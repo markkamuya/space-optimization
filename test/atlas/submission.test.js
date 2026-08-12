@@ -99,3 +99,16 @@ test('submission comparison uses adaptive canonical incumbents', async () => {
   assert.equal(report.comparison.bestKnownId, improved.id);
   assert.ok(report.comparison.improvement < 0);
 });
+
+test('malformed submissions are rejected without crashing identity comparison', () => {
+  const report = assessSubmission({
+    format: 'triangle-packing-atlas/v1',
+    id: 'missing-problem',
+    solution: { construction: 'invalid', placements: [] },
+    evidence: { status: 'candidate' },
+    provenance: { generator: 'test', createdAt: new Date(0).toISOString() }
+  }, []);
+  assert.equal(report.disposition, 'reject_invalid');
+  assert.deepEqual(report.comparison.comparableRecords, []);
+  assert.ok(report.schema.errors.some(error => error.path === 'problem'));
+});

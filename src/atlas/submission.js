@@ -42,8 +42,15 @@ export function assessSubmission(candidate, publishedRecords) {
   const fingerprint = verification.normalizedProblem && verification.normalizedState
     ? packingFingerprint(verification.normalizedProblem, verification.normalizedState)
     : null;
-  const candidateIdentity = packingProblemIdentity(candidate.problem);
-  const comparable = publishedRecords.filter(record =>
+  let candidateIdentity = null;
+  if (schema.valid && verification.valid) {
+    try {
+      candidateIdentity = packingProblemIdentity(candidate.problem);
+    } catch {
+      candidateIdentity = null;
+    }
+  }
+  const comparable = candidateIdentity === null ? [] : publishedRecords.filter(record =>
     packingProblemIdentity(record.problem) === candidateIdentity);
   const duplicate = publishedRecords.find(record => record.verification?.fingerprint === fingerprint);
   const best = comparable
