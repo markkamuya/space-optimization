@@ -1,6 +1,6 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { auditRecords } from '../src/research/audit.js';
-import { auditArtifactChecksum } from '../src/research/artifacts.js';
+import { auditArtifactChecksum, auditReleaseManifest } from '../src/research/artifacts.js';
 
 const [datasetPayload, queue, challengeBoard, csv, checksumFile, manifest] = await Promise.all([
   readFile(new URL('../public/atlas-v2.json', import.meta.url), 'utf8'),
@@ -19,11 +19,12 @@ const report = auditRecords(release.records, {
   csv
 });
 const artifactChecksum = auditArtifactChecksum(datasetPayload, checksumFile, manifest);
-for (const code of artifactChecksum.errors) {
+const releaseManifest = auditReleaseManifest(manifest, release);
+for (const code of [...artifactChecksum.errors, ...releaseManifest.errors]) {
   report.findings.push({ severity: 'critical', code });
 }
 report.summary.critical = report.findings.filter(finding => finding.severity === 'critical').length;
-report.passed = report.passed && artifactChecksum.valid;
+report.passed = report.passed && artifactChecksum.valid && releaseManifest.valid;
 await writeFile(new URL('../public/audit-v2.json', import.meta.url), `${JSON.stringify(report, null, 2)}\n`);
 console.log(JSON.stringify({
   passed: report.passed,
