@@ -58,3 +58,25 @@ test('worker results are verified against the assigned problem identity', () => 
   assert.equal(result.valid, false);
   assert.ok(result.errors.includes('problem_identity_mismatch'));
 });
+
+test('worker results are bound to the queued experiment and exact baseline', () => {
+  const records = RESEARCH_RECORDS.map(canonicalRecord);
+  const [task] = buildWorkQueue(records);
+  const record = records.find(candidate => candidate.id === task.recordId);
+  const result = validateWorkerResult({
+    ...task,
+    experimentId: `${task.experimentId}-tampered`,
+    baselineFingerprint: 'tpa1-stale',
+    baselineUtilization: task.baselineUtilization - 0.1
+  }, {
+    recordId: task.recordId,
+    seed: 'worker-stale-task',
+    problem: record.problem,
+    placements: record.solution.placements,
+    utilization: record.verification.utilization
+  }, record);
+  assert.equal(result.valid, false);
+  assert.ok(result.errors.includes('task_experiment_mismatch'));
+  assert.ok(result.errors.includes('stale_baseline_fingerprint'));
+  assert.ok(result.errors.includes('stale_baseline_utilization'));
+});

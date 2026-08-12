@@ -24,6 +24,14 @@ export function buildWorkQueue(records) {
 export function validateWorkerResult(task, candidate, assignedRecord) {
   const errors = [];
   if (candidate.recordId !== task.recordId) errors.push('record_id_mismatch');
+  if (task.experimentId !== assignedRecord?.experimentId) errors.push('task_experiment_mismatch');
+  if (task.baselineFingerprint !== assignedRecord?.verification?.fingerprint) {
+    errors.push('stale_baseline_fingerprint');
+  }
+  if (!Number.isFinite(task.baselineUtilization) ||
+    Math.abs(task.baselineUtilization - (assignedRecord?.verification?.utilization ?? NaN)) > 1e-10) {
+    errors.push('stale_baseline_utilization');
+  }
   if (!candidate.seed) errors.push('missing_seed');
   if (!candidate.problem || typeof candidate.problem !== 'object') errors.push('missing_problem');
   if (!Array.isArray(candidate.placements)) errors.push('missing_coordinates');
