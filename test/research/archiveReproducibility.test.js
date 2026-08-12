@@ -19,3 +19,24 @@ test('v2 archive is byte-for-byte reproducible', async () => {
   );
   assert.deepEqual(first, second);
 });
+
+test('deterministic archive rejects unsafe paths', () => {
+  assert.throws(
+    () => buildDeterministicTarGzip([['../escape.json', Buffer.from('{}')]]),
+    /Unsafe archive path/
+  );
+  assert.throws(
+    () => buildDeterministicTarGzip([['/absolute.json', Buffer.from('{}')]]),
+    /Unsafe archive path/
+  );
+});
+
+test('deterministic archive rejects duplicate paths', () => {
+  assert.throws(
+    () => buildDeterministicTarGzip([
+      ['public/data.json', Buffer.from('{}')],
+      ['public/data.json', Buffer.from('{"changed":true}')]
+    ]),
+    /Duplicate archive path/
+  );
+});

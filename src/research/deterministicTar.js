@@ -40,7 +40,13 @@ function headerFor(path, size) {
 
 export function buildDeterministicTarGzip(entries) {
   const chunks = [];
+  const seenPaths = new Set();
   for (const [path, payload] of entries) {
+    if (typeof path !== 'string' || path.startsWith('/') || path.split('/').includes('..')) {
+      throw new Error(`Unsafe archive path: ${path}`);
+    }
+    if (seenPaths.has(path)) throw new Error(`Duplicate archive path: ${path}`);
+    seenPaths.add(path);
     const content = Buffer.isBuffer(payload) ? payload : Buffer.from(payload);
     chunks.push(headerFor(path, content.length), content);
     const padding = (BLOCK_SIZE - (content.length % BLOCK_SIZE)) % BLOCK_SIZE;
