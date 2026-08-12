@@ -80,6 +80,27 @@ test('standalone record verification enforces required record metadata', () => {
     error.code === 'INVALID_SCHEMA' && error.path === 'provenance.generator'));
 });
 
+test('runtime validation rejects fields forbidden by the published schemas', async () => {
+  const record = JSON.parse(await readFile(
+    new URL('../../atlas/right/right-grid-2x1.json', import.meta.url),
+    'utf8'
+  ));
+  record.unreviewedClaim = true;
+  record.problem.triangles[0].privateScale = 2;
+  record.solution.placements[0].z = 1;
+  record.provenance.trusted = true;
+  const report = verifyAtlasRecord(record);
+  assert.equal(report.valid, false);
+  for (const path of [
+    'unreviewedClaim',
+    'problem.triangles.0.privateScale',
+    'solution.placements.0.z',
+    'provenance.trusted'
+  ]) {
+    assert.ok(report.errors.some(error => error.code === 'INVALID_SCHEMA' && error.path === path));
+  }
+});
+
 test('proven status rejects unrecognized proof types', () => {
   const record = {
     format: 'triangle-packing-atlas/v1',
