@@ -5,6 +5,8 @@ import { DEFAULT_PROBLEM, normalizeProblem, serializableProblem } from '../../sr
 import { createRandom } from '../../src/core/random.js';
 import { evaluate } from '../../src/solvers/scoring.js';
 import { solveGreedy } from '../../src/solvers/greedy.js';
+import { candidateTranslations, findBestPlacement } from '../../src/solvers/compact.js';
+import { transform } from '../../src/geometry/triangle.js';
 
 test('seeded random sequences are reproducible', () => {
   const first = createRandom('same-seed');
@@ -112,4 +114,20 @@ test('residual pass fills rotated border and corner gaps', () => {
   assert.equal(result.metrics.valid, true);
   assert.ok(result.state.length > 60);
   assert.ok(result.metrics.utilization > 0.9);
+});
+
+test('compact placement does not re-evaluate duplicate translation anchors', () => {
+  const problem = normalizeProblem({
+    ...DEFAULT_PROBLEM,
+    fillSheet: false,
+    triangles: [DEFAULT_PROBLEM.triangles[2]]
+  });
+  const rotated = transform(problem.triangles[0].shape, { angle: 0 });
+  const translations = candidateTranslations(problem, rotated, []);
+  const unique = new Set(translations.map(({ x, y }) =>
+    `${Math.round(x / 1e-7)}:${Math.round(y / 1e-7)}`));
+  assert.equal(translations.length, unique.size);
+  const result = findBestPlacement(problem, problem.triangles[0], [], 0);
+  assert.ok(result);
+  assert.equal(Number.isFinite(result.rank), true);
 });

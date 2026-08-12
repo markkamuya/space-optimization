@@ -20,7 +20,7 @@ export function orientationSet(problem, phase = 0) {
     : [{ angle, reflect: false }]);
 }
 
-function candidateTranslations(problem, rotated, placed) {
+export function candidateTranslations(problem, rotated, placed) {
   const box = bounds(rotated);
   const left = problem.margin - box.minX;
   const right = problem.width - problem.margin - box.maxX;
@@ -73,7 +73,13 @@ function candidateTranslations(problem, rotated, placed) {
       }
     }
   }
-  return translations;
+  const seen = new Set();
+  return translations.filter(({ x, y }) => {
+    const key = `${Math.round(x / EPSILON)}:${Math.round(y / EPSILON)}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 function fits(problem, candidate, placed) {
