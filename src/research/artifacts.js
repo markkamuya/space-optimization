@@ -54,3 +54,21 @@ export function auditArchiveManifest(manifestPayload, checksumFile, files) {
   }
   return { valid: errors.length === 0, errors, files: seen.size };
 }
+
+export function auditTarInventory(entries, requiredPaths) {
+  const errors = [];
+  const counts = new Map();
+  for (const path of entries) {
+    if (path.startsWith('/') || path.split('/').includes('..')) {
+      errors.push(`TARBALL_UNSAFE_PATH:${path}`);
+      continue;
+    }
+    counts.set(path, (counts.get(path) ?? 0) + 1);
+  }
+  for (const path of requiredPaths) {
+    const count = counts.get(path) ?? 0;
+    if (count === 0) errors.push(`TARBALL_FILE_MISSING:${path}`);
+    if (count > 1) errors.push(`TARBALL_DUPLICATE_PATH:${path}`);
+  }
+  return { valid: errors.length === 0, errors, entries: entries.length };
+}

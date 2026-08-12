@@ -1,5 +1,7 @@
 import { readFile } from 'node:fs/promises';
-import { auditArchiveManifest } from '../src/research/artifacts.js';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import { auditArchiveManifest, auditTarInventory } from '../src/research/artifacts.js';
 
 const manifestUrl = new URL('../releases/2.0.0-archive-manifest.json', import.meta.url);
 const [manifestPayload, checksumFile] = await Promise.all([
@@ -12,5 +14,31 @@ const files = new Map(await Promise.all(manifest.files.map(async entry => [
   await readFile(new URL(`../${entry.path}`, import.meta.url))
 ])));
 const report = auditArchiveManifest(manifestPayload, checksumFile, files);
-console.log(JSON.stringify(report, null, 2));
-if (!report.valid) process.exitCode = 1;
+const archivePath = fileURLToPath(new URL('../releases/triangle-packing-atlas-2.0.0.tgz', import.meta.url));
+const listing = spawnSync('tar', ['-tzf', archivePath], { encoding: 'utf8' });
+if (listing.status !== 0) throw new Error(`Unable to list archive: ${listing.stderr}`);
+const entries = listing.stdout.trim().split('\n').filter(Boolean);
+const requiredPaths = [
+  ...manifest.files.map(entry => entry.path),
+  'public/atlas-v2.sha256',
+  'releases/2.0.0-canonical.json',
+  'releases/2.0.0-archive-manifest.json',
+  'releases/2.0.0-archive-manifest.sha256'
+];
+const inventory = auditTarInventory(entries, requiredPaths);
+const archivedFiles = new Map();
+for (const entry of manifest.files) {
+  const extracted = spawnSync('tar', ['-xOzf', archivePath, entry.path], {
+    maxBuffer: 32 * 1024 * 1024
+  });
+  if (extracted.status === 0) archivedFiles.set(entry.path, extracted.stdout);
+}
+const archivedManifestFiles = auditArchiveManifest(manifestPayload, checksumFile, archivedFiles);
+const combined = {
+  valid: report.valid && inventory.valid && archivedManifestFiles.valid,
+  manifest: report,
+  inventory,
+  archivedFiles: archivedManifestFiles
+};
+console.log(JSON.stringify(combined, null, 2));
+if (!combined.valid) process.exitCode = 1;

@@ -6,7 +6,8 @@ import { readFile } from 'node:fs/promises';
 import {
   auditArchiveManifest,
   auditArtifactChecksum,
-  auditReleaseManifest
+  auditReleaseManifest,
+  auditTarInventory
 } from '../../src/research/artifacts.js';
 import { validateCanonicalRecords } from '../../src/research/registry.js';
 
@@ -57,4 +58,15 @@ test('archive manifest audit validates its checksum and every listed file', () =
   assert.ok(report.errors.includes('ARCHIVE_MANIFEST_CHECKSUM_DRIFT'));
   assert.ok(report.errors.includes('ARCHIVE_SIZE_DRIFT:public/example.json'));
   assert.ok(report.errors.includes('ARCHIVE_FILE_CHECKSUM_DRIFT:public/example.json'));
+});
+
+test('tarball inventory requires safe unique artifact paths', () => {
+  assert.equal(auditTarInventory(['public/data.json'], ['public/data.json']).valid, true);
+  const report = auditTarInventory(
+    ['public/data.json', 'public/data.json', '../escape.json'],
+    ['public/data.json', 'public/missing.json']
+  );
+  assert.ok(report.errors.includes('TARBALL_DUPLICATE_PATH:public/data.json'));
+  assert.ok(report.errors.includes('TARBALL_UNSAFE_PATH:../escape.json'));
+  assert.ok(report.errors.includes('TARBALL_FILE_MISSING:public/missing.json'));
 });
