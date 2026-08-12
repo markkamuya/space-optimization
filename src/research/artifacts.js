@@ -38,19 +38,47 @@ export function auditArchiveManifest(manifestPayload, checksumFile, files) {
   const manifestHash = createHash('sha256').update(manifestPayload).digest('hex');
   const declaredManifestHash = checksumFile.trim().split(/\s+/)[0];
   if (declaredManifestHash !== manifestHash) errors.push('ARCHIVE_MANIFEST_CHECKSUM_DRIFT');
-  const manifest = JSON.parse(manifestPayload);
+  let manifest;
+  try {
+    manifest = JSON.parse(manifestPayload);
+  } catch {
+    return { valid: false, errors: [...errors, 'ARCHIVE_MANIFEST_INVALID_JSON'], files: 0 };
+  }
+  if (manifest?.format !== 'triangle-packing-atlas-archive/v2') {
+    errors.push('ARCHIVE_MANIFEST_FORMAT_INVALID');
+  }
+  if (!Array.isArray(manifest?.files)) {
+    errors.push('ARCHIVE_MANIFEST_FILES_INVALID');
+    return { valid: false, errors, files: 0 };
+  }
   const seen = new Set();
-  for (const entry of manifest.files ?? []) {
+  for (const entry of manifest.files) {
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry) ||
+      typeof entry.path !== 'string' || entry.path.length === 0 ||
+      entry.path.startsWith('/') || entry.path.split('/').includes('..')) {
+      errors.push('ARCHIVE_MANIFEST_ENTRY_INVALID');
+      continue;
+    }
     if (seen.has(entry.path)) errors.push(`ARCHIVE_DUPLICATE_PATH:${entry.path}`);
     seen.add(entry.path);
+    if (!Number.isInteger(entry.bytes) || entry.bytes < 0) {
+      errors.push(`ARCHIVE_BYTES_INVALID:${entry.path}`);
+    }
+    if (typeof entry.sha256 !== 'string' || !/^[0-9a-f]{64}$/.test(entry.sha256)) {
+      errors.push(`ARCHIVE_SHA256_INVALID:${entry.path}`);
+    }
     const payload = files.get(entry.path);
     if (!Buffer.isBuffer(payload)) {
       errors.push(`ARCHIVE_FILE_MISSING:${entry.path}`);
       continue;
     }
-    if (payload.byteLength !== entry.bytes) errors.push(`ARCHIVE_SIZE_DRIFT:${entry.path}`);
+    if (Number.isInteger(entry.bytes) && payload.byteLength !== entry.bytes) {
+      errors.push(`ARCHIVE_SIZE_DRIFT:${entry.path}`);
+    }
     const sha256 = createHash('sha256').update(payload).digest('hex');
-    if (sha256 !== entry.sha256) errors.push(`ARCHIVE_FILE_CHECKSUM_DRIFT:${entry.path}`);
+    if (/^[0-9a-f]{64}$/.test(entry.sha256 ?? '') && sha256 !== entry.sha256) {
+      errors.push(`ARCHIVE_FILE_CHECKSUM_DRIFT:${entry.path}`);
+    }
   }
   return { valid: errors.length === 0, errors, files: seen.size };
 }

@@ -49,6 +49,7 @@ test('archive manifest audit validates its checksum and every listed file', () =
   const payload = Buffer.from('atlas artifact');
   const entryHash = createHash('sha256').update(payload).digest('hex');
   const manifestPayload = Buffer.from(JSON.stringify({
+    format: 'triangle-packing-atlas-archive/v2',
     files: [{ path: 'public/example.json', bytes: payload.byteLength, sha256: entryHash }]
   }));
   const manifestHash = createHash('sha256').update(manifestPayload).digest('hex');
@@ -59,6 +60,28 @@ test('archive manifest audit validates its checksum and every listed file', () =
   assert.ok(report.errors.includes('ARCHIVE_MANIFEST_CHECKSUM_DRIFT'));
   assert.ok(report.errors.includes('ARCHIVE_SIZE_DRIFT:public/example.json'));
   assert.ok(report.errors.includes('ARCHIVE_FILE_CHECKSUM_DRIFT:public/example.json'));
+});
+
+test('archive manifest rejects unsafe paths and malformed metadata', () => {
+  const payload = Buffer.from(JSON.stringify({
+    format: 'wrong-format',
+    files: [
+      { path: '../secret', bytes: -1, sha256: 'not-a-hash' },
+      { path: 'public/data.json', bytes: 1.5, sha256: 'abc' }
+    ]
+  }));
+  const report = auditArchiveManifest(payload, 'invalid checksum', new Map());
+  assert.equal(report.valid, false);
+  assert.ok(report.errors.includes('ARCHIVE_MANIFEST_FORMAT_INVALID'));
+  assert.ok(report.errors.includes('ARCHIVE_MANIFEST_ENTRY_INVALID'));
+  assert.ok(report.errors.includes('ARCHIVE_BYTES_INVALID:public/data.json'));
+  assert.ok(report.errors.includes('ARCHIVE_SHA256_INVALID:public/data.json'));
+});
+
+test('archive manifest reports invalid JSON without throwing', () => {
+  const report = auditArchiveManifest(Buffer.from('{'), 'invalid checksum', new Map());
+  assert.equal(report.valid, false);
+  assert.ok(report.errors.includes('ARCHIVE_MANIFEST_INVALID_JSON'));
 });
 
 test('tarball inventory requires safe unique artifact paths', () => {

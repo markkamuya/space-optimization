@@ -15,6 +15,12 @@ const [manifestPayload, checksumPayload, canonicalManifestPayload] = await Promi
   readFile(new URL('../releases/2.0.0-canonical.json', import.meta.url))
 ]);
 const checksumFile = checksumPayload.toString('utf8');
+const manifestShape = auditArchiveManifest(manifestPayload, checksumFile, new Map());
+const unsafeManifest = manifestShape.errors.some(error =>
+  error === 'ARCHIVE_MANIFEST_INVALID_JSON' ||
+  error === 'ARCHIVE_MANIFEST_FILES_INVALID' ||
+  error === 'ARCHIVE_MANIFEST_ENTRY_INVALID');
+if (unsafeManifest) throw new Error(`Unsafe archive manifest: ${manifestShape.errors.join(', ')}`);
 const manifest = JSON.parse(manifestPayload);
 const files = new Map(await Promise.all(manifest.files.map(async entry => [
   entry.path,
