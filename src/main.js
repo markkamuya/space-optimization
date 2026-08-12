@@ -1,6 +1,7 @@
 import { ATLAS_RECORDS, OPEN_PROBLEMS, phaseAt } from './atlas/catalog.js';
 import { normalizeProblem } from './core/problem.js';
 import { renderPacking } from './rendering/canvas.js';
+import { escapeHtml, safeExternalUrl } from './ui/safeText.js';
 
 const $ = selector => document.querySelector(selector);
 const percent = value => `${(value * 100).toFixed(1)}%`;
@@ -181,8 +182,8 @@ function recordCard(record) {
   article.className = 'record-card';
   article.dataset.family = record.family;
   article.innerHTML = `
-    <div class="record-preview"><canvas width="540" height="340" aria-label="${record.title} packing"></canvas><span>${statusLabel(record)}</span></div>
-    <div class="record-meta"><small>${record.family} · ${record.problem.width.toFixed(1)} × ${record.problem.height.toFixed(1)}</small><h3>${record.title}</h3>
+    <div class="record-preview"><canvas width="540" height="340" aria-label="${escapeHtml(record.title)} packing"></canvas><span>${escapeHtml(statusLabel(record))}</span></div>
+    <div class="record-meta"><small>${escapeHtml(record.family)} · ${record.problem.width.toFixed(1)} × ${record.problem.height.toFixed(1)}</small><h3>${escapeHtml(record.title)}</h3>
       <dl><div><dt>Fill</dt><dd>${percent(record.verification.utilization)}</dd></div><div><dt>Pieces</dt><dd>${record.solution.placements.length}</dd></div><div><dt>Gap</dt><dd>${percent(record.verification.optimalityGap)}</dd></div></dl>
     </div>`;
   article.tabIndex = 0;
@@ -404,14 +405,14 @@ async function loadV1Context() {
     }
     if (literature) {
       $('#literature-grid').innerHTML = literature.entries.map(entry => `
-        <article><span>${entry.year} · ${entry.atlasRelation.replaceAll('-', ' ')}</span><h3>${entry.title}</h3><p>${entry.scope}</p>
-          <b>${entry.claimImportStatus.replaceAll('_', ' ')}</b><a href="${entry.primarySource}" target="_blank" rel="noreferrer">Primary source ↗</a></article>`).join('');
+        <article><span>${escapeHtml(entry.year)} · ${escapeHtml(entry.atlasRelation.replaceAll('-', ' '))}</span><h3>${escapeHtml(entry.title)}</h3><p>${escapeHtml(entry.scope)}</p>
+          <b>${escapeHtml(entry.claimImportStatus.replaceAll('_', ' '))}</b><a href="${escapeHtml(safeExternalUrl(entry.primarySource))}" target="_blank" rel="noreferrer">Primary source ↗</a></article>`).join('');
     }
     if (challenges) {
       $('#challenge-grid').replaceChildren();
       challenges.challenges.forEach(challenge => {
         const article = document.createElement('article');
-        article.innerHTML = `<span>${challenge.challengeId}</span><small>${challenge.status} · verified starting point</small><h3>${challenge.title}</h3><p>Fit more triangles or prove that the current result is close to the best possible.</p><b>${percent(challenge.baseline.utilization)} filled now · at most ${percent(challenge.baseline.upperBound)}</b><a href="${challenge.issueUrl}" target="_blank" rel="noreferrer">Open this challenge on GitHub ↗</a>`;
+        article.innerHTML = `<span>${escapeHtml(challenge.challengeId)}</span><small>${escapeHtml(challenge.status)} · verified starting point</small><h3>${escapeHtml(challenge.title)}</h3><p>Fit more triangles or prove that the current result is close to the best possible.</p><b>${percent(challenge.baseline.utilization)} filled now · at most ${percent(challenge.baseline.upperBound)}</b><a href="${escapeHtml(safeExternalUrl(challenge.issueUrl))}" target="_blank" rel="noreferrer">Open this challenge on GitHub ↗</a>`;
         $('#challenge-grid').append(article);
       });
       $('#open-count').textContent = String(challenges.challenges.length).padStart(2, '0');
