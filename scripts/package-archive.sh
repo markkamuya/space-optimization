@@ -14,6 +14,8 @@ tar -czf releases/triangle-packing-atlas-2.0.0.tgz \
   public/audit-v2.json \
   public/work-queue-v2.json \
   public/community-challenges-v2.json \
+  schemas/canonical-release.schema.json \
+  schemas/finite-domain-certificate.schema.json \
   releases/2.0.0-canonical.json \
   releases/2.0.0-archive-manifest.json \
   releases/2.0.0-archive-manifest.sha256 \
