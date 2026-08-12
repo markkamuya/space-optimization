@@ -17,15 +17,18 @@
     <link rel="stylesheet" href="./styles.css">
   </head>
   <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
     <header class="topbar">
-      <a class="brand" href="#top" aria-label="Triangle Packing Atlas home"><span class="brand-mark"></span><span>TPA</span></a>
-      <nav aria-label="Primary navigation">
-        <a href="#map">Map</a><a href="#families">Families</a><a href="#research">Research</a><a href="#challenges">Open problems</a>
+      <a class="brand" href="#top" aria-label="Triangle Packing Atlas home"><span class="brand-mark"></span><span>Triangle Packing Atlas</span></a>
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav">Menu</button>
+      <nav id="primary-nav" aria-label="Main navigation">
+        <a href="#map">Try the map</a><a href="#families">Browse packings</a><a href="#research">Search all results</a><a href="#challenges">Open challenges</a>
       </nav>
-      <a class="contribute-link" href="#contribute">Contribute ↗</a>
+      <a class="contribute-link" href="#contribute">How to contribute</a>
     </header>
 
-    <main id="top">
+    <main id="main-content" tabindex="-1">
+      <span id="top" aria-hidden="true"></span>
       <section class="hero">
         <div>
           <p class="kicker">OPEN TRIANGLE-PACKING DATA</p>
@@ -100,7 +103,7 @@
           <div><p class="kicker">FEATURED PACKINGS</p><h2>Open a result to inspect it.</h2></div>
           <div class="download-stack"><a href="/atlas-v1.json" download class="download-link">Curated release ↓</a><a href="/atlas-research-v2.json" download class="download-link">304-record research release ↓</a></div>
         </div>
-        <div id="record-grid" class="record-grid"></div>
+        <div id="record-grid" class="record-grid" aria-live="polite"></div>
       </section>
 
       <section id="compare" class="compare-section">
@@ -128,8 +131,8 @@
           <label>Evidence<select id="research-evidence"><option value="all">All evidence</option><option value="proven_optimal">Proven optimal</option><option value="verified_best_known">Verified best known</option></select></label>
           <div class="research-downloads"><a href="/atlas-v2.json" download>JSON ↓</a><a href="/atlas-v2.csv" download>CSV ↓</a><a href="/audit-v2.json" download>AUDIT ↓</a><a href="/work-queue-v2.json" download>WORK QUEUE ↓</a></div>
         </div>
-        <div class="registry-head"><span>Experiment</span><span>Pattern</span><span>Evidence</span><span>Fill / gap</span></div>
-        <div id="research-results" class="registry-results"></div>
+        <div class="registry-head"><span>Triangle and rectangle</span><span>Packing pattern</span><span>What we know</span><span>Filled / possible gain</span></div>
+        <div id="research-results" class="registry-results" aria-live="polite" aria-busy="true"></div>
         <div class="registry-footer"><span id="research-result-count">Loading canonical release…</span><button id="research-more" type="button">Show more records</button></div>
         <div class="transition-panel">
           <div><p class="kicker">WHERE PATTERNS CHANGE</p><h3>Changes seen between neighboring test cases.</h3></div>
@@ -193,7 +196,7 @@
     </main>
 
     <dialog id="record-dialog">
-      <button class="dialog-close" aria-label="Close record">×</button>
+      <button class="dialog-close" type="button" aria-label="Close result details">×</button>
       <div id="record-detail"></div>
     </dialog>
     <footer><span>TRIANGLE PACKING ATLAS · CC BY 4.0</span><span>Published claims are independently verified · open regions remain explicit</span></footer>

@@ -9,6 +9,8 @@ let selectedPhase = phaseAt(60, 1.5);
 let researchRelease = null;
 let canonicalRelease = null;
 let researchLimit = 24;
+const navToggle = $('#nav-toggle');
+const primaryNav = $('#primary-nav');
 
 $('#record-count').textContent = String(ATLAS_RECORDS.length).padStart(2, '0');
 $('#open-count').textContent = String(OPEN_PROBLEMS.length).padStart(2, '0');
@@ -228,11 +230,13 @@ function openRecord(record) {
 
 function renderFilters() {
   const filters = $('#family-filters');
+  filters.replaceChildren();
   ['all', 'right', 'equilateral', 'isosceles'].forEach(family => {
     const button = document.createElement('button');
     button.type = 'button';
     button.textContent = family;
     button.className = family === familyFilter ? 'active' : '';
+    button.setAttribute('aria-pressed', String(family === familyFilter));
     button.addEventListener('click', () => {
       familyFilter = family;
       renderFilters();
@@ -346,6 +350,7 @@ function openResearchRecord(record) {
 
 function renderResearchExplorer() {
   if (!canonicalRelease) return;
+  $('#research-results').setAttribute('aria-busy', 'false');
   const records = filteredResearchRecords();
   const visible = records.slice(0, researchLimit);
   $('#research-summary').innerHTML = [
@@ -431,6 +436,16 @@ $('#research-more').addEventListener('click', () => {
 $('#record-dialog .dialog-close').addEventListener('click', () => $('#record-dialog').close());
 $('#record-dialog').addEventListener('click', event => {
   if (event.target === $('#record-dialog')) $('#record-dialog').close();
+});
+navToggle.addEventListener('click', () => {
+  const open = navToggle.getAttribute('aria-expanded') === 'true';
+  navToggle.setAttribute('aria-expanded', String(!open));
+  primaryNav.classList.toggle('open', !open);
+});
+primaryNav.addEventListener('click', event => {
+  if (!event.target.closest('a')) return;
+  navToggle.setAttribute('aria-expanded', 'false');
+  primaryNav.classList.remove('open');
 });
 window.addEventListener('resize', updatePhase);
 
