@@ -55,7 +55,7 @@ export function auditArchiveManifest(manifestPayload, checksumFile, files) {
   return { valid: errors.length === 0, errors, files: seen.size };
 }
 
-export function auditTarInventory(entries, requiredPaths) {
+export function auditTarInventory(entries, requiredPaths, options = {}) {
   const errors = [];
   const counts = new Map();
   for (const path of entries) {
@@ -69,6 +69,12 @@ export function auditTarInventory(entries, requiredPaths) {
     const count = counts.get(path) ?? 0;
     if (count === 0) errors.push(`TARBALL_FILE_MISSING:${path}`);
     if (count > 1) errors.push(`TARBALL_DUPLICATE_PATH:${path}`);
+  }
+  if (options.exact === true) {
+    const allowed = new Set(requiredPaths);
+    for (const path of counts.keys()) {
+      if (!allowed.has(path)) errors.push(`TARBALL_UNDECLARED_PATH:${path}`);
+    }
   }
   return { valid: errors.length === 0, errors, entries: entries.length };
 }

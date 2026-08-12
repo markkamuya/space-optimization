@@ -72,6 +72,16 @@ test('tarball inventory requires safe unique artifact paths', () => {
   assert.ok(report.errors.includes('TARBALL_FILE_MISSING:public/missing.json'));
 });
 
+test('strict tarball inventory rejects undeclared payloads', () => {
+  const report = auditTarInventory(
+    ['public/data.json', 'unreviewed.bin'],
+    ['public/data.json'],
+    { exact: true }
+  );
+  assert.equal(report.valid, false);
+  assert.ok(report.errors.includes('TARBALL_UNDECLARED_PATH:unreviewed.bin'));
+});
+
 test('archive audit compares embedded control files byte-for-byte', () => {
   const expected = new Map([
     ['releases/manifest.json', Buffer.from('manifest')],

@@ -29,9 +29,18 @@ const requiredPaths = [
   'public/atlas-v2.sha256',
   'releases/2.0.0-canonical.json',
   'releases/2.0.0-archive-manifest.json',
-  'releases/2.0.0-archive-manifest.sha256'
+  'releases/2.0.0-archive-manifest.sha256',
+  'CITATION.cff',
+  '.zenodo.json',
+  'codemeta.json',
+  'DATA_LICENSE.md',
+  'CHANGELOG.md',
+  'CONTRIBUTORS.json',
+  'GOVERNANCE.md',
+  'docs/COMMUNITY_CHALLENGE_V2.md',
+  'docs/RELEASE_POLICY.md'
 ];
-const inventory = auditTarInventory(entries, requiredPaths);
+const inventory = auditTarInventory(entries, requiredPaths, { exact: true });
 const archivedFiles = new Map();
 for (const entry of manifest.files) {
   const extracted = spawnSync('tar', ['-xOzf', archivePath, entry.path], {
