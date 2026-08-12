@@ -72,3 +72,16 @@ export function auditTarInventory(entries, requiredPaths) {
   }
   return { valid: errors.length === 0, errors, entries: entries.length };
 }
+
+export function auditArchivedControlFiles(archived, expected) {
+  const errors = [];
+  for (const [path, payload] of expected) {
+    const archivedPayload = archived.get(path);
+    if (!Buffer.isBuffer(archivedPayload)) {
+      errors.push(`TARBALL_CONTROL_FILE_MISSING:${path}`);
+    } else if (!archivedPayload.equals(payload)) {
+      errors.push(`TARBALL_CONTROL_FILE_DRIFT:${path}`);
+    }
+  }
+  return { valid: errors.length === 0, errors, files: expected.size };
+}

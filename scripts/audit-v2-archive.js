@@ -1,13 +1,19 @@
 import { readFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { auditArchiveManifest, auditTarInventory } from '../src/research/artifacts.js';
+import {
+  auditArchivedControlFiles,
+  auditArchiveManifest,
+  auditTarInventory
+} from '../src/research/artifacts.js';
 
 const manifestUrl = new URL('../releases/2.0.0-archive-manifest.json', import.meta.url);
-const [manifestPayload, checksumFile] = await Promise.all([
+const [manifestPayload, checksumPayload, canonicalManifestPayload] = await Promise.all([
   readFile(manifestUrl),
-  readFile(new URL('../releases/2.0.0-archive-manifest.sha256', import.meta.url), 'utf8')
+  readFile(new URL('../releases/2.0.0-archive-manifest.sha256', import.meta.url)),
+  readFile(new URL('../releases/2.0.0-canonical.json', import.meta.url))
 ]);
+const checksumFile = checksumPayload.toString('utf8');
 const manifest = JSON.parse(manifestPayload);
 const files = new Map(await Promise.all(manifest.files.map(async entry => [
   entry.path,
@@ -34,11 +40,25 @@ for (const entry of manifest.files) {
   if (extracted.status === 0) archivedFiles.set(entry.path, extracted.stdout);
 }
 const archivedManifestFiles = auditArchiveManifest(manifestPayload, checksumFile, archivedFiles);
+const controlPaths = new Map([
+  ['releases/2.0.0-archive-manifest.json', manifestPayload],
+  ['releases/2.0.0-archive-manifest.sha256', checksumPayload],
+  ['releases/2.0.0-canonical.json', canonicalManifestPayload]
+]);
+const archivedControls = new Map();
+for (const path of controlPaths.keys()) {
+  const extracted = spawnSync('tar', ['-xOzf', archivePath, path], {
+    maxBuffer: 32 * 1024 * 1024
+  });
+  if (extracted.status === 0) archivedControls.set(path, extracted.stdout);
+}
+const controls = auditArchivedControlFiles(archivedControls, controlPaths);
 const combined = {
-  valid: report.valid && inventory.valid && archivedManifestFiles.valid,
+  valid: report.valid && inventory.valid && archivedManifestFiles.valid && controls.valid,
   manifest: report,
   inventory,
-  archivedFiles: archivedManifestFiles
+  archivedFiles: archivedManifestFiles,
+  controls
 };
 console.log(JSON.stringify(combined, null, 2));
 if (!combined.valid) process.exitCode = 1;

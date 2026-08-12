@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 
 import {
+  auditArchivedControlFiles,
   auditArchiveManifest,
   auditArtifactChecksum,
   auditReleaseManifest,
@@ -69,4 +70,20 @@ test('tarball inventory requires safe unique artifact paths', () => {
   assert.ok(report.errors.includes('TARBALL_DUPLICATE_PATH:public/data.json'));
   assert.ok(report.errors.includes('TARBALL_UNSAFE_PATH:../escape.json'));
   assert.ok(report.errors.includes('TARBALL_FILE_MISSING:public/missing.json'));
+});
+
+test('archive audit compares embedded control files byte-for-byte', () => {
+  const expected = new Map([
+    ['releases/manifest.json', Buffer.from('manifest')],
+    ['releases/manifest.sha256', Buffer.from('checksum')]
+  ]);
+  const archived = new Map([
+    ['releases/manifest.json', Buffer.from('manifest')],
+    ['releases/manifest.sha256', Buffer.from('tampered')]
+  ]);
+  const report = auditArchivedControlFiles(archived, expected);
+  assert.equal(report.valid, false);
+  assert.deepEqual(report.errors, [
+    'TARBALL_CONTROL_FILE_DRIFT:releases/manifest.sha256'
+  ]);
 });
