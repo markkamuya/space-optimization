@@ -32,6 +32,11 @@ def validate_record(record):
         value = problem.get(key, 0)
         if not finite_number(value) or value < 0:
             errors.append(f"invalid_problem_{key}")
+    if (finite_number(problem.get("width")) and finite_number(problem.get("height"))
+            and finite_number(problem.get("margin", 0))
+            and (problem["width"] <= problem.get("margin", 0) * 2
+                 or problem["height"] <= problem.get("margin", 0) * 2)):
+        errors.append("margin_eliminates_usable_area")
     for key in ("allowRotation", "allowReflection"):
         if key in problem and not isinstance(problem[key], bool):
             errors.append(f"invalid_problem_{key}")

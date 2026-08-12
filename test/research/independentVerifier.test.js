@@ -150,6 +150,24 @@ test('independent verifier computes utilization over the usable margin area', as
   assert.equal(result.report.passed, 1);
 });
 
+test('independent verifier rejects margins that eliminate usable area', async () => {
+  const result = await crossVerify({
+    id: 'impossible-margin-fixture',
+    problem: {
+      width: 2,
+      height: 2,
+      margin: 1,
+      kerf: 0,
+      triangles: [{ id: 'small', sides: [0.5, 0.5, 0.5] }]
+    },
+    solution: { placements: [{ x: 1, y: 1, angle: 0, reflect: false }] },
+    verification: { fingerprint: 'tpa1-invalid', utilization: 0 }
+  });
+  assert.equal(result.status, 1);
+  assert.ok(result.report.failures[0].errors.includes('margin_eliminates_usable_area'));
+  assert.ok(!result.report.failures[0].errors.some(error => error.startsWith('verifier_exception:')));
+});
+
 test('independent verifier enforces nonzero kerf between pieces', async () => {
   const problem = normalizeProblem({
     name: 'kerf fixture',
