@@ -245,7 +245,9 @@ def verify(record):
                 errors.append(f"overlap:{left}:{right}")
             elif kerf > 0 and polygon_distance(placed[left], placed[right]) < kerf - EPSILON:
                 errors.append(f"spacing_violation:{left}:{right}")
-    utilization = sum(area(template) for template in templates) / (problem["width"] * problem["height"])
+    usable_area = ((problem["width"] - margin * 2) *
+                   (problem["height"] - margin * 2))
+    utilization = sum(area(template) for template in templates) / usable_area
     actual_fingerprint = fingerprint(record)
     if actual_fingerprint != record["verification"]["fingerprint"]:
         errors.append("fingerprint_mismatch")

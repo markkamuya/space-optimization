@@ -119,6 +119,37 @@ test('independent verifier enforces the usable margin boundary', async () => {
   assert.ok(result.report.failures[0].errors.includes('out_of_bounds:0'));
 });
 
+test('independent verifier computes utilization over the usable margin area', async () => {
+  const problem = normalizeProblem({
+    name: 'margin utilization fixture',
+    width: 4,
+    height: 4,
+    margin: 1,
+    kerf: 0,
+    fillSheet: false,
+    maxPieces: 1,
+    allowRotation: true,
+    allowReflection: false,
+    seed: 'cross-verifier-margin-utilization',
+    triangles: [{ id: 'right', sides: [1, 1, Math.SQRT2] }]
+  });
+  const placements = [{ x: 1, y: 1, angle: 0, reflect: false }];
+  const serialized = serializableProblem(problem);
+  const verification = verifyPacking(serialized, placements);
+  assert.equal(verification.valid, true);
+  const result = await crossVerify({
+    id: 'margin-utilization-fixture',
+    problem: serialized,
+    solution: { placements },
+    verification: {
+      fingerprint: packingFingerprint(serialized, placements),
+      utilization: verification.metrics.utilization
+    }
+  });
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.equal(result.report.passed, 1);
+});
+
 test('independent verifier enforces nonzero kerf between pieces', async () => {
   const problem = normalizeProblem({
     name: 'kerf fixture',
