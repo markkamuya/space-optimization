@@ -6,6 +6,7 @@ import {
   auditArchiveManifest,
   auditTarInventory
 } from '../src/research/artifacts.js';
+import { V2_ARCHIVE_PATHS } from '../src/research/archiveInventory.js';
 
 const manifestUrl = new URL('../releases/2.0.0-archive-manifest.json', import.meta.url);
 const [manifestPayload, checksumPayload, canonicalManifestPayload] = await Promise.all([
@@ -24,23 +25,7 @@ const archivePath = fileURLToPath(new URL('../releases/triangle-packing-atlas-2.
 const listing = spawnSync('tar', ['-tzf', archivePath], { encoding: 'utf8' });
 if (listing.status !== 0) throw new Error(`Unable to list archive: ${listing.stderr}`);
 const entries = listing.stdout.trim().split('\n').filter(Boolean);
-const requiredPaths = [
-  ...manifest.files.map(entry => entry.path),
-  'public/atlas-v2.sha256',
-  'releases/2.0.0-canonical.json',
-  'releases/2.0.0-archive-manifest.json',
-  'releases/2.0.0-archive-manifest.sha256',
-  'CITATION.cff',
-  '.zenodo.json',
-  'codemeta.json',
-  'DATA_LICENSE.md',
-  'CHANGELOG.md',
-  'CONTRIBUTORS.json',
-  'GOVERNANCE.md',
-  'docs/COMMUNITY_CHALLENGE_V2.md',
-  'docs/RELEASE_POLICY.md'
-];
-const inventory = auditTarInventory(entries, requiredPaths, { exact: true });
+const inventory = auditTarInventory(entries, V2_ARCHIVE_PATHS, { exact: true });
 const archivedFiles = new Map();
 for (const entry of manifest.files) {
   const extracted = spawnSync('tar', ['-xOzf', archivePath, entry.path], {
