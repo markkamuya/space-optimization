@@ -217,14 +217,14 @@ function openRecord(record, trigger = document.activeElement) {
   dialogTrigger = trigger;
   const detail = $('#record-detail');
   detail.innerHTML = `
-    <div class="detail-header"><div><p class="kicker">${record.family} / ${statusLabel(record)}</p><h2>${record.title}</h2><p>${record.pattern}. Fingerprint <code>${record.verification.fingerprint}</code></p></div>
+    <div class="detail-header"><div><p class="kicker">${escapeHtml(record.family)} / ${escapeHtml(statusLabel(record))}</p><h2>${escapeHtml(record.title)}</h2><p>${escapeHtml(record.pattern)}. Fingerprint <code>${escapeHtml(record.verification.fingerprint)}</code></p></div>
       <div class="detail-stat"><b>${percent(record.verification.utilization)}</b><span>verified fill</span></div></div>
-    <canvas width="1000" height="560" aria-label="${record.title} detailed packing"></canvas>
+    <canvas width="1000" height="560" aria-label="${escapeHtml(record.title)} detailed packing"></canvas>
     <div class="detail-grid">
       <section><h3>Filled and empty space</h3><div class="detail-waste"><span style="width:${percent(record.verification.utilization)}"></span><i style="width:${percent(1 - record.verification.utilization)}"></i></div>
         <dl><div><dt>Filled by triangles</dt><dd>${percent(record.verification.utilization)}</dd></div><div><dt>Empty space</dt><dd>${percent(1 - record.verification.utilization)}</dd></div><div><dt>Overlap</dt><dd>0.0%</dd></div></dl></section>
       <section><h3>How the result improved</h3><div class="timeline">${record.history.map(point => `<div><b style="height:${Math.max(8, point.utilization * 100)}%"></b><span>${point.year}</span><small>${percent(point.utilization)}</small></div>`).join('')}</div></section>
-      <section><h3>Source and verification</h3><p>Created by <code>${record.provenance.generator}</code> and checked independently using the Atlas geometry rules.</p><a href="/atlas-v1.json" download>Download coordinates ↓</a></section>
+      <section><h3>Source and verification</h3><p>Created by <code>${escapeHtml(record.provenance.generator)}</code> and checked independently using the Atlas geometry rules.</p><a href="/atlas-v1.json" download>Download coordinates ↓</a></section>
     </div>`;
   const dialog = $('#record-dialog');
   dialog.showModal();
@@ -256,7 +256,7 @@ function renderFilters() {
 function renderChallenges() {
   OPEN_PROBLEMS.forEach((problem, index) => {
     const article = document.createElement('article');
-    article.innerHTML = `<span>OP-${String(index + 1).padStart(2, '0')}</span><small>${problem.family} · ${problem.difficulty}</small><h3>${problem.title}</h3><p>${problem.question}</p><b>${problem.shape} / ${problem.ratio}:1</b>`;
+    article.innerHTML = `<span>OP-${String(index + 1).padStart(2, '0')}</span><small>${escapeHtml(problem.family)} · ${escapeHtml(problem.difficulty)}</small><h3>${escapeHtml(problem.title)}</h3><p>${escapeHtml(problem.question)}</p><b>${escapeHtml(problem.shape)} / ${escapeHtml(problem.ratio)}:1</b>`;
     $('#challenge-grid').append(article);
   });
 }
@@ -265,9 +265,9 @@ function compare() {
   const left = ATLAS_RECORDS.find(record => record.id === $('#compare-a').value);
   const right = ATLAS_RECORDS.find(record => record.id === $('#compare-b').value);
   $('#comparison').innerHTML = [left, right].map(record => `
-    <article><span>${statusLabel(record)}</span><h3>${record.title}</h3>
+    <article><span>${escapeHtml(statusLabel(record))}</span><h3>${escapeHtml(record.title)}</h3>
       <div class="comparison-bar"><i style="width:${percent(record.verification.utilization)}"></i></div>
-      <dl><div><dt>Verified fill</dt><dd>${percent(record.verification.utilization)}</dd></div><div><dt>Boundary waste</dt><dd>${percent(1 - record.verification.utilization)}</dd></div><div><dt>Pattern</dt><dd>${record.pattern}</dd></div></dl>
+      <dl><div><dt>Verified fill</dt><dd>${percent(record.verification.utilization)}</dd></div><div><dt>Boundary waste</dt><dd>${percent(1 - record.verification.utilization)}</dd></div><div><dt>Pattern</dt><dd>${escapeHtml(record.pattern)}</dd></div></dl>
     </article>`).join('');
 }
 
@@ -287,7 +287,7 @@ function renderLeaderboard() {
     .sort((left, right) => right.verification.utilization - left.verification.utilization)
     .slice(0, 8);
   $('#leaderboard').innerHTML = leaders.map((record, index) => `
-    <article><b>${String(index + 1).padStart(2, '0')}</b><div><small>${record.family} · ${record.parameters.apexAngle}° · ${record.parameters.rectangleRatio}:1</small><h3>${record.pattern}</h3><span>${record.provenance.contributor}</span></div>
+    <article><b>${String(index + 1).padStart(2, '0')}</b><div><small>${escapeHtml(record.family)} · ${record.parameters.apexAngle}° · ${record.parameters.rectangleRatio}:1</small><h3>${escapeHtml(record.pattern)}</h3><span>${escapeHtml(record.provenance.contributor)}</span></div>
       <strong>${percent(record.verification.utilization)}</strong><em>gap ${percent(record.bounds.optimalityGap)}</em></article>`).join('');
 }
 
@@ -340,13 +340,13 @@ function openResearchRecord(record) {
   dialogReturnHash = '#research';
   const detail = $('#record-detail');
   detail.innerHTML = `
-    <div class="detail-header"><div><p class="kicker">${record.family} / ${record.evidence.state.replaceAll('_', ' ')}</p><h2>${record.experimentId}</h2><p>${record.evidence.claim}</p></div>
+    <div class="detail-header"><div><p class="kicker">${escapeHtml(record.family)} / ${escapeHtml(record.evidence.state.replaceAll('_', ' '))}</p><h2>${escapeHtml(record.experimentId)}</h2><p>${escapeHtml(record.evidence.claim)}</p></div>
       <div class="detail-stat"><b>${percent(record.verification.utilization)}</b><span>verified lower bound</span></div></div>
-    <canvas width="1000" height="560" aria-label="${record.id} packing coordinates"></canvas>
+    <canvas width="1000" height="560" aria-label="${escapeHtml(record.id)} packing coordinates"></canvas>
     <div class="detail-grid">
-      <section><h3>Verification certificate</h3><p><code>${record.verification.certificate}</code></p><dl><div><dt>Pieces</dt><dd>${record.verification.pieceCount}</dd></div><div><dt>Overlap</dt><dd>0</dd></div><div><dt>Verifier</dt><dd>${record.verification.verifier}</dd></div></dl></section>
-      <section><h3>Best result and proven limit</h3><dl><div><dt>Verified fill</dt><dd>${percent(record.bounds.lowerBound)}</dd></div><div><dt>Proven maximum</dt><dd>${percent(record.bounds.upperBound)}</dd></div><div><dt>Room for improvement</dt><dd>${percent(record.bounds.optimalityGap)}</dd></div></dl><p>Priority for checking empty boundary space: ${record.descriptors.boundaryGapAnalysis.priority}.</p></section>
-      <section><h3>Reproduce this result</h3><p><code>${record.reproducibility.command}</code></p><p>Seed <code>${record.reproducibility.seed}</code><br>Fingerprint <code>${record.verification.fingerprint}</code></p><a href="/atlas-v2.json" download>Download coordinates ↓</a></section>
+      <section><h3>Verification certificate</h3><p><code>${escapeHtml(record.verification.certificate)}</code></p><dl><div><dt>Pieces</dt><dd>${record.verification.pieceCount}</dd></div><div><dt>Overlap</dt><dd>0</dd></div><div><dt>Verifier</dt><dd>${escapeHtml(record.verification.verifier)}</dd></div></dl></section>
+      <section><h3>Best result and proven limit</h3><dl><div><dt>Verified fill</dt><dd>${percent(record.bounds.lowerBound)}</dd></div><div><dt>Proven maximum</dt><dd>${percent(record.bounds.upperBound)}</dd></div><div><dt>Room for improvement</dt><dd>${percent(record.bounds.optimalityGap)}</dd></div></dl><p>Priority for checking empty boundary space: ${escapeHtml(record.descriptors.boundaryGapAnalysis.priority)}.</p></section>
+      <section><h3>Reproduce this result</h3><p><code>${escapeHtml(record.reproducibility.command)}</code></p><p>Seed <code>${escapeHtml(record.reproducibility.seed)}</code><br>Fingerprint <code>${escapeHtml(record.verification.fingerprint)}</code></p><a href="/atlas-v2.json" download>Download coordinates ↓</a></section>
     </div>`;
   $('#record-dialog').showModal();
   requestAnimationFrame(() => renderPacking(
@@ -370,10 +370,10 @@ function renderResearchExplorer() {
     ['Open compute tasks', canonicalRelease.coverage.openDistributedTasks]
   ].map(([label, value]) => `<div><b>${value}</b><span>${label}</span></div>`).join('');
   $('#research-results').innerHTML = visible.map(record => `
-    <button type="button" data-record="${record.id}">
-      <span><b>${researchRecordLabel(record)}</b><small>${record.experimentId}</small></span>
-      <span>${record.pattern}</span>
-      <span><i class="${record.evidence.state}">${record.evidence.state.replaceAll('_', ' ')}</i></span>
+    <button type="button" data-record="${escapeHtml(record.id)}">
+      <span><b>${escapeHtml(researchRecordLabel(record))}</b><small>${escapeHtml(record.experimentId)}</small></span>
+      <span>${escapeHtml(record.pattern)}</span>
+      <span><i class="${escapeHtml(record.evidence.state)}">${escapeHtml(record.evidence.state.replaceAll('_', ' '))}</i></span>
       <span><b>${percent(record.verification.utilization)}</b><small>gap ${percent(record.bounds.optimalityGap)}</small></span>
     </button>`).join('');
   $('#research-results').querySelectorAll('[data-record]').forEach(button => {
@@ -383,7 +383,7 @@ function renderResearchExplorer() {
   $('#research-result-count').textContent = `Showing ${visible.length} of ${records.length} matching records`;
   $('#research-more').hidden = visible.length >= records.length;
   $('#transition-list').innerHTML = canonicalRelease.transitions.slice(0, 8).map(transition => `
-    <article><b>${transition.apexAngle}°</b><span>${transition.betweenRatios.join('–')}:1</span><p>${transition.from} → ${transition.to}</p><small>${transition.evidence.join(' / ')}</small></article>`).join('') ||
+    <article><b>${transition.apexAngle}°</b><span>${transition.betweenRatios.join('–')}:1</span><p>${escapeHtml(transition.from)} → ${escapeHtml(transition.to)}</p><small>${escapeHtml(transition.evidence.join(' / '))}</small></article>`).join('') ||
     '<p>No pattern transition was observed at this sampling resolution.</p>';
   const match = location.hash.match(/^#research\?record=([^&]+)/);
   if (match) {
