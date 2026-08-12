@@ -28,45 +28,45 @@
     <main id="top">
       <section class="hero">
         <div>
-          <p class="kicker">OPEN COMPUTATIONAL GEOMETRY · CANONICAL ATLAS V2</p>
-          <h1>A living map of<br><em>what fits.</em></h1>
+          <p class="kicker">OPEN TRIANGLE-PACKING DATA</p>
+          <h1>See how triangles<br><em>fit in rectangles.</em></h1>
         </div>
         <div class="hero-copy">
-          <p>Verified constructions, best-known records, and unsolved regions—mapped across triangle shape and container geometry.</p>
+          <p>Choose a triangle shape and rectangle size. Explore verified packings, compare results, and find problems that still need better solutions.</p>
           <div class="hero-facts">
             <span><b id="record-count">—</b> verified records</span>
             <span><b id="family-count">04</b> family slices</span>
             <span><b id="open-count">—</b> open problems</span>
           </div>
-          <a class="primary-action" href="#map">Explore the phase map <span>↓</span></a>
+          <a class="primary-action" href="#map">Try the packing map <span>↓</span></a>
         </div>
       </section>
 
       <section id="map" class="map-section">
         <div class="section-intro">
-          <div><p class="kicker">THE SIGNATURE VIEW</p><h2>Where patterns change.</h2></div>
-          <p>Move through shape space. Each cell names the dominant observed construction and its evidence level—not a universal claim of optimality.</p>
+          <div><p class="kicker">INTERACTIVE PACKING MAP</p><h2>Change the shape. See what works best.</h2></div>
+          <p>Adjust the triangle angle and rectangle ratio. The map shows the best verified pattern in our sampled data. It does not claim that every result is optimal.</p>
         </div>
         <div class="map-workspace">
           <aside class="map-controls">
             <label>
-              <span><b>Triangle apex</b><output id="angle-output">60°</output></span>
+              <span><b>Top angle of triangle</b><output id="angle-output">60°</output></span>
               <input id="angle" type="range" min="35" max="110" value="60" step="1">
             </label>
             <label>
-              <span><b>Rectangle ratio</b><output id="ratio-output">1.50:1</output></span>
+              <span><b>Rectangle width-to-height ratio</b><output id="ratio-output">1.50:1</output></span>
               <input id="ratio" type="range" min="0.75" max="3" value="1.5" step="0.05">
             </label>
             <div class="shape-readout">
               <span id="phase-dot"></span>
-              <div><small>DOMINANT PATTERN</small><strong id="phase-name">—</strong><p id="phase-note"></p></div>
+              <div><small>BEST PATTERN FOUND</small><strong id="phase-name">—</strong><p id="phase-note"></p></div>
             </div>
             <dl>
               <div><dt>Evidence</dt><dd id="phase-status">—</dd></div>
-              <div><dt>Observed fill</dt><dd id="phase-fill">—</dd></div>
-              <div><dt>Boundary loss</dt><dd id="phase-waste">—</dd></div>
-              <div><dt>Rigorous gap</dt><dd id="phase-gap">—</dd></div>
-              <div><dt>Nearest sample</dt><dd id="phase-distance">—</dd></div>
+              <div><dt>Rectangle filled</dt><dd id="phase-fill">—</dd></div>
+              <div><dt>Empty space</dt><dd id="phase-waste">—</dd></div>
+              <div><dt>Room for improvement</dt><dd id="phase-gap">—</dd></div>
+              <div><dt>Distance from sampled case</dt><dd id="phase-distance">—</dd></div>
             </dl>
           </aside>
           <div class="phase-panel">
@@ -75,29 +75,29 @@
             <div class="axis-label">RECTANGLE ASPECT RATIO → · <span id="resolution-label">loading computed release…</span></div>
           </div>
           <article class="live-pattern">
-            <div class="panel-heading"><span>LIVE SLICE</span><b id="live-label">60° / 1.50:1</b></div>
+            <div class="panel-heading"><span>PACKING PREVIEW</span><b id="live-label">60° / 1.50:1</b></div>
             <canvas id="live-canvas" width="720" height="520" aria-label="Live packing pattern"></canvas>
             <div class="waste-bar"><span id="used-bar"></span><i id="waste-bar"></i></div>
-            <div class="waste-legend"><span>triangle area</span><span>boundary waste</span></div>
+            <div class="waste-legend"><span>filled by triangles</span><span>empty space</span></div>
           </article>
         </div>
       </section>
 
       <section id="families" class="family-section">
         <div class="section-intro">
-          <div><p class="kicker">FAMILY EXPLORER</p><h2>Three starting territories.</h2></div>
+          <div><p class="kicker">BROWSE BY TRIANGLE</p><h2>Choose a triangle family.</h2></div>
           <div id="family-filters" class="filters" aria-label="Filter records"></div>
         </div>
         <div class="family-grid">
-          <article data-family-card="right"><span>01</span><i class="triangle-icon right"></i><h3>Right</h3><p>Exact rectangular pairings supply the Atlas’s known-optimum controls.</p><b>PROVEN CONTROLS</b></article>
-          <article data-family-card="equilateral"><span>02</span><i class="triangle-icon equilateral"></i><h3>Equilateral</h3><p>Periodic interiors expose the finite boundary-loss problem most clearly.</p><b>VERIFIED SLICES</b></article>
-          <article data-family-card="isosceles"><span>03</span><i class="triangle-icon isosceles"></i><h3>Isosceles</h3><p>Right-isosceles controls anchor a much larger, mostly open shape family.</p><b>CONTROL + OPEN</b></article>
+          <article data-family-card="right"><span>01</span><i class="triangle-icon right"></i><h3>Right triangles</h3><p>Includes exact packings that fill the whole rectangle.</p><b>SOME RESULTS PROVEN BEST</b></article>
+          <article data-family-card="equilateral"><span>02</span><i class="triangle-icon equilateral"></i><h3>Equilateral triangles</h3><p>Shows how much empty space remains near rectangle edges.</p><b>VERIFIED RESULTS</b></article>
+          <article data-family-card="isosceles"><span>03</span><i class="triangle-icon isosceles"></i><h3>Isosceles triangles</h3><p>Covers many shapes; most cases can still be improved.</p><b>MOSTLY OPEN</b></article>
         </div>
       </section>
 
       <section id="records" class="records-section">
         <div class="section-intro">
-          <div><p class="kicker">VERIFIED RECORDS</p><h2>Inspect the evidence.</h2></div>
+          <div><p class="kicker">FEATURED PACKINGS</p><h2>Open a result to inspect it.</h2></div>
           <div class="download-stack"><a href="/atlas-v1.json" download class="download-link">Curated release ↓</a><a href="/atlas-research-v2.json" download class="download-link">304-record research release ↓</a></div>
         </div>
         <div id="record-grid" class="record-grid"></div>
@@ -105,8 +105,8 @@
 
       <section id="compare" class="compare-section">
         <div class="section-intro">
-          <div><p class="kicker">PATTERN COMPARISON</p><h2>Same question, different structure.</h2></div>
-          <p>Compare records by verified utilization, optimality gap, and where unused area accumulates.</p>
+          <div><p class="kicker">COMPARE TWO RESULTS</p><h2>See which packing uses more space.</h2></div>
+          <p>Choose two packings to compare how much of the rectangle they fill, how much remains empty, and which pattern they use.</p>
         </div>
         <div class="compare-controls">
           <label>Pattern A<select id="compare-a"></select></label>
@@ -118,12 +118,12 @@
 
       <section id="research" class="research-explorer">
         <div class="section-intro">
-          <div><p class="kicker">CANONICAL RECORD REGISTRY</p><h2>Query the evidence,<br>not a gallery.</h2></div>
-          <p>Search every computed experiment by family, pattern, evidence state, angle, or identifier. Each result carries coordinates, a certificate, provenance, a bound, and a one-command reproduction path.</p>
+          <div><p class="kicker">ALL VERIFIED RESULTS</p><h2>Search the full dataset.</h2></div>
+          <p>Filter by triangle family or evidence level. Open any result to see its coordinates, verification details, known bounds, and reproduction command.</p>
         </div>
         <div class="research-summary" id="research-summary" aria-live="polite"></div>
         <div class="research-toolbar">
-          <label>Search records<input id="research-search" type="search" placeholder="e.g. equilateral, apex-60, vertical"></label>
+          <label>Search results<input id="research-search" type="search" placeholder="Try: equilateral, 60°, or vertical"></label>
           <label>Family<select id="research-family"><option value="all">All families</option><option>right</option><option>equilateral</option><option>isosceles</option><option>scalene</option></select></label>
           <label>Evidence<select id="research-evidence"><option value="all">All evidence</option><option value="proven_optimal">Proven optimal</option><option value="verified_best_known">Verified best known</option></select></label>
           <div class="research-downloads"><a href="/atlas-v2.json" download>JSON ↓</a><a href="/atlas-v2.csv" download>CSV ↓</a><a href="/audit-v2.json" download>AUDIT ↓</a><a href="/work-queue-v2.json" download>WORK QUEUE ↓</a></div>
@@ -132,15 +132,15 @@
         <div id="research-results" class="registry-results"></div>
         <div class="registry-footer"><span id="research-result-count">Loading canonical release…</span><button id="research-more" type="button">Show more records</button></div>
         <div class="transition-panel">
-          <div><p class="kicker">OBSERVED PHASE BOUNDARIES</p><h3>Transitions backed by adjacent samples.</h3></div>
+          <div><p class="kicker">WHERE PATTERNS CHANGE</p><h3>Changes seen between neighboring test cases.</h3></div>
           <div id="transition-list"></div>
         </div>
       </section>
 
       <section id="challenges" class="challenge-section">
         <div class="section-intro light">
-          <div><p class="kicker">OPEN-PROBLEM BROWSER</p><h2>The blank parts are the point.</h2></div>
-          <p>Every open region is an invitation: reproduce a baseline, improve a record, or tighten a bound.</p>
+          <div><p class="kicker">OPEN CHALLENGES</p><h2>Help improve a packing.</h2></div>
+          <p>Each challenge starts with a verified result. Reproduce it, fit more triangles, or prove a tighter limit.</p>
         </div>
         <div id="challenge-grid" class="challenge-grid"></div>
         <div class="challenge-download"><a href="/community-challenges-v2.json" download>Download all machine-verifiable challenges ↓</a></div>
@@ -148,44 +148,44 @@
 
       <section class="leaderboard-section">
         <div class="section-intro">
-          <div><p class="kicker">RECORD LEADERBOARD</p><h2>Strong results, traceable people.</h2></div>
-          <p>Rankings use independently verified density. Reproducibility and attribution travel with every coordinate set.</p>
+          <div><p class="kicker">HIGHEST FILL RATES</p><h2>Results that use the most space.</h2></div>
+          <p>Ranked by independently checked fill percentage. Every result includes its author and the data needed to reproduce it.</p>
         </div>
         <div id="leaderboard" class="leaderboard"></div>
       </section>
 
       <section id="contribute" class="contribute-section">
-        <div><p class="kicker">COMMUNITY PIPELINE</p><h2>Bring coordinates,<br><em>not screenshots.</em></h2></div>
+        <div><p class="kicker">CONTRIBUTE A RESULT</p><h2>Submit a packing<br><em>we can verify.</em></h2></div>
         <ol><li><b>01</b> Submit JSON</li><li><b>02</b> Verify geometry</li><li><b>03</b> Compare record</li><li><b>04</b> Review evidence</li><li><b>05</b> Publish</li></ol>
         <div class="contribute-copy">
-          <p>Submissions are checked for schema validity, overlaps, boundary violations, duplicate fingerprints, and whether they improve the current record. Proofs and citations always require human review.</p>
+          <p>Submit the triangle coordinates as JSON. Automated checks confirm that pieces stay inside the rectangle, do not overlap, and improve on the current result. A maintainer reviews proofs and citations.</p>
           <a class="primary-action dark" href="https://github.com/markkamuya/space-optimization" target="_blank" rel="noreferrer">Contribute on GitHub <span>↗</span></a>
         </div>
       </section>
 
       <section class="research-section">
-        <p class="kicker">RESEARCH INFRASTRUCTURE · MILESTONES 22–30</p>
-        <h2>From atlas to shared instrument.</h2>
+        <p class="kicker">HOW THE DATA STAYS TRUSTWORTHY</p>
+        <h2>Every result can be checked again.</h2>
         <div class="research-track">
-          <article><span>CANONICAL</span><h3>Traceable records</h3><p>Stable experiment IDs, coordinates, certificates, provenance, history, and citations.</p></article>
-          <article><span>REPRODUCIBLE</span><h3>Solver laboratory</h3><p>Deterministic commands, declared budgets, fingerprints, and independent replay.</p></article>
-          <article><span>COMPUTED</span><h3>Phase evidence</h3><p>Sample-backed transitions, rigorous gaps, and visible uncertainty.</p></article>
-          <article><span>DISTRIBUTED</span><h3>Open work queue</h3><p>Prioritized, bounded tasks that require coordinates and verified improvements.</p></article>
+          <article><span>IDENTIFIED</span><h3>Traceable results</h3><p>Each result has a stable ID, coordinates, source, history, and citations.</p></article>
+          <article><span>REPEATABLE</span><h3>Run it again</h3><p>Saved commands, seeds, limits, and fingerprints make results reproducible.</p></article>
+          <article><span>CHECKED</span><h3>Visible uncertainty</h3><p>We show the best result found, the proven limit, and the gap between them.</p></article>
+          <article><span>OPEN</span><h3>Clear next tasks</h3><p>The work queue lists specific cases where contributors can improve the atlas.</p></article>
         </div>
       </section>
 
       <section class="literature-section">
         <div class="section-intro">
-          <div><p class="kicker">LITERATURE REGISTRY</p><h2>Related work, scoped precisely.</h2></div>
-          <p>Primary sources are classified by their exact relationship to the Atlas. Context and methods never become numerical claims by implication.</p>
+          <div><p class="kicker">RELATED RESEARCH</p><h2>Sources and how we use them.</h2></div>
+          <p>Each paper is labeled by its relationship to this project. A related method or topic is not treated as proof of an atlas result.</p>
         </div>
         <div id="literature-grid" class="literature-grid"></div>
       </section>
 
       <section class="archive-section">
-        <div><p class="kicker">ATLAS V2 · RESEARCH RELEASE</p><h2>One registry.<br>Reproducible evidence.</h2></div>
+        <div><p class="kicker">DOWNLOAD ATLAS V2</p><h2>Verified data you can reuse.</h2></div>
         <div>
-          <p>Atlas v2 unifies 304 records into a canonical, certificate-backed registry with executable reproduction commands, computed transitions, downloadable JSON and CSV, an open distributed work queue, and immutable checksums.</p>
+          <p>Atlas v2 contains 304 verified packing results. Download the coordinates as JSON or CSV, rerun the checks, and use the open work queue to choose a research problem.</p>
           <dl id="release-gates"><div><dt>Release status</dt><dd>loading…</dd></div></dl>
           <a href="/atlas-v2.json" download class="primary-action">Download canonical v2 dataset <span>↓</span></a>
         </div>
