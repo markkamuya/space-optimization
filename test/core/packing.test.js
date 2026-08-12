@@ -5,7 +5,7 @@ import { DEFAULT_PROBLEM, normalizeProblem, serializableProblem } from '../../sr
 import { createRandom } from '../../src/core/random.js';
 import { evaluate } from '../../src/solvers/scoring.js';
 import { solveGreedy } from '../../src/solvers/greedy.js';
-import { candidateTranslations, findBestPlacement } from '../../src/solvers/compact.js';
+import { candidateTranslations, findBestPlacement, fits } from '../../src/solvers/compact.js';
 import { transform } from '../../src/geometry/triangle.js';
 
 test('seeded random sequences are reproducible', () => {
@@ -130,4 +130,19 @@ test('compact placement does not re-evaluate duplicate translation anchors', () 
   const result = findBestPlacement(problem, problem.triangles[0], [], 0);
   assert.ok(result);
   assert.equal(Number.isFinite(result.rank), true);
+});
+
+test('compact collision fast path preserves overlap and kerf decisions', () => {
+  const problem = normalizeProblem({
+    ...DEFAULT_PROBLEM,
+    fillSheet: false,
+    margin: 0,
+    kerf: 0,
+    triangles: [DEFAULT_PROBLEM.triangles[2]]
+  });
+  const shape = problem.triangles[0].shape;
+  const placed = [{ shape: transform(shape, { x: 0, y: 0, angle: 0 }) }];
+  assert.equal(fits(problem, transform(shape, { x: 0, y: 0, angle: 0 }), placed), false);
+  assert.equal(fits(problem, transform(shape, { x: 10, y: 10, angle: 0 }), placed), true);
+  assert.equal(fits({ ...problem, kerf: 8 }, transform(shape, { x: 10, y: 0, angle: 0 }), placed), false);
 });

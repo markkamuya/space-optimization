@@ -73,11 +73,10 @@ function bestLatticeTiling(problem) {
 function fillResidualGaps(problem, base) {
   const triangles = [...base.problem.triangles];
   const state = base.state.map(placement => ({ ...placement }));
-  const placed = triangles.map((triangle, index) => ({
-    triangle,
-    shape: transform(triangle.shape, state[index]),
-    placement: state[index]
-  }));
+  const placed = triangles.map((triangle, index) => {
+    const shape = transform(triangle.shape, state[index]);
+    return { triangle, shape, box: bounds(shape), placement: state[index] };
+  });
   const templates = [...new Map(
     [...problem.triangles]
       .sort((left, right) => right.area - left.area)
@@ -106,6 +105,7 @@ function fillResidualGaps(problem, base) {
     placed.push({
       triangle,
       shape: selected.candidate.shape,
+      box: bounds(selected.candidate.shape),
       placement: selected.candidate.placement
     });
   }

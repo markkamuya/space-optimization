@@ -82,7 +82,13 @@ export function candidateTranslations(problem, rotated, placed) {
   });
 }
 
-function fits(problem, candidate, placed) {
+function boxDistance(left, right) {
+  const dx = Math.max(0, left.minX - right.maxX, right.minX - left.maxX);
+  const dy = Math.max(0, left.minY - right.maxY, right.minY - left.maxY);
+  return Math.hypot(dx, dy);
+}
+
+export function fits(problem, candidate, placed) {
   const container = {
     minX: problem.margin,
     minY: problem.margin,
@@ -90,10 +96,16 @@ function fits(problem, candidate, placed) {
     maxY: problem.height - problem.margin
   };
   if (!isInsideBounds(candidate, container, EPSILON)) return false;
-  return placed.every(item =>
-    overlapArea(candidate, item.shape) <= EPSILON &&
-    polygonDistance(candidate, item.shape) >= problem.kerf - EPSILON
-  );
+  const candidateBox = bounds(candidate);
+  return placed.every(item => {
+    const itemBox = item.box ?? bounds(item.shape);
+    const broadDistance = boxDistance(candidateBox, itemBox);
+    if (broadDistance > EPSILON && problem.kerf <= EPSILON) return true;
+    if (broadDistance >= problem.kerf - EPSILON && broadDistance > EPSILON) return true;
+    if (overlapArea(candidate, item.shape) > EPSILON) return false;
+    return problem.kerf <= EPSILON ||
+      polygonDistance(candidate, item.shape) >= problem.kerf - EPSILON;
+  });
 }
 
 function placementRank(problem, candidate, placed) {
@@ -143,6 +155,7 @@ export function packOrder(problem, order, { phase = 0, allowPartial = false } = 
       index,
       triangle: problem.triangles[index],
       shape: best.shape,
+      box: bounds(best.shape),
       placement: best.placement
     });
   }
