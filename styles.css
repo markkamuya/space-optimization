@@ -127,6 +127,7 @@ dt { color:var(--muted); } dd { margin:0; font-weight:700; text-align:right; }
 .registry-results i.proven_optimal { background:var(--acid); }
 .registry-footer { margin:16px 6vw 0; display:flex; justify-content:space-between; align-items:center; font:9px "DM Mono"; }
 .registry-footer button { border:1px solid var(--ink); background:var(--panel); padding:9px 14px; cursor:pointer; }
+.load-error { margin:24px 6vw; padding:18px; border:1px solid var(--ink); background:var(--panel); font-size:12px; line-height:1.6; }
 .transition-panel { margin:55px 6vw 0; display:grid; grid-template-columns:.65fr 1.35fr; gap:40px; border-top:1px solid var(--ink); padding-top:28px; }
 .transition-panel h3 { font-size:26px; margin:8px 0; }
 #transition-list { display:grid; grid-template-columns:1fr 1fr; border:1px solid var(--ink); background:var(--panel); }

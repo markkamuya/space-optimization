@@ -2,6 +2,7 @@ import { ATLAS_RECORDS, OPEN_PROBLEMS, phaseAt } from './atlas/catalog.js';
 import { normalizeProblem } from './core/problem.js';
 import { renderPacking } from './rendering/canvas.js';
 import { escapeHtml, safeExternalUrl } from './ui/safeText.js';
+import { validatePublicRelease } from './ui/releaseValidation.js';
 
 const $ = selector => document.querySelector(selector);
 const percent = value => `${(value * 100).toFixed(1)}%`;
@@ -295,7 +296,10 @@ async function loadResearchRelease() {
   try {
     const response = await fetch('/atlas-v2.json');
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    canonicalRelease = await response.json();
+    const release = await response.json();
+    const validation = validatePublicRelease(release);
+    if (!validation.valid) throw new Error(`Invalid public release: ${validation.errors[0]}`);
+    canonicalRelease = release;
     researchRelease = {
       records: canonicalRelease.records,
       verifiedCount: canonicalRelease.coverage.verified,
@@ -314,6 +318,9 @@ async function loadResearchRelease() {
   } catch {
     $('#resolution-label').textContent = 'curated fallback';
     $('#research-result-count').textContent = 'The full dataset could not be loaded. Try refreshing the page.';
+    $('#research-results').setAttribute('aria-busy', 'false');
+    $('#research-results').innerHTML = '<p class="load-error">Showing the smaller curated collection instead. The full research dataset is temporarily unavailable.</p>';
+    $('#research-more').hidden = true;
   }
 }
 
