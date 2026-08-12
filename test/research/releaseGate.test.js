@@ -24,3 +24,24 @@ test('release check includes independent and community acceptance gates', async 
     'archive integrity must be verified before the production build'
   );
 });
+
+test('GitHub CI audits canonical and frozen artifacts before production builds', async () => {
+  const workflow = await readFile(
+    new URL('../../.github/workflows/ci.yml', import.meta.url),
+    'utf8'
+  );
+  for (const command of [
+    'npm run atlas:v2',
+    'npm run atlas:audit',
+    'npm run atlas:cross-verify',
+    'npm run atlas:archive-audit',
+    'npm run build:vercel'
+  ]) {
+    assert.match(workflow, new RegExp(command.replaceAll(':', '\\:')));
+  }
+  const buildIndex = workflow.indexOf('npm run build:vercel');
+  assert.ok(workflow.indexOf('npm run atlas:v2') < workflow.indexOf('npm run atlas:audit'));
+  assert.ok(workflow.indexOf('npm run atlas:audit') < buildIndex);
+  assert.ok(workflow.indexOf('npm run atlas:cross-verify') < buildIndex);
+  assert.ok(workflow.indexOf('npm run atlas:archive-audit') < buildIndex);
+});

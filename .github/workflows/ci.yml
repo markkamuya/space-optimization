@@ -19,15 +19,18 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
-      - run: npm run build
       - run: npm run benchmark
       - run: npm run atlas:benchmark
       - run: npm run atlas:verify -- atlas/right/right-grid-2x1.json
       - run: npm run atlas:release
       - run: npm run atlas:research
       - run: npm run atlas:v2
+      - run: npm run atlas:audit
+      - run: npm run atlas:cross-verify
+      - run: npm run atlas:archive-audit
+      - run: npm run build:vercel
+      - run: npm run build
       - run: npm run atlas:experiment -- --record iso-a60-r1p5
       - run: npm run atlas:submission -- atlas/submissions/template.json
-      - run: npm run atlas:cross-verify
       - run: npm run atlas:certificate -- proofs/right-grid-2x1.json atlas/right/right-grid-2x1.json
       - run: npm run atlas:beta
