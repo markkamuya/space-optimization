@@ -23,6 +23,7 @@
     "atlas:submission": "node cli/submission.js",
     "atlas:report": "node cli/report.js",
     "atlas:archive": "sh scripts/package-archive.sh",
+    "atlas:archive-audit": "node scripts/audit-v2-archive.js",
     "atlas:cross-verify": "python3 independent_verifier/verify_release.py public/atlas-v2.json",
     "atlas:certificate": "node cli/certificates.js",
     "atlas:beta": "node scripts/community-beta.js",

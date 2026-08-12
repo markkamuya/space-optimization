@@ -3,7 +3,11 @@ import test from 'node:test';
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 
-import { auditArtifactChecksum, auditReleaseManifest } from '../../src/research/artifacts.js';
+import {
+  auditArchiveManifest,
+  auditArtifactChecksum,
+  auditReleaseManifest
+} from '../../src/research/artifacts.js';
 import { validateCanonicalRecords } from '../../src/research/registry.js';
 
 test('artifact audit binds dataset bytes to checksum file and manifest', () => {
@@ -37,4 +41,20 @@ test('manifest audit recomputes canonical metadata and embedded registry audit',
   const report = auditReleaseManifest(manifest, release);
   assert.ok(report.errors.includes('MANIFEST_RECORDS_DRIFT'));
   assert.ok(report.errors.includes('MANIFEST_AUDIT_DRIFT'));
+});
+
+test('archive manifest audit validates its checksum and every listed file', () => {
+  const payload = Buffer.from('atlas artifact');
+  const entryHash = createHash('sha256').update(payload).digest('hex');
+  const manifestPayload = Buffer.from(JSON.stringify({
+    files: [{ path: 'public/example.json', bytes: payload.byteLength, sha256: entryHash }]
+  }));
+  const manifestHash = createHash('sha256').update(manifestPayload).digest('hex');
+  const files = new Map([['public/example.json', payload]]);
+  assert.equal(auditArchiveManifest(manifestPayload, `${manifestHash}  manifest.json\n`, files).valid, true);
+  files.set('public/example.json', Buffer.from('tampered'));
+  const report = auditArchiveManifest(manifestPayload, 'invalid  manifest.json\n', files);
+  assert.ok(report.errors.includes('ARCHIVE_MANIFEST_CHECKSUM_DRIFT'));
+  assert.ok(report.errors.includes('ARCHIVE_SIZE_DRIFT:public/example.json'));
+  assert.ok(report.errors.includes('ARCHIVE_FILE_CHECKSUM_DRIFT:public/example.json'));
 });

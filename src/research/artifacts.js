@@ -32,3 +32,25 @@ export function auditReleaseManifest(manifest, release) {
   }
   return { valid: errors.length === 0, errors };
 }
+
+export function auditArchiveManifest(manifestPayload, checksumFile, files) {
+  const errors = [];
+  const manifestHash = createHash('sha256').update(manifestPayload).digest('hex');
+  const declaredManifestHash = checksumFile.trim().split(/\s+/)[0];
+  if (declaredManifestHash !== manifestHash) errors.push('ARCHIVE_MANIFEST_CHECKSUM_DRIFT');
+  const manifest = JSON.parse(manifestPayload);
+  const seen = new Set();
+  for (const entry of manifest.files ?? []) {
+    if (seen.has(entry.path)) errors.push(`ARCHIVE_DUPLICATE_PATH:${entry.path}`);
+    seen.add(entry.path);
+    const payload = files.get(entry.path);
+    if (!Buffer.isBuffer(payload)) {
+      errors.push(`ARCHIVE_FILE_MISSING:${entry.path}`);
+      continue;
+    }
+    if (payload.byteLength !== entry.bytes) errors.push(`ARCHIVE_SIZE_DRIFT:${entry.path}`);
+    const sha256 = createHash('sha256').update(payload).digest('hex');
+    if (sha256 !== entry.sha256) errors.push(`ARCHIVE_FILE_CHECKSUM_DRIFT:${entry.path}`);
+  }
+  return { valid: errors.length === 0, errors, files: seen.size };
+}
