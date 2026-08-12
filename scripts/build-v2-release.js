@@ -11,6 +11,7 @@ import {
 } from '../src/research/registry.js';
 import { buildWorkQueue } from '../src/research/distributed.js';
 import { canonicalCoverage } from '../src/research/release.js';
+import { buildCanonicalCsv } from '../src/research/exports.js';
 
 const adaptiveTargets = new Set([...RESEARCH_RECORDS]
   .filter(record => record.bounds.optimalityGap > 0 && record.verification.pieceCount < 300)
@@ -112,26 +113,11 @@ const release = {
 
 const payload = `${JSON.stringify(release)}\n`;
 const checksum = createHash('sha256').update(payload).digest('hex');
-const csvHeader = ['id', 'experiment_id', 'family', 'apex_angle', 'rectangle_ratio', 'pattern', 'evidence', 'pieces', 'utilization', 'upper_bound', 'gap', 'fingerprint'];
-const csvRows = records.map(record => [
-  record.id,
-  record.experimentId,
-  record.family,
-  record.parameters.apexAngle,
-  record.parameters.rectangleRatio,
-  record.pattern,
-  record.evidence.state,
-  record.verification.pieceCount,
-  record.verification.utilization,
-  record.bounds.upperBound,
-  record.bounds.optimalityGap,
-  record.verification.fingerprint
-].map(value => `"${String(value).replaceAll('"', '""')}"`).join(','));
 
 await mkdir(new URL('../public/', import.meta.url), { recursive: true });
 await mkdir(new URL('../releases/', import.meta.url), { recursive: true });
 await writeFile(new URL('../public/atlas-v2.json', import.meta.url), payload);
-await writeFile(new URL('../public/atlas-v2.csv', import.meta.url), `${csvHeader.join(',')}\n${csvRows.join('\n')}\n`);
+await writeFile(new URL('../public/atlas-v2.csv', import.meta.url), buildCanonicalCsv(records));
 await writeFile(new URL('../public/atlas-v2.sha256', import.meta.url), `${checksum}  atlas-v2.json\n`);
 await writeFile(new URL('../public/work-queue-v2.json', import.meta.url), `${JSON.stringify({ format: 'tpa-work-queue/v1', version: '2.0.0', tasks: queue }, null, 2)}\n`);
 await writeFile(new URL('../releases/2.0.0-canonical.json', import.meta.url), `${JSON.stringify({

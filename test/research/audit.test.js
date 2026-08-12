@@ -6,6 +6,7 @@ import { auditRecords } from '../../src/research/audit.js';
 import { buildWorkQueue } from '../../src/research/distributed.js';
 import { buildCommunityChallenges } from '../../src/research/challenges.js';
 import { canonicalCoverage } from '../../src/research/release.js';
+import { buildCanonicalCsv } from '../../src/research/exports.js';
 
 test('scientific audit independently replays the canonical registry', () => {
   const report = auditRecords(RESEARCH_RECORDS.map(canonicalRecord));
@@ -161,4 +162,12 @@ test('scientific audit recomputes the release coverage summary', () => {
   const report = auditRecords(records, { coverage });
   assert.equal(report.passed, false);
   assert.ok(report.findings.some(finding => finding.code === 'COVERAGE_SUMMARY_DRIFT'));
+});
+
+test('scientific audit recomputes the downloadable CSV export', () => {
+  const record = canonicalRecord(RESEARCH_RECORDS[0]);
+  const csv = buildCanonicalCsv([record]).replace(record.id, 'tampered-record');
+  const report = auditRecords([record], { csv });
+  assert.equal(report.passed, false);
+  assert.ok(report.findings.some(finding => finding.code === 'CSV_EXPORT_DRIFT'));
 });

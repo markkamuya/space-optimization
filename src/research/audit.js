@@ -2,6 +2,7 @@ import { verifyPacking } from '../atlas/verifier.js';
 import { buildWorkQueue } from './distributed.js';
 import { buildCommunityChallenges } from './challenges.js';
 import { canonicalCoverage } from './release.js';
+import { buildCanonicalCsv } from './exports.js';
 import {
   detectPhaseTransitions,
   experimentId,
@@ -208,6 +209,12 @@ export function auditRecords(records, options = {}) {
     findings.push({
       severity: 'critical',
       code: 'COVERAGE_SUMMARY_DRIFT'
+    });
+  }
+  if (options.csv !== undefined && options.csv !== buildCanonicalCsv(records)) {
+    findings.push({
+      severity: 'critical',
+      code: 'CSV_EXPORT_DRIFT'
     });
   }
 
