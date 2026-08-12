@@ -10,6 +10,8 @@ let selectedPhase = phaseAt(60, 1.5);
 let researchRelease = null;
 let canonicalRelease = null;
 let researchLimit = 24;
+let dialogTrigger = null;
+let dialogReturnHash = '#research';
 const navToggle = $('#nav-toggle');
 const primaryNav = $('#primary-nav');
 
@@ -188,9 +190,12 @@ function recordCard(record) {
     </div>`;
   article.tabIndex = 0;
   article.setAttribute('role', 'button');
-  article.addEventListener('click', () => openRecord(record));
+  article.addEventListener('click', () => openRecord(record, article));
   article.addEventListener('keydown', event => {
-    if (event.key === 'Enter' || event.key === ' ') openRecord(record);
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      openRecord(record, article);
+    }
   });
   requestAnimationFrame(() => renderPacking(
     article.querySelector('canvas'),
@@ -208,7 +213,8 @@ function renderRecords() {
     .forEach(record => grid.append(recordCard(record)));
 }
 
-function openRecord(record) {
+function openRecord(record, trigger = document.activeElement) {
+  dialogTrigger = trigger;
   const detail = $('#record-detail');
   detail.innerHTML = `
     <div class="detail-header"><div><p class="kicker">${record.family} / ${statusLabel(record)}</p><h2>${record.title}</h2><p>${record.pattern}. Fingerprint <code>${record.verification.fingerprint}</code></p></div>
@@ -330,6 +336,8 @@ function filteredResearchRecords() {
 }
 
 function openResearchRecord(record) {
+  dialogTrigger = document.activeElement;
+  dialogReturnHash = '#research';
   const detail = $('#record-detail');
   detail.innerHTML = `
     <div class="detail-header"><div><p class="kicker">${record.family} / ${record.evidence.state.replaceAll('_', ' ')}</p><h2>${record.experimentId}</h2><p>${record.evidence.claim}</p></div>
@@ -434,9 +442,19 @@ $('#research-more').addEventListener('click', () => {
   researchLimit += 24;
   renderResearchExplorer();
 });
-$('#record-dialog .dialog-close').addEventListener('click', () => $('#record-dialog').close());
+function closeRecordDialog() {
+  const dialog = $('#record-dialog');
+  if (dialog.open) dialog.close();
+}
+
+$('#record-dialog .dialog-close').addEventListener('click', closeRecordDialog);
 $('#record-dialog').addEventListener('click', event => {
-  if (event.target === $('#record-dialog')) $('#record-dialog').close();
+  if (event.target === $('#record-dialog')) closeRecordDialog();
+});
+$('#record-dialog').addEventListener('close', () => {
+  if (location.hash.startsWith('#research?record=')) history.replaceState(null, '', dialogReturnHash);
+  if (dialogTrigger?.isConnected) dialogTrigger.focus();
+  dialogTrigger = null;
 });
 navToggle.addEventListener('click', () => {
   const open = navToggle.getAttribute('aria-expanded') === 'true';
