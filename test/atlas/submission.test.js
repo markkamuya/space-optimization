@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { ATLAS_RECORDS } from '../../src/atlas/catalog.js';
-import { loadPublishedRecords } from '../../src/atlas/published.js';
+import { loadPublishedRecords, validatePublishedRelease } from '../../src/atlas/published.js';
 import { assessSubmission, packingProblemIdentity } from '../../src/atlas/submission.js';
 import { RESEARCH_RECORDS } from '../../src/research/dataset.js';
 
@@ -102,6 +102,17 @@ test('submission comparison uses adaptive canonical incumbents', async () => {
   assert.equal(report.disposition, 'reject_inferior');
   assert.equal(report.comparison.bestKnownId, improved.id);
   assert.ok(report.comparison.improvement < 0);
+});
+
+test('published incumbents are independently replayed before comparison', async () => {
+  const published = await loadPublishedRecords();
+  const canonical = published.find(record => typeof record.experimentId === 'string');
+  const tampered = structuredClone(canonical);
+  tampered.solution.placements[0].x += 0.01;
+  assert.throws(
+    () => validatePublishedRelease({ format: 'triangle-packing-atlas/v2', records: [tampered] }),
+    /failed independent replay/
+  );
 });
 
 test('malformed submissions are rejected without crashing identity comparison', () => {
