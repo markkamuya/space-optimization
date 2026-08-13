@@ -76,3 +76,13 @@ test('submission CI validates all changed records in one incumbent replay', asyn
   assert.match(workflow, /npm run atlas:submission -- "\$\{records\[@\]\}"/);
   assert.doesNotMatch(workflow, /while[\s\S]*npm run atlas:submission -- "\$record"/);
 });
+
+test('submission CI persists and independently verifies review evidence', async () => {
+  const workflow = await readFile(
+    new URL('../../.github/workflows/submission.yml', import.meta.url),
+    'utf8'
+  );
+  assert.match(workflow, /--output submission-reports\/review-bundle\.json/);
+  assert.match(workflow, /atlas:submission-verify -- submission-reports\/review-bundle\.json/);
+  assert.match(workflow, /name: atlas-submission-review-evidence/);
+});

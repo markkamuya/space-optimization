@@ -27,7 +27,8 @@ jobs:
         run: |
           mkdir -p submission-reports
           mapfile -t records < /tmp/records.txt
-          npm run atlas:submission -- "${records[@]}"
+          npm run atlas:submission -- "${records[@]}" --output submission-reports/review-bundle.json
+          npm run atlas:submission-verify -- submission-reports/review-bundle.json
           while IFS= read -r record; do
             name="$(basename "$record" .json)"
             npm run atlas:report -- "$record" "submission-reports/$name.svg"
@@ -36,7 +37,7 @@ jobs:
         run: npm run atlas:v2
       - uses: actions/upload-artifact@v4
         with:
-          name: atlas-submission-visual-reports
+          name: atlas-submission-review-evidence
           path: submission-reports/
       - name: Human-review reminder
         run: |
