@@ -15,7 +15,9 @@ if (!verifySubmissionAttestation(bundle.attestation, bundle.results ?? [])) erro
 for (const result of bundle.results ?? []) {
   if (result.candidateSha256) {
     try {
-      const payload = await readFile(result.path, 'utf8');
+      const payload = result.candidatePayloadBase64 === undefined
+        ? await readFile(result.path, 'utf8')
+        : Buffer.from(result.candidatePayloadBase64, 'base64').toString('utf8');
       if (candidatePayloadDigest(payload) !== result.candidateSha256) errors.push(`CANDIDATE_DRIFT:${result.path}`);
     } catch {
       errors.push(`CANDIDATE_UNREADABLE:${result.path}`);

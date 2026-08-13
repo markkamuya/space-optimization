@@ -17,15 +17,25 @@ if (paths.length === 0) {
 const publishedRecords = await loadPublishedIncumbentIndex();
 const results = [];
 for (const path of paths) {
+  let payload;
   try {
-    const payload = await readFile(path, 'utf8');
+    payload = await readFile(path, 'utf8');
     const candidate = JSON.parse(payload);
     const report = assessSubmission(candidate, publishedRecords);
-    results.push({ path, candidateSha256: candidatePayloadDigest(payload), report });
+    results.push({
+      path,
+      candidateSha256: candidatePayloadDigest(payload),
+      candidatePayloadBase64: Buffer.from(payload).toString('base64'),
+      report
+    });
     if (report.disposition.startsWith('reject_')) process.exitCode = 1;
   } catch (error) {
     results.push({
       path,
+      ...(payload === undefined ? {} : {
+        candidateSha256: candidatePayloadDigest(payload),
+        candidatePayloadBase64: Buffer.from(payload).toString('base64')
+      }),
       error: {
         code: error instanceof SyntaxError ? 'INVALID_JSON' : 'UNREADABLE_SUBMISSION',
         message: error.message

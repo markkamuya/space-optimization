@@ -38,9 +38,10 @@ test('submission CLI atomically writes a portable batch bundle', async () => {
   const bundle = JSON.parse(await readFile(bundlePath, 'utf8'));
   assert.equal(bundle.format, 'triangle-packing-submission-batch/v1');
   assert.equal(verifySubmissionAttestation(bundle.attestation, bundle.results), true);
+  assert.equal(Buffer.from(bundle.results[0].candidatePayloadBase64, 'base64').toString('utf8'), '{');
 });
 
-test('standalone bundle verification rejects candidate-byte drift', async () => {
+test('standalone bundle verification is independent of external candidate drift', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'atlas-bundle-verify-'));
   const candidate = join(directory, 'candidate.json');
   const bundlePath = join(directory, 'bundle.json');
@@ -57,8 +58,15 @@ test('standalone bundle verification rejects candidate-byte drift', async () => 
   verification = spawnSync(process.execPath, ['cli/verify-submission-bundle.js', bundlePath], {
     cwd: new URL('../..', import.meta.url), encoding: 'utf8', timeout: 120_000
   });
+  assert.equal(verification.status, 0);
+  const bundle = JSON.parse(await readFile(bundlePath, 'utf8'));
+  bundle.results[0].candidatePayloadBase64 = Buffer.from(`${template} `).toString('base64');
+  await writeFile(bundlePath, JSON.stringify(bundle));
+  verification = spawnSync(process.execPath, ['cli/verify-submission-bundle.js', bundlePath], {
+    cwd: new URL('../..', import.meta.url), encoding: 'utf8', timeout: 120_000
+  });
   assert.equal(verification.status, 1);
-  assert.ok(JSON.parse(verification.stdout).errors.some(error => error.startsWith('CANDIDATE_DRIFT:')));
+  assert.ok(JSON.parse(verification.stdout).errors.includes('ATTESTATION_INVALID'));
 });
 
 test('submission attestations are deterministic and outcome-bound', () => {

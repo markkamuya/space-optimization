@@ -12,6 +12,7 @@ function attestedResult(result) {
   return {
     path: result.path,
     candidateSha256: result.candidateSha256 ?? null,
+    candidatePayloadBase64: result.candidatePayloadBase64 ?? null,
     disposition: result.report?.disposition ?? null,
     incumbentIndexDigest: result.report?.comparison?.incumbentIndexDigest ?? null,
     errorCode: result.error?.code ?? null
