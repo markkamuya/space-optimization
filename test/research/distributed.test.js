@@ -135,3 +135,30 @@ test('worker results are bound to the exact task and experiment identifiers', ()
   assert.ok(result.errors.includes('task_id_mismatch'));
   assert.ok(result.errors.includes('experiment_id_mismatch'));
 });
+
+test('worker results must report valid usage within the assigned budget', () => {
+  const records = RESEARCH_RECORDS.map(canonicalRecord);
+  const [task] = buildWorkQueue(records);
+  const record = records.find(candidate => candidate.id === task.recordId);
+  const candidate = {
+    taskId: task.taskId,
+    recordId: task.recordId,
+    experimentId: task.experimentId,
+    seed: 'worker-over-budget',
+    solverVersion: 'atlas-worker/1.0.0',
+    problem: record.problem,
+    placements: record.solution.placements,
+    utilization: record.verification.utilization,
+    budgetUsed: {
+      orientationEvaluations: task.budget.orientationEvaluations + 1,
+      wallTimeSeconds: task.budget.wallTimeSeconds + 0.1
+    }
+  };
+  const result = validateWorkerResult(task, candidate, record);
+  assert.ok(result.errors.includes('orientation_budget_exceeded'));
+  assert.ok(result.errors.includes('wall_time_budget_exceeded'));
+
+  candidate.budgetUsed = { orientationEvaluations: -1, wallTimeSeconds: Number.NaN };
+  const malformed = validateWorkerResult(task, candidate, record);
+  assert.ok(malformed.errors.includes('invalid_budget_usage'));
+});

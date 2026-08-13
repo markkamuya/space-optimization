@@ -42,6 +42,20 @@ export function validateWorkerResult(task, candidate, assignedRecord) {
   if (typeof submitted.solverVersion !== 'string' || submitted.solverVersion.trim().length === 0) {
     errors.push('missing_solver_version');
   }
+  if (!submitted.budgetUsed || typeof submitted.budgetUsed !== 'object' ||
+    !Number.isInteger(submitted.budgetUsed.orientationEvaluations) ||
+    submitted.budgetUsed.orientationEvaluations < 0 ||
+    !Number.isFinite(submitted.budgetUsed.wallTimeSeconds) ||
+    submitted.budgetUsed.wallTimeSeconds < 0) {
+    errors.push('invalid_budget_usage');
+  } else {
+    if (submitted.budgetUsed.orientationEvaluations > (queuedTask.budget?.orientationEvaluations ?? -1)) {
+      errors.push('orientation_budget_exceeded');
+    }
+    if (submitted.budgetUsed.wallTimeSeconds > (queuedTask.budget?.wallTimeSeconds ?? -1)) {
+      errors.push('wall_time_budget_exceeded');
+    }
+  }
   if (!submitted.problem || typeof submitted.problem !== 'object') errors.push('missing_problem');
   if (!Array.isArray(submitted.placements)) errors.push('missing_coordinates');
   if (!Number.isFinite(submitted.utilization)) errors.push('missing_utilization');
