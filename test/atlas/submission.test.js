@@ -1,9 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFile } from 'node:fs/promises';
+import { mkdtemp, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 import { ATLAS_RECORDS } from '../../src/atlas/catalog.js';
 import {
   buildVerifiedIncumbentIndex,
+  loadPublishedIncumbentIndex,
   loadPublishedRecords,
   validatePublishedRelease
 } from '../../src/atlas/published.js';
@@ -140,6 +144,15 @@ test('verified incumbent index rejects geometry or claim drift', () => {
   const tampered = structuredClone(ATLAS_RECORDS[0]);
   tampered.verification.fingerprint = 'forged';
   assert.throws(() => buildVerifiedIncumbentIndex([tampered]), /Cannot index unverified incumbent/);
+});
+
+test('published index loader verifies dataset bytes against the checksum sidecar', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'atlas-checksum-'));
+  const dataset = join(directory, 'atlas.json');
+  const checksum = join(directory, 'atlas.sha256');
+  await writeFile(dataset, '{"format":"triangle-packing-atlas/v2","records":[]}\n');
+  await writeFile(checksum, `${'0'.repeat(64)}  atlas.json\n`);
+  await assert.rejects(() => loadPublishedIncumbentIndex(dataset, checksum), /checksum mismatch/);
 });
 
 test('forged verified indexes cannot activate the trusted fast path', () => {

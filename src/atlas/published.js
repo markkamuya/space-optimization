@@ -45,8 +45,9 @@ function createVerifiedIncumbentIndex(records) {
   const index = Object.freeze({ kind: 'verified-incumbent-index' });
   const sourceDigest = createHash('sha256').update(JSON.stringify(records.map(record => ({
     id: record.id,
-    fingerprint: record.verification.fingerprint,
-    utilization: record.verification.utilization
+    problem: record.problem,
+    placements: record.solution.placements,
+    verification: record.verification
   })))).digest('hex');
   trustedIndexes.set(index, { byFingerprint, byProblem, sourceDigest, size: records.length });
   return index;
@@ -83,9 +84,17 @@ export async function loadPublishedRecords(
 }
 
 export async function loadPublishedIncumbentIndex(
-  source = new URL('../../public/atlas-v2.json', import.meta.url)
+  source = new URL('../../public/atlas-v2.json', import.meta.url),
+  checksumSource = new URL('../../public/atlas-v2.sha256', import.meta.url)
 ) {
-  const release = JSON.parse(await readFile(source, 'utf8'));
+  const [payload, checksumFile] = await Promise.all([
+    readFile(source, 'utf8'),
+    readFile(checksumSource, 'utf8')
+  ]);
+  const actual = createHash('sha256').update(payload).digest('hex');
+  const declared = checksumFile.trim().split(/\s+/)[0];
+  if (actual !== declared) throw new Error('Published dataset checksum mismatch');
+  const release = JSON.parse(payload);
   return createVerifiedIncumbentIndex([
     ...ATLAS_RECORDS,
     ...validatePublishedRelease(release)
