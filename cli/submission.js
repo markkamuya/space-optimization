@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { readFile, rename, writeFile } from 'node:fs/promises';
 import { assessSubmission } from '../src/atlas/submission.js';
-import { loadPublishedIncumbentIndex } from '../src/atlas/published.js';
+import { loadPublishedIncumbentIndex, snapshotVerifiedIncumbentIndex } from '../src/atlas/published.js';
 import { candidatePayloadDigest, createSubmissionAttestation } from '../src/atlas/attestation.js';
 import { queryVerifiedIncumbentIndex } from '../src/atlas/published.js';
 
@@ -45,10 +45,12 @@ for (const path of paths) {
   }
 }
 const incumbentIndexDigest = queryVerifiedIncumbentIndex(publishedRecords, null, null).sourceDigest;
+const incumbentSnapshot = output ? snapshotVerifiedIncumbentIndex(publishedRecords) : null;
 const bundle = {
   format: 'triangle-packing-submission-batch/v1',
+  ...(incumbentSnapshot === null ? {} : { incumbentSnapshot }),
   results,
-  attestation: createSubmissionAttestation(incumbentIndexDigest, results)
+  attestation: createSubmissionAttestation(incumbentIndexDigest, results, incumbentSnapshot)
 };
 const serialized = `${JSON.stringify(bundle, null, 2)}\n`;
 if (output) {
@@ -56,4 +58,6 @@ if (output) {
   await writeFile(temporary, serialized);
   await rename(temporary, output);
 }
-console.log(serialized.trimEnd());
+console.log((output
+  ? JSON.stringify({ ...bundle, incumbentSnapshot: undefined }, null, 2)
+  : serialized).trimEnd());

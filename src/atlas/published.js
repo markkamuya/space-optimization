@@ -49,8 +49,19 @@ function createVerifiedIncumbentIndex(records) {
     placements: record.solution.placements,
     verification: record.verification
   })))).digest('hex');
-  trustedIndexes.set(index, { byFingerprint, byProblem, sourceDigest, size: records.length });
+  trustedIndexes.set(index, { byFingerprint, byProblem, sourceDigest, size: records.length, records });
   return index;
+}
+
+export function snapshotVerifiedIncumbentIndex(index) {
+  const trusted = trustedIndexes.get(index);
+  if (!trusted) throw new Error('Cannot snapshot an unverified incumbent index');
+  return trusted.records.map(record => ({
+    id: record.id,
+    problem: record.problem,
+    solution: { placements: record.solution.placements },
+    verification: record.verification
+  }));
 }
 
 export function buildVerifiedIncumbentIndex(records) {

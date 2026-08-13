@@ -14,7 +14,8 @@ test('submission CLI reports every malformed input in a batch', async () => {
   const result = spawnSync(process.execPath, ['cli/submission.js', invalid, missing], {
     cwd: new URL('../..', import.meta.url),
     encoding: 'utf8',
-    timeout: 120_000
+    timeout: 120_000,
+    maxBuffer: 16 * 1024 * 1024
   });
   assert.equal(result.status, 1);
   const batch = JSON.parse(result.stdout);
@@ -32,12 +33,14 @@ test('submission CLI atomically writes a portable batch bundle', async () => {
   const bundlePath = join(directory, 'bundle.json');
   await writeFile(invalid, '{');
   const result = spawnSync(process.execPath, ['cli/submission.js', invalid, '--output', bundlePath], {
-    cwd: new URL('../..', import.meta.url), encoding: 'utf8', timeout: 120_000
+    cwd: new URL('../..', import.meta.url), encoding: 'utf8', timeout: 120_000,
+    maxBuffer: 16 * 1024 * 1024
   });
   assert.equal(result.status, 1);
   const bundle = JSON.parse(await readFile(bundlePath, 'utf8'));
   assert.equal(bundle.format, 'triangle-packing-submission-batch/v1');
-  assert.equal(verifySubmissionAttestation(bundle.attestation, bundle.results), true);
+  assert.equal(verifySubmissionAttestation(bundle.attestation, bundle.results, bundle.incumbentSnapshot), true);
+  assert.equal(bundle.incumbentSnapshot.length, 311);
   assert.equal(Buffer.from(bundle.results[0].candidatePayloadBase64, 'base64').toString('utf8'), '{');
 });
 
@@ -92,7 +95,11 @@ test('standalone verification rejects stored decision tampering', async () => {
   });
   const bundle = JSON.parse(await readFile(bundlePath, 'utf8'));
   bundle.results[0].report.disposition = 'improves_record';
-  bundle.attestation = createSubmissionAttestation(bundle.attestation.incumbentIndexDigest, bundle.results);
+  bundle.attestation = createSubmissionAttestation(
+    bundle.attestation.incumbentIndexDigest,
+    bundle.results,
+    bundle.incumbentSnapshot
+  );
   await writeFile(bundlePath, JSON.stringify(bundle));
   const verification = spawnSync(process.execPath, ['cli/verify-submission-bundle.js', bundlePath], {
     cwd: new URL('../..', import.meta.url), encoding: 'utf8', timeout: 120_000
