@@ -135,3 +135,21 @@ test('submissions require reproducible solver provenance', () => {
     assert.ok(report.schema.errors.some(error => error.path === path));
   }
 });
+
+test('submissions require attribution and the atlas data license', () => {
+  const record = ATLAS_RECORDS[0];
+  const report = assessSubmission(asCandidate(record, {
+    provenance: {
+      generator: 'solver',
+      version: '1.0.0',
+      seed: 'licensed-seed',
+      runtimeMs: 1,
+      contributor: ' ',
+      license: 'custom',
+      createdAt: '2026-07-26T00:00:00.000Z'
+    }
+  }), []);
+  assert.equal(report.disposition, 'reject_invalid');
+  assert.ok(report.schema.errors.some(error => error.path === 'provenance.contributor'));
+  assert.ok(report.schema.errors.some(error => error.path === 'provenance.license'));
+});

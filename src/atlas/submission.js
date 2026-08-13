@@ -49,6 +49,13 @@ export function assessSubmission(candidate, publishedRecords) {
   if (!Number.isFinite(candidate?.provenance?.runtimeMs) || candidate.provenance.runtimeMs < 0) {
     addSchemaError('provenance.runtimeMs', 'Runtime must be a non-negative finite number');
   }
+  if (typeof candidate?.provenance?.contributor !== 'string' ||
+    candidate.provenance.contributor.trim().length === 0) {
+    addSchemaError('provenance.contributor', 'Contributor attribution is required');
+  }
+  if (candidate?.provenance?.license !== 'CC-BY-4.0') {
+    addSchemaError('provenance.license', 'Submission data must use the CC-BY-4.0 license');
+  }
   schema.valid = schema.errors.length === 0;
   const verification = verifyAtlasRecord(candidate);
   const fingerprint = verification.normalizedProblem && verification.normalizedState
