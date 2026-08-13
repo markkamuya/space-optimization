@@ -37,6 +37,9 @@ export function validateWorkerResult(task, candidate, assignedRecord) {
     errors.push('stale_baseline_utilization');
   }
   if (submitted.seed === undefined || submitted.seed === null || submitted.seed === '') errors.push('missing_seed');
+  if (typeof submitted.solverVersion !== 'string' || submitted.solverVersion.trim().length === 0) {
+    errors.push('missing_solver_version');
+  }
   if (!submitted.problem || typeof submitted.problem !== 'object') errors.push('missing_problem');
   if (!Array.isArray(submitted.placements)) errors.push('missing_coordinates');
   if (!Number.isFinite(submitted.utilization)) errors.push('missing_utilization');

@@ -88,11 +88,27 @@ test('worker validation accepts zero as a deterministic seed', () => {
   const result = validateWorkerResult(task, {
     recordId: task.recordId,
     seed: 0,
+    solverVersion: 'atlas-worker/1.0.0',
     problem: record.problem,
     placements: record.solution.placements,
     utilization: record.verification.utilization
   }, record);
   assert.equal(result.errors.includes('missing_seed'), false);
+  assert.equal(result.errors.includes('missing_solver_version'), false);
+});
+
+test('worker validation requires a solver version for reproducibility', () => {
+  const records = RESEARCH_RECORDS.map(canonicalRecord);
+  const [task] = buildWorkQueue(records);
+  const record = records.find(candidate => candidate.id === task.recordId);
+  const result = validateWorkerResult(task, {
+    recordId: task.recordId,
+    seed: 'worker-without-version',
+    problem: record.problem,
+    placements: record.solution.placements,
+    utilization: record.verification.utilization
+  }, record);
+  assert.ok(result.errors.includes('missing_solver_version'));
 });
 
 test('worker validation reports malformed envelopes without throwing', () => {
