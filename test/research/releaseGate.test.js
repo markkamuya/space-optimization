@@ -45,3 +45,24 @@ test('GitHub CI audits canonical and frozen artifacts before production builds',
   assert.ok(workflow.indexOf('npm run atlas:cross-verify') < buildIndex);
   assert.ok(workflow.indexOf('npm run atlas:archive-audit') < buildIndex);
 });
+
+test('GitHub CI rejects uncommitted generated release drift', async () => {
+  const workflow = await readFile(
+    new URL('../../.github/workflows/ci.yml', import.meta.url),
+    'utf8'
+  );
+  const generation = workflow.indexOf('npm run atlas:v2');
+  const driftCheck = workflow.indexOf('git diff --exit-code -- public/atlas-v2.json');
+  const audit = workflow.indexOf('npm run atlas:audit');
+  assert.ok(generation >= 0);
+  assert.ok(driftCheck > generation);
+  assert.ok(audit > driftCheck);
+  for (const artifact of [
+    'public/atlas-v2.csv',
+    'public/atlas-v2.sha256',
+    'public/audit-v2.json',
+    'public/work-queue-v2.json',
+    'public/community-challenges-v2.json',
+    'releases/2.0.0-canonical.json'
+  ]) assert.ok(workflow.includes(artifact));
+});

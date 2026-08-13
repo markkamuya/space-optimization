@@ -25,6 +25,8 @@ jobs:
       - run: npm run atlas:release
       - run: npm run atlas:research
       - run: npm run atlas:v2
+      - name: Confirm generated release artifacts are committed
+        run: git diff --exit-code -- public/atlas-v2.json public/atlas-v2.csv public/atlas-v2.sha256 public/audit-v2.json public/work-queue-v2.json public/community-challenges-v2.json releases/2.0.0-canonical.json
       - run: npm run atlas:audit
       - run: npm run atlas:cross-verify
       - run: npm run atlas:archive-audit
