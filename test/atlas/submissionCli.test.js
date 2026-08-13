@@ -57,6 +57,11 @@ test('standalone bundle verification is independent of external candidate drift'
     cwd: new URL('../..', import.meta.url), encoding: 'utf8', timeout: 120_000
   });
   assert.equal(verification.status, 0);
+  const independent = spawnSync('python3', ['independent_verifier/verify_submission_bundle.py', bundlePath], {
+    cwd: new URL('../..', import.meta.url), encoding: 'utf8', timeout: 120_000
+  });
+  assert.equal(independent.status, 0, independent.stderr || independent.stdout);
+  assert.equal(JSON.parse(independent.stdout).incumbents, 311);
   await writeFile(candidate, `${template} `);
   verification = spawnSync(process.execPath, ['cli/verify-submission-bundle.js', bundlePath], {
     cwd: new URL('../..', import.meta.url), encoding: 'utf8', timeout: 120_000
@@ -106,4 +111,9 @@ test('standalone verification rejects stored decision tampering', async () => {
   });
   assert.equal(verification.status, 1);
   assert.ok(JSON.parse(verification.stdout).errors.some(error => error.startsWith('DECISION_REPLAY_MISMATCH:')));
+  const independent = spawnSync('python3', ['independent_verifier/verify_submission_bundle.py', bundlePath], {
+    cwd: new URL('../..', import.meta.url), encoding: 'utf8', timeout: 120_000
+  });
+  assert.equal(independent.status, 1);
+  assert.ok(JSON.parse(independent.stdout).errors.some(error => error.startsWith('DECISION_REPLAY_MISMATCH:')));
 });

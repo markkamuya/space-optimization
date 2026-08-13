@@ -23,6 +23,7 @@
     "atlas:freeze": "node scripts/freeze-v2-release.js",
     "atlas:submission": "node cli/submission.js",
     "atlas:submission-verify": "node cli/verify-submission-bundle.js",
+    "atlas:submission-cross-verify": "python3 independent_verifier/verify_submission_bundle.py",
     "atlas:report": "node cli/report.js",
     "atlas:archive": "sh scripts/package-archive.sh",
     "atlas:archive-audit": "node scripts/audit-v2-archive.js",

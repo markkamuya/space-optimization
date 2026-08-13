@@ -29,6 +29,7 @@ jobs:
           mapfile -t records < /tmp/records.txt
           npm run atlas:submission -- "${records[@]}" --output submission-reports/review-bundle.json
           npm run atlas:submission-verify -- submission-reports/review-bundle.json
+          npm run atlas:submission-cross-verify -- submission-reports/review-bundle.json
           while IFS= read -r record; do
             name="$(basename "$record" .json)"
             npm run atlas:report -- "$record" "submission-reports/$name.svg"

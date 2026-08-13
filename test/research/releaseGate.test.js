@@ -84,5 +84,6 @@ test('submission CI persists and independently verifies review evidence', async 
   );
   assert.match(workflow, /--output submission-reports\/review-bundle\.json/);
   assert.match(workflow, /atlas:submission-verify -- submission-reports\/review-bundle\.json/);
+  assert.match(workflow, /atlas:submission-cross-verify -- submission-reports\/review-bundle\.json/);
   assert.match(workflow, /name: atlas-submission-review-evidence/);
 });
