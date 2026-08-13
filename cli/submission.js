@@ -11,9 +11,20 @@ if (paths.length === 0) {
 const publishedRecords = await loadPublishedRecords();
 const results = [];
 for (const path of paths) {
-  const candidate = JSON.parse(await readFile(path, 'utf8'));
-  const report = assessSubmission(candidate, publishedRecords);
-  results.push({ path, report });
-  if (report.disposition.startsWith('reject_')) process.exitCode = 1;
+  try {
+    const candidate = JSON.parse(await readFile(path, 'utf8'));
+    const report = assessSubmission(candidate, publishedRecords);
+    results.push({ path, report });
+    if (report.disposition.startsWith('reject_')) process.exitCode = 1;
+  } catch (error) {
+    results.push({
+      path,
+      error: {
+        code: error instanceof SyntaxError ? 'INVALID_JSON' : 'UNREADABLE_SUBMISSION',
+        message: error.message
+      }
+    });
+    process.exitCode = 1;
+  }
 }
 console.log(JSON.stringify(results, null, 2));
