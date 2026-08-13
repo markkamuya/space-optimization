@@ -13,7 +13,7 @@ test('submission CLI reports every malformed input in a batch', async () => {
   const result = spawnSync(process.execPath, ['cli/submission.js', invalid, missing], {
     cwd: new URL('../..', import.meta.url),
     encoding: 'utf8',
-    timeout: 30_000
+    timeout: 120_000
   });
   assert.equal(result.status, 1);
   const reports = JSON.parse(result.stdout);

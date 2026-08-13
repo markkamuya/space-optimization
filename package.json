@@ -12,6 +12,7 @@
     "benchmark": "node benchmarks/run.js",
     "atlas:verify": "node cli/verify.js",
     "atlas:benchmark": "node benchmarks/atlas.js",
+    "atlas:submission-benchmark": "node benchmarks/submission.js",
     "atlas:release": "node scripts/build-atlas-release.js",
     "atlas:research": "node scripts/build-research-release.js",
     "atlas:v2": "node scripts/build-v2-release.js",

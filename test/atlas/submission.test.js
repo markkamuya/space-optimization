@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFile } from 'node:fs/promises';
 import { ATLAS_RECORDS } from '../../src/atlas/catalog.js';
 import {
   buildVerifiedIncumbentIndex,
@@ -109,8 +110,11 @@ test('submission comparison uses adaptive canonical incumbents', async () => {
 });
 
 test('published incumbents are independently replayed before comparison', async () => {
-  const published = await loadPublishedRecords();
-  const canonical = published.find(record => typeof record.experimentId === 'string');
+  const release = JSON.parse(await readFile(
+    new URL('../../public/atlas-v2.json', import.meta.url),
+    'utf8'
+  ));
+  const canonical = release.records[0];
   const tampered = structuredClone(canonical);
   tampered.solution.placements[0].x += 0.01;
   assert.throws(
@@ -120,13 +124,24 @@ test('published incumbents are independently replayed before comparison', async 
 });
 
 test('verified incumbent index maps fingerprints and problem identities', async () => {
-  const records = await loadPublishedRecords();
+  const records = ATLAS_RECORDS;
   const index = buildVerifiedIncumbentIndex(records);
   const record = records[0];
   assert.equal(index.verified, true);
   assert.equal(index.byFingerprint.get(record.verification.fingerprint), record);
   assert.ok(index.byProblem.get(packingProblemIdentity(record.problem)).includes(record));
   assert.ok(Object.isFrozen(index.records));
+});
+
+test('indexed and scanned comparisons produce identical decisions', async () => {
+  const records = ATLAS_RECORDS;
+  const candidate = asCandidate(records[0]);
+  const scanned = assessSubmission(candidate, records);
+  const indexed = assessSubmission(candidate, buildVerifiedIncumbentIndex(records));
+  assert.equal(indexed.disposition, scanned.disposition);
+  assert.equal(indexed.comparison.duplicateOf, scanned.comparison.duplicateOf);
+  assert.equal(indexed.comparison.bestKnownId, scanned.comparison.bestKnownId);
+  assert.equal(indexed.comparison.comparisonMode, 'verified_index');
 });
 
 test('malformed submissions are rejected without crashing identity comparison', () => {

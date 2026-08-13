@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 import { readFile } from 'node:fs/promises';
 import { assessSubmission } from '../src/atlas/submission.js';
-import { loadPublishedRecords } from '../src/atlas/published.js';
+import { loadPublishedIncumbentIndex } from '../src/atlas/published.js';
 
 const paths = process.argv.slice(2);
 if (paths.length === 0) {
   console.error('Usage: npm run atlas:submission -- path/to/record.json [...]');
   process.exit(2);
 }
-const publishedRecords = await loadPublishedRecords();
+const publishedRecords = await loadPublishedIncumbentIndex();
 const results = [];
 for (const path of paths) {
   try {
