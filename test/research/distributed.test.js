@@ -93,7 +93,7 @@ test('worker validation accepts zero as a deterministic seed', () => {
     placements: record.solution.placements,
     utilization: record.verification.utilization
   }, record);
-  assert.equal(result.errors.includes('missing_seed'), false);
+  assert.equal(result.errors.includes('invalid_seed'), false);
   assert.equal(result.errors.includes('missing_solver_version'), false);
 });
 
@@ -109,6 +109,29 @@ test('worker validation requires a solver version for reproducibility', () => {
     utilization: record.verification.utilization
   }, record);
   assert.ok(result.errors.includes('missing_solver_version'));
+});
+
+test('worker validation rejects non-reproducible seed and version values', () => {
+  const records = RESEARCH_RECORDS.map(canonicalRecord);
+  const [task] = buildWorkQueue(records);
+  const record = records.find(candidate => candidate.id === task.recordId);
+  const base = {
+    taskId: task.taskId,
+    recordId: task.recordId,
+    experimentId: task.experimentId,
+    problem: record.problem,
+    placements: record.solution.placements,
+    utilization: record.verification.utilization,
+    budgetUsed: { orientationEvaluations: 1, wallTimeSeconds: 1 }
+  };
+  for (const seed of [{}, Number.NaN, Number.POSITIVE_INFINITY, '', ' '.repeat(2), 'x'.repeat(257)]) {
+    const result = validateWorkerResult(task, { ...base, seed, solverVersion: 'solver/1.0.0' }, record);
+    assert.ok(result.errors.includes('invalid_seed'));
+  }
+  for (const solverVersion of [{}, 'solver\nforged', 'x'.repeat(257)]) {
+    const result = validateWorkerResult(task, { ...base, seed: 0, solverVersion }, record);
+    assert.ok(result.errors.includes('missing_solver_version'));
+  }
 });
 
 test('worker validation reports malformed envelopes without throwing', () => {

@@ -38,8 +38,11 @@ export function validateWorkerResult(task, candidate, assignedRecord) {
     Math.abs(queuedTask.baselineUtilization - (assignedRecord?.verification?.utilization ?? NaN)) > 1e-10) {
     errors.push('stale_baseline_utilization');
   }
-  if (submitted.seed === undefined || submitted.seed === null || submitted.seed === '') errors.push('missing_seed');
-  if (typeof submitted.solverVersion !== 'string' || submitted.solverVersion.trim().length === 0) {
+  const validSeed = (typeof submitted.seed === 'string' && submitted.seed.trim().length > 0 && submitted.seed.length <= 256) ||
+    (typeof submitted.seed === 'number' && Number.isFinite(submitted.seed));
+  if (!validSeed) errors.push('invalid_seed');
+  if (typeof submitted.solverVersion !== 'string' || submitted.solverVersion.trim().length === 0 ||
+    submitted.solverVersion.length > 256 || /[\u0000-\u001f\u007f]/.test(submitted.solverVersion)) {
     errors.push('missing_solver_version');
   }
   if (!submitted.budgetUsed || typeof submitted.budgetUsed !== 'object' ||
