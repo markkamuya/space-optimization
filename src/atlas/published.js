@@ -2,7 +2,9 @@ import { readFile } from 'node:fs/promises';
 import { ATLAS_RECORDS } from './catalog.js';
 import { verifyPacking } from './verifier.js';
 import { CANONICAL_FORMAT, validateCanonicalRecords } from '../research/registry.js';
-import { packingProblemIdentity } from './submission.js';
+import { packingProblemIdentity } from './problemIdentity.js';
+
+const trustedIndexes = new WeakMap();
 
 export function validatePublishedRelease(release) {
   if (release?.format !== CANONICAL_FORMAT || !Array.isArray(release?.records)) {
@@ -39,12 +41,18 @@ export function buildVerifiedIncumbentIndex(records) {
     comparable.sort((left, right) => right.verification.utilization - left.verification.utilization);
     Object.freeze(comparable);
   }
-  return Object.freeze({
-    verified: true,
-    records: Object.freeze([...records]),
-    byFingerprint,
-    byProblem
-  });
+  const index = Object.freeze({ kind: 'verified-incumbent-index' });
+  trustedIndexes.set(index, { byFingerprint, byProblem });
+  return index;
+}
+
+export function queryVerifiedIncumbentIndex(index, fingerprint, identity) {
+  const trusted = trustedIndexes.get(index);
+  if (!trusted) return null;
+  return {
+    duplicate: trusted.byFingerprint.get(fingerprint),
+    comparable: identity === null ? [] : (trusted.byProblem.get(identity) ?? [])
+  };
 }
 
 export async function loadPublishedRecords(

@@ -127,10 +127,18 @@ test('verified incumbent index maps fingerprints and problem identities', async 
   const records = ATLAS_RECORDS;
   const index = buildVerifiedIncumbentIndex(records);
   const record = records[0];
-  assert.equal(index.verified, true);
-  assert.equal(index.byFingerprint.get(record.verification.fingerprint), record);
-  assert.ok(index.byProblem.get(packingProblemIdentity(record.problem)).includes(record));
-  assert.ok(Object.isFrozen(index.records));
+  assert.equal(index.kind, 'verified-incumbent-index');
+  assert.equal('byFingerprint' in index, false);
+  assert.equal('byProblem' in index, false);
+  assert.ok(Object.isFrozen(index));
+});
+
+test('forged verified indexes cannot activate the trusted fast path', () => {
+  const candidate = asCandidate(ATLAS_RECORDS[0]);
+  const forged = { verified: true, byFingerprint: new Map(), byProblem: new Map() };
+  const report = assessSubmission(candidate, forged);
+  assert.equal(report.comparison.comparisonMode, 'record_scan');
+  assert.equal(report.disposition, 'new_problem');
 });
 
 test('indexed and scanned comparisons produce identical decisions', async () => {
