@@ -80,3 +80,24 @@ test('worker results are bound to the queued experiment and exact baseline', () 
   assert.ok(result.errors.includes('stale_baseline_fingerprint'));
   assert.ok(result.errors.includes('stale_baseline_utilization'));
 });
+
+test('worker validation accepts zero as a deterministic seed', () => {
+  const records = RESEARCH_RECORDS.map(canonicalRecord);
+  const [task] = buildWorkQueue(records);
+  const record = records.find(candidate => candidate.id === task.recordId);
+  const result = validateWorkerResult(task, {
+    recordId: task.recordId,
+    seed: 0,
+    problem: record.problem,
+    placements: record.solution.placements,
+    utilization: record.verification.utilization
+  }, record);
+  assert.equal(result.errors.includes('missing_seed'), false);
+});
+
+test('worker validation reports malformed envelopes without throwing', () => {
+  const result = validateWorkerResult(null, null, null);
+  assert.equal(result.valid, false);
+  assert.ok(result.errors.includes('invalid_task'));
+  assert.ok(result.errors.includes('invalid_candidate'));
+});
