@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { mkdtemp, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -24,6 +24,20 @@ test('submission CLI reports every malformed input in a batch', async () => {
     'UNREADABLE_SUBMISSION'
   ]);
   assert.equal(verifySubmissionAttestation(batch.attestation, batch.results), true);
+});
+
+test('submission CLI atomically writes a portable batch bundle', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'atlas-bundle-'));
+  const invalid = join(directory, 'invalid.json');
+  const bundlePath = join(directory, 'bundle.json');
+  await writeFile(invalid, '{');
+  const result = spawnSync(process.execPath, ['cli/submission.js', invalid, '--output', bundlePath], {
+    cwd: new URL('../..', import.meta.url), encoding: 'utf8', timeout: 120_000
+  });
+  assert.equal(result.status, 1);
+  const bundle = JSON.parse(await readFile(bundlePath, 'utf8'));
+  assert.equal(bundle.format, 'triangle-packing-submission-batch/v1');
+  assert.equal(verifySubmissionAttestation(bundle.attestation, bundle.results), true);
 });
 
 test('submission attestations are deterministic and outcome-bound', () => {

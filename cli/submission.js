@@ -1,11 +1,15 @@
 #!/usr/bin/env node
-import { readFile } from 'node:fs/promises';
+import { readFile, rename, writeFile } from 'node:fs/promises';
 import { assessSubmission } from '../src/atlas/submission.js';
 import { loadPublishedIncumbentIndex } from '../src/atlas/published.js';
 import { candidatePayloadDigest, createSubmissionAttestation } from '../src/atlas/attestation.js';
 import { queryVerifiedIncumbentIndex } from '../src/atlas/published.js';
 
-const paths = process.argv.slice(2);
+const args = process.argv.slice(2);
+const outputIndex = args.indexOf('--output');
+const output = outputIndex >= 0 ? args[outputIndex + 1] : null;
+if (outputIndex >= 0) args.splice(outputIndex, 2);
+const paths = args;
 if (paths.length === 0) {
   console.error('Usage: npm run atlas:submission -- path/to/record.json [...]');
   process.exit(2);
@@ -31,8 +35,15 @@ for (const path of paths) {
   }
 }
 const incumbentIndexDigest = queryVerifiedIncumbentIndex(publishedRecords, null, null).sourceDigest;
-console.log(JSON.stringify({
+const bundle = {
   format: 'triangle-packing-submission-batch/v1',
   results,
   attestation: createSubmissionAttestation(incumbentIndexDigest, results)
-}, null, 2));
+};
+const serialized = `${JSON.stringify(bundle, null, 2)}\n`;
+if (output) {
+  const temporary = `${output}.tmp-${process.pid}`;
+  await writeFile(temporary, serialized);
+  await rename(temporary, output);
+}
+console.log(serialized.trimEnd());
