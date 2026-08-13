@@ -27,7 +27,9 @@ export function validateWorkerResult(task, candidate, assignedRecord) {
   const submitted = candidate && typeof candidate === 'object' && !Array.isArray(candidate) ? candidate : {};
   if (queuedTask !== task) errors.push('invalid_task');
   if (submitted !== candidate) errors.push('invalid_candidate');
+  if (submitted.taskId !== queuedTask.taskId) errors.push('task_id_mismatch');
   if (submitted.recordId !== queuedTask.recordId) errors.push('record_id_mismatch');
+  if (submitted.experimentId !== queuedTask.experimentId) errors.push('experiment_id_mismatch');
   if (queuedTask.experimentId !== assignedRecord?.experimentId) errors.push('task_experiment_mismatch');
   if (queuedTask.baselineFingerprint !== assignedRecord?.verification?.fingerprint) {
     errors.push('stale_baseline_fingerprint');

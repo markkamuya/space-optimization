@@ -117,3 +117,21 @@ test('worker validation reports malformed envelopes without throwing', () => {
   assert.ok(result.errors.includes('invalid_task'));
   assert.ok(result.errors.includes('invalid_candidate'));
 });
+
+test('worker results are bound to the exact task and experiment identifiers', () => {
+  const records = RESEARCH_RECORDS.map(canonicalRecord);
+  const [task] = buildWorkQueue(records);
+  const record = records.find(candidate => candidate.id === task.recordId);
+  const result = validateWorkerResult(task, {
+    taskId: `${task.taskId}-wrong`,
+    recordId: task.recordId,
+    experimentId: `${task.experimentId}-wrong`,
+    seed: 'worker-replayed-envelope',
+    solverVersion: 'atlas-worker/1.0.0',
+    problem: record.problem,
+    placements: record.solution.placements,
+    utilization: record.verification.utilization
+  }, record);
+  assert.ok(result.errors.includes('task_id_mismatch'));
+  assert.ok(result.errors.includes('experiment_id_mismatch'));
+});
