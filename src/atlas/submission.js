@@ -38,6 +38,18 @@ export function packingProblemIdentity(problem) {
 
 export function assessSubmission(candidate, publishedRecords) {
   const schema = validateRecordShape(candidate);
+  const addSchemaError = (path, message) => schema.errors.push({ path, message });
+  if (typeof candidate?.provenance?.version !== 'string' || candidate.provenance.version.trim().length === 0) {
+    addSchemaError('provenance.version', 'Solver or construction version is required');
+  }
+  const seed = candidate?.provenance?.seed;
+  const validSeed = (typeof seed === 'string' && seed.trim().length > 0 && seed.length <= 256) ||
+    (typeof seed === 'number' && Number.isFinite(seed));
+  if (!validSeed) addSchemaError('provenance.seed', 'A finite number or non-empty deterministic seed is required');
+  if (!Number.isFinite(candidate?.provenance?.runtimeMs) || candidate.provenance.runtimeMs < 0) {
+    addSchemaError('provenance.runtimeMs', 'Runtime must be a non-negative finite number');
+  }
+  schema.valid = schema.errors.length === 0;
   const verification = verifyAtlasRecord(candidate);
   const fingerprint = verification.normalizedProblem && verification.normalizedState
     ? packingFingerprint(verification.normalizedProblem, verification.normalizedState)

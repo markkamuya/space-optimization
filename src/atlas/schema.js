@@ -9,7 +9,7 @@ const ALLOWED_TRIANGLE_FIELDS = new Set(['id', 'sides', 'color']);
 const ALLOWED_SOLUTION_FIELDS = new Set(['construction', 'placements']);
 const ALLOWED_PLACEMENT_FIELDS = new Set(['x', 'y', 'angle', 'reflect']);
 const ALLOWED_PROVENANCE_FIELDS = new Set([
-  'generator', 'version', 'seed', 'runtimeMs', 'contributor', 'createdAt'
+  'generator', 'version', 'seed', 'runtimeMs', 'contributor', 'license', 'createdAt'
 ]);
 
 function rejectUnknownFields(value, allowed, path, add) {

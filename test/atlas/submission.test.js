@@ -14,7 +14,11 @@ function asCandidate(record, overrides = {}) {
     evidence: { status: 'candidate' },
     provenance: {
       generator: 'test',
+      version: '1.0.0',
+      seed: 'test-seed',
+      runtimeMs: 0,
       contributor: 'Test contributor',
+      license: 'CC-BY-4.0',
       createdAt: '2026-07-26T00:00:00.000Z'
     },
     ...overrides
@@ -111,4 +115,23 @@ test('malformed submissions are rejected without crashing identity comparison', 
   assert.equal(report.disposition, 'reject_invalid');
   assert.deepEqual(report.comparison.comparableRecords, []);
   assert.ok(report.schema.errors.some(error => error.path === 'problem'));
+});
+
+test('submissions require reproducible solver provenance', () => {
+  const record = ATLAS_RECORDS[0];
+  const report = assessSubmission(asCandidate(record, {
+    provenance: {
+      generator: 'solver',
+      version: '',
+      seed: Number.NaN,
+      runtimeMs: -1,
+      contributor: 'Test contributor',
+      license: 'CC-BY-4.0',
+      createdAt: '2026-07-26T00:00:00.000Z'
+    }
+  }), []);
+  assert.equal(report.disposition, 'reject_invalid');
+  for (const path of ['provenance.version', 'provenance.seed', 'provenance.runtimeMs']) {
+    assert.ok(report.schema.errors.some(error => error.path === path));
+  }
 });
