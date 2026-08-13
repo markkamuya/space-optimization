@@ -128,6 +128,18 @@ test('malformed submissions are rejected without crashing identity comparison', 
   assert.ok(report.schema.errors.some(error => error.path === 'problem'));
 });
 
+test('submission comparison quarantines malformed published incumbents', () => {
+  const candidate = asCandidate(ATLAS_RECORDS[0]);
+  const report = assessSubmission(candidate, [
+    null,
+    { verification: { valid: true, fingerprint: 'forged', utilization: 1 }, problem: null },
+    ATLAS_RECORDS[0]
+  ]);
+  assert.equal(report.disposition, 'reject_duplicate');
+  assert.equal(report.comparison.duplicateOf, ATLAS_RECORDS[0].id);
+  assert.equal(report.comparison.quarantinedIncumbents, 2);
+});
+
 test('submissions require reproducible solver provenance', () => {
   const record = ATLAS_RECORDS[0];
   const report = assessSubmission(asCandidate(record, {

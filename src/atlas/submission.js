@@ -69,9 +69,27 @@ export function assessSubmission(candidate, publishedRecords) {
       candidateIdentity = null;
     }
   }
-  const comparable = candidateIdentity === null ? [] : publishedRecords.filter(record =>
-    packingProblemIdentity(record.problem) === candidateIdentity);
-  const duplicate = publishedRecords.find(record => record.verification?.fingerprint === fingerprint);
+  const safeIncumbents = [];
+  let quarantinedIncumbents = 0;
+  for (const record of Array.isArray(publishedRecords) ? publishedRecords : []) {
+    if (!record || typeof record !== 'object' || !record.verification?.valid ||
+      typeof record.verification.fingerprint !== 'string' ||
+      !Number.isFinite(record.verification.utilization)) {
+      quarantinedIncumbents += 1;
+      continue;
+    }
+    try {
+      safeIncumbents.push({ record, identity: packingProblemIdentity(record.problem) });
+    } catch {
+      quarantinedIncumbents += 1;
+    }
+  }
+  const comparable = candidateIdentity === null ? [] : safeIncumbents
+    .filter(entry => entry.identity === candidateIdentity)
+    .map(entry => entry.record);
+  const duplicate = safeIncumbents
+    .map(entry => entry.record)
+    .find(record => record.verification.fingerprint === fingerprint);
   const best = comparable
     .filter(record => record.verification?.valid)
     .sort((a, b) => b.verification.utilization - a.verification.utilization)[0];
@@ -92,7 +110,8 @@ export function assessSubmission(candidate, publishedRecords) {
       bestKnownId: best?.id ?? null,
       bestKnownUtilization: best?.verification?.utilization ?? null,
       candidateUtilization,
-      improvement: delta
+      improvement: delta,
+      quarantinedIncumbents
     },
     disposition,
     humanReviewRequired: ['published', 'proven_optimal'].includes(candidate?.evidence?.status)
