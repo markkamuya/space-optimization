@@ -66,3 +66,13 @@ test('GitHub CI rejects uncommitted generated release drift', async () => {
     'releases/2.0.0-canonical.json'
   ]) assert.ok(workflow.includes(artifact));
 });
+
+test('submission CI validates all changed records in one incumbent replay', async () => {
+  const workflow = await readFile(
+    new URL('../../.github/workflows/submission.yml', import.meta.url),
+    'utf8'
+  );
+  assert.match(workflow, /mapfile -t records/);
+  assert.match(workflow, /npm run atlas:submission -- "\$\{records\[@\]\}"/);
+  assert.doesNotMatch(workflow, /while[\s\S]*npm run atlas:submission -- "\$record"/);
+});

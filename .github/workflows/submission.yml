@@ -26,9 +26,10 @@ jobs:
       - name: Verify, compare, and render every record
         run: |
           mkdir -p submission-reports
+          mapfile -t records < /tmp/records.txt
+          npm run atlas:submission -- "${records[@]}"
           while IFS= read -r record; do
             name="$(basename "$record" .json)"
-            npm run atlas:submission -- "$record"
             npm run atlas:report -- "$record" "submission-reports/$name.svg"
           done < /tmp/records.txt
       - name: Rebuild canonical registry
