@@ -131,6 +131,15 @@ test('verified incumbent index maps fingerprints and problem identities', async 
   assert.equal('byFingerprint' in index, false);
   assert.equal('byProblem' in index, false);
   assert.ok(Object.isFrozen(index));
+  const report = assessSubmission(asCandidate(record), index);
+  assert.match(report.comparison.incumbentIndexDigest, /^[0-9a-f]{64}$/);
+  assert.equal(report.comparison.incumbentCount, records.length);
+});
+
+test('verified incumbent index rejects geometry or claim drift', () => {
+  const tampered = structuredClone(ATLAS_RECORDS[0]);
+  tampered.verification.fingerprint = 'forged';
+  assert.throws(() => buildVerifiedIncumbentIndex([tampered]), /Cannot index unverified incumbent/);
 });
 
 test('forged verified indexes cannot activate the trusted fast path', () => {

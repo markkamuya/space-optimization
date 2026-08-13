@@ -84,7 +84,9 @@ export function assessSubmission(candidate, publishedRecords) {
       candidateUtilization,
       improvement: delta,
       quarantinedIncumbents,
-      comparisonMode: indexed ? 'verified_index' : 'record_scan'
+      comparisonMode: indexed ? 'verified_index' : 'record_scan',
+      incumbentIndexDigest: indexed ? indexedResult.sourceDigest : null,
+      incumbentCount: indexed ? indexedResult.size : safeIncumbents.length
     },
     disposition,
     humanReviewRequired: ['published', 'proven_optimal'].includes(candidate?.evidence?.status)

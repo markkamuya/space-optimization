@@ -37,7 +37,8 @@ const report = {
   scannedMs: Number(scannedMs.toFixed(2)),
   indexedMs: Number(indexedMs.toFixed(2)),
   speedup: Number((scannedMs / indexedMs).toFixed(2)),
+  incumbentIndexDigest: assessSubmission(candidate, index).comparison.incumbentIndexDigest,
   passes: indexedMs < scannedMs
 };
 console.log(JSON.stringify(report, null, 2));
-if (!report.passes) process.exitCode = 1;
+if (!report.passes || !/^[0-9a-f]{64}$/.test(report.incumbentIndexDigest)) process.exitCode = 1;

@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { ATLAS_RECORDS } from './catalog.js';
 import { verifyPacking } from './verifier.js';
 import { CANONICAL_FORMAT, validateCanonicalRecords } from '../research/registry.js';
@@ -27,7 +28,7 @@ export function validatePublishedRelease(release) {
   return release.records;
 }
 
-export function buildVerifiedIncumbentIndex(records) {
+function createVerifiedIncumbentIndex(records) {
   const byFingerprint = new Map();
   const byProblem = new Map();
   for (const record of records) {
@@ -42,8 +43,25 @@ export function buildVerifiedIncumbentIndex(records) {
     Object.freeze(comparable);
   }
   const index = Object.freeze({ kind: 'verified-incumbent-index' });
-  trustedIndexes.set(index, { byFingerprint, byProblem });
+  const sourceDigest = createHash('sha256').update(JSON.stringify(records.map(record => ({
+    id: record.id,
+    fingerprint: record.verification.fingerprint,
+    utilization: record.verification.utilization
+  })))).digest('hex');
+  trustedIndexes.set(index, { byFingerprint, byProblem, sourceDigest, size: records.length });
   return index;
+}
+
+export function buildVerifiedIncumbentIndex(records) {
+  if (!Array.isArray(records)) throw new Error('Verified incumbent records must be an array');
+  for (const record of records) {
+    const replay = verifyPacking(record?.problem, record?.solution?.placements);
+    if (!replay.valid || replay.fingerprint !== record?.verification?.fingerprint ||
+      Math.abs(replay.metrics.utilization - record?.verification?.utilization) > 1e-10) {
+      throw new Error(`Cannot index unverified incumbent: ${record?.id ?? 'unknown'}`);
+    }
+  }
+  return createVerifiedIncumbentIndex(records);
 }
 
 export function queryVerifiedIncumbentIndex(index, fingerprint, identity) {
@@ -51,7 +69,9 @@ export function queryVerifiedIncumbentIndex(index, fingerprint, identity) {
   if (!trusted) return null;
   return {
     duplicate: trusted.byFingerprint.get(fingerprint),
-    comparable: identity === null ? [] : (trusted.byProblem.get(identity) ?? [])
+    comparable: identity === null ? [] : (trusted.byProblem.get(identity) ?? []),
+    sourceDigest: trusted.sourceDigest,
+    size: trusted.size
   };
 }
 
@@ -66,7 +86,7 @@ export async function loadPublishedIncumbentIndex(
   source = new URL('../../public/atlas-v2.json', import.meta.url)
 ) {
   const release = JSON.parse(await readFile(source, 'utf8'));
-  return buildVerifiedIncumbentIndex([
+  return createVerifiedIncumbentIndex([
     ...ATLAS_RECORDS,
     ...validatePublishedRelease(release)
   ]);
