@@ -2,6 +2,8 @@
 import { readFile } from 'node:fs/promises';
 import { assessSubmission } from '../src/atlas/submission.js';
 import { loadPublishedIncumbentIndex } from '../src/atlas/published.js';
+import { candidatePayloadDigest, createSubmissionAttestation } from '../src/atlas/attestation.js';
+import { queryVerifiedIncumbentIndex } from '../src/atlas/published.js';
 
 const paths = process.argv.slice(2);
 if (paths.length === 0) {
@@ -12,9 +14,10 @@ const publishedRecords = await loadPublishedIncumbentIndex();
 const results = [];
 for (const path of paths) {
   try {
-    const candidate = JSON.parse(await readFile(path, 'utf8'));
+    const payload = await readFile(path, 'utf8');
+    const candidate = JSON.parse(payload);
     const report = assessSubmission(candidate, publishedRecords);
-    results.push({ path, report });
+    results.push({ path, candidateSha256: candidatePayloadDigest(payload), report });
     if (report.disposition.startsWith('reject_')) process.exitCode = 1;
   } catch (error) {
     results.push({
@@ -27,4 +30,9 @@ for (const path of paths) {
     process.exitCode = 1;
   }
 }
-console.log(JSON.stringify(results, null, 2));
+const incumbentIndexDigest = queryVerifiedIncumbentIndex(publishedRecords, null, null).sourceDigest;
+console.log(JSON.stringify({
+  format: 'triangle-packing-submission-batch/v1',
+  results,
+  attestation: createSubmissionAttestation(incumbentIndexDigest, results)
+}, null, 2));

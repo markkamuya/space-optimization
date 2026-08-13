@@ -4,6 +4,7 @@ import { mkdtemp, writeFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { createSubmissionAttestation, verifySubmissionAttestation } from '../../src/atlas/attestation.js';
 
 test('submission CLI reports every malformed input in a batch', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'atlas-submission-'));
@@ -16,9 +17,23 @@ test('submission CLI reports every malformed input in a batch', async () => {
     timeout: 120_000
   });
   assert.equal(result.status, 1);
-  const reports = JSON.parse(result.stdout);
-  assert.deepEqual(reports.map(report => report.error.code), [
+  const batch = JSON.parse(result.stdout);
+  assert.equal(batch.format, 'triangle-packing-submission-batch/v1');
+  assert.deepEqual(batch.results.map(report => report.error.code), [
     'INVALID_JSON',
     'UNREADABLE_SUBMISSION'
   ]);
+  assert.equal(verifySubmissionAttestation(batch.attestation, batch.results), true);
+});
+
+test('submission attestations are deterministic and outcome-bound', () => {
+  const results = [{ path: 'candidate.json', candidateSha256: 'a'.repeat(64), report: {
+    disposition: 'improves_record', comparison: { incumbentIndexDigest: 'b'.repeat(64) }
+  } }];
+  const first = createSubmissionAttestation('b'.repeat(64), results);
+  const second = createSubmissionAttestation('b'.repeat(64), structuredClone(results));
+  assert.deepEqual(first, second);
+  assert.equal(verifySubmissionAttestation(first, results), true);
+  results[0].report.disposition = 'reject_inferior';
+  assert.equal(verifySubmissionAttestation(first, results), false);
 });
