@@ -80,3 +80,23 @@ test('submission attestations are deterministic and outcome-bound', () => {
   results[0].report.disposition = 'reject_inferior';
   assert.equal(verifySubmissionAttestation(first, results), false);
 });
+
+test('standalone verification rejects stored decision tampering', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'atlas-decision-replay-'));
+  const candidate = join(directory, 'candidate.json');
+  const bundlePath = join(directory, 'bundle.json');
+  const template = await readFile(new URL('../../atlas/submissions/template.json', import.meta.url), 'utf8');
+  await writeFile(candidate, template);
+  spawnSync(process.execPath, ['cli/submission.js', candidate, '--output', bundlePath], {
+    cwd: new URL('../..', import.meta.url), encoding: 'utf8', timeout: 120_000
+  });
+  const bundle = JSON.parse(await readFile(bundlePath, 'utf8'));
+  bundle.results[0].report.disposition = 'improves_record';
+  bundle.attestation = createSubmissionAttestation(bundle.attestation.incumbentIndexDigest, bundle.results);
+  await writeFile(bundlePath, JSON.stringify(bundle));
+  const verification = spawnSync(process.execPath, ['cli/verify-submission-bundle.js', bundlePath], {
+    cwd: new URL('../..', import.meta.url), encoding: 'utf8', timeout: 120_000
+  });
+  assert.equal(verification.status, 1);
+  assert.ok(JSON.parse(verification.stdout).errors.some(error => error.startsWith('DECISION_REPLAY_MISMATCH:')));
+});
