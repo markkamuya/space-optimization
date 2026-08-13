@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { ATLAS_RECORDS } from '../../src/atlas/catalog.js';
-import { loadPublishedRecords, validatePublishedRelease } from '../../src/atlas/published.js';
+import {
+  buildVerifiedIncumbentIndex,
+  loadPublishedRecords,
+  validatePublishedRelease
+} from '../../src/atlas/published.js';
 import { assessSubmission, packingProblemIdentity } from '../../src/atlas/submission.js';
 import { RESEARCH_RECORDS } from '../../src/research/dataset.js';
 
@@ -113,6 +117,16 @@ test('published incumbents are independently replayed before comparison', async 
     () => validatePublishedRelease({ format: 'triangle-packing-atlas/v2', records: [tampered] }),
     /failed independent replay/
   );
+});
+
+test('verified incumbent index maps fingerprints and problem identities', async () => {
+  const records = await loadPublishedRecords();
+  const index = buildVerifiedIncumbentIndex(records);
+  const record = records[0];
+  assert.equal(index.verified, true);
+  assert.equal(index.byFingerprint.get(record.verification.fingerprint), record);
+  assert.ok(index.byProblem.get(packingProblemIdentity(record.problem)).includes(record));
+  assert.ok(Object.isFrozen(index.records));
 });
 
 test('malformed submissions are rejected without crashing identity comparison', () => {

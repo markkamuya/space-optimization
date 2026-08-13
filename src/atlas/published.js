@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { ATLAS_RECORDS } from './catalog.js';
 import { verifyPacking } from './verifier.js';
 import { CANONICAL_FORMAT, validateCanonicalRecords } from '../research/registry.js';
+import { packingProblemIdentity } from './submission.js';
 
 export function validatePublishedRelease(release) {
   if (release?.format !== CANONICAL_FORMAT || !Array.isArray(release?.records)) {
@@ -24,9 +25,41 @@ export function validatePublishedRelease(release) {
   return release.records;
 }
 
+export function buildVerifiedIncumbentIndex(records) {
+  const byFingerprint = new Map();
+  const byProblem = new Map();
+  for (const record of records) {
+    byFingerprint.set(record.verification.fingerprint, record);
+    const identity = packingProblemIdentity(record.problem);
+    const comparable = byProblem.get(identity) ?? [];
+    comparable.push(record);
+    byProblem.set(identity, comparable);
+  }
+  for (const comparable of byProblem.values()) {
+    comparable.sort((left, right) => right.verification.utilization - left.verification.utilization);
+    Object.freeze(comparable);
+  }
+  return Object.freeze({
+    verified: true,
+    records: Object.freeze([...records]),
+    byFingerprint,
+    byProblem
+  });
+}
+
 export async function loadPublishedRecords(
   source = new URL('../../public/atlas-v2.json', import.meta.url)
 ) {
   const release = JSON.parse(await readFile(source, 'utf8'));
   return [...ATLAS_RECORDS, ...validatePublishedRelease(release)];
+}
+
+export async function loadPublishedIncumbentIndex(
+  source = new URL('../../public/atlas-v2.json', import.meta.url)
+) {
+  const release = JSON.parse(await readFile(source, 'utf8'));
+  return buildVerifiedIncumbentIndex([
+    ...ATLAS_RECORDS,
+    ...validatePublishedRelease(release)
+  ]);
 }
