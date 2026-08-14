@@ -3,6 +3,7 @@ import { normalizeProblem } from './core/problem.js';
 import { renderPacking } from './rendering/canvas.js';
 import { escapeHtml, safeExternalUrl } from './ui/safeText.js';
 import { validatePublicRelease } from './ui/releaseValidation.js';
+import { loadIntegrityCheckedRelease } from './ui/shardedReleaseLoader.js';
 
 const $ = selector => document.querySelector(selector);
 const percent = value => `${(value * 100).toFixed(1)}%`;
@@ -294,9 +295,12 @@ function renderLeaderboard() {
 
 async function loadResearchRelease() {
   try {
-    const response = await fetch('/atlas-v2.json');
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const release = await response.json();
+    const loaded = await loadIntegrityCheckedRelease({
+      onProgress: progress => {
+        $('#resolution-label').textContent = `verified ${progress.loadedRecords} records from ${progress.loadedShards}/${progress.totalShards} shards…`;
+      }
+    });
+    const release = loaded.release;
     const validation = validatePublicRelease(release);
     if (!validation.valid) throw new Error(`Invalid public release: ${validation.errors[0]}`);
     canonicalRelease = release;
@@ -307,7 +311,9 @@ async function loadResearchRelease() {
         rectangleRatios: [...new Set(canonicalRelease.records
           .filter(record => record.family !== 'scalene')
           .map(record => record.parameters.rectangleRatio))],
-        resolution: `${canonicalRelease.coverage.records} canonical experiments`
+        resolution: loaded.source === 'verified_shards'
+          ? `${canonicalRelease.coverage.records} verified records · integrity-checked shards`
+          : `${canonicalRelease.coverage.records} verified records · checksum-checked fallback`
       }
     };
     $('#record-count').textContent = String(researchRelease.verifiedCount);
@@ -316,10 +322,10 @@ async function loadResearchRelease() {
     renderLeaderboard();
     renderResearchExplorer();
   } catch {
-    $('#resolution-label').textContent = 'curated fallback';
-    $('#research-result-count').textContent = 'The full dataset could not be loaded. Try refreshing the page.';
+    $('#resolution-label').textContent = 'verified dataset unavailable';
+    $('#research-result-count').textContent = 'The verified dataset could not be loaded safely. Try refreshing the page.';
     $('#research-results').setAttribute('aria-busy', 'false');
-    $('#research-results').innerHTML = '<p class="load-error">Showing the smaller curated collection instead. The full research dataset is temporarily unavailable.</p>';
+    $('#research-results').innerHTML = '<p class="load-error">The full dataset failed its availability or integrity checks. The interactive map remains available, but research records are hidden rather than showing partial data.</p>';
     $('#research-more').hidden = true;
   }
 }

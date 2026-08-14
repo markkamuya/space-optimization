@@ -43,6 +43,14 @@ Release audits reject missing, reordered, duplicated, truncated, or modified
 shards and require reconstruction to match `public/atlas-v2.json` exactly. The
 monolithic file remains available for backward compatibility.
 
+The web explorer loads the root index and verifies every shard with the Web
+Crypto API before making records searchable. It reports record/shard progress
+while loading. If any shard is unavailable or fails integrity checks, the
+explorer discards the partial assembly and accepts `public/atlas-v2.json` only
+after matching `public/atlas-v2.sha256`. If neither path verifies, research
+records remain hidden and the interface reports that verified data is
+unavailable; partial or unverified results are never presented as canonical.
+
 The frozen archival manifest records individual SHA-256 digests for the
 canonical JSON, CSV, audit, work queue, challenges, schemas, methodology,
 certificate policy, sharded release index and payloads, citation data, and
