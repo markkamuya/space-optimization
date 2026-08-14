@@ -12,6 +12,7 @@ import {
 import { buildWorkQueue } from '../src/research/distributed.js';
 import { canonicalCoverage } from '../src/research/release.js';
 import { buildCanonicalCsv } from '../src/research/exports.js';
+import { buildShardedRelease } from '../src/research/shardedRelease.js';
 import { verifyFiniteDomainProof } from '../src/research/finiteDomain.js';
 import {
   advanceFiniteDomainProofJob,
@@ -139,6 +140,7 @@ const release = {
   claimPolicy: 'literature/CLAIM_POLICY.md',
   finiteDomainProofIndex: 'public/finite-domain-proofs-v2.json',
   finiteDomainProofJobIndex: 'public/finite-domain-proof-jobs-v2.json',
+  shardedReleaseIndex: 'public/atlas-v2-shards.json',
   verificationPolicy: {
     independentImplementations: ['src/atlas/verifier.js', 'independent_verifier/verify_release.py'],
     tolerancePolicy: 'docs/NUMERICAL_POLICY.md',
@@ -148,11 +150,13 @@ const release = {
   transitions,
   records
 };
+const shardedRelease = buildShardedRelease(release, { recordsPerShard: 76 });
 
 const payload = `${JSON.stringify(release)}\n`;
 const checksum = createHash('sha256').update(payload).digest('hex');
 
 await mkdir(new URL('../public/', import.meta.url), { recursive: true });
+await mkdir(new URL('../public/atlas-v2-shards/', import.meta.url), { recursive: true });
 await mkdir(new URL('../releases/', import.meta.url), { recursive: true });
 await writeFile(new URL('../public/atlas-v2.json', import.meta.url), payload);
 await writeFile(new URL('../public/atlas-v2.csv', import.meta.url), buildCanonicalCsv(records));
@@ -160,6 +164,10 @@ await writeFile(new URL('../public/atlas-v2.sha256', import.meta.url), `${checks
 await writeFile(new URL('../public/work-queue-v2.json', import.meta.url), `${JSON.stringify({ format: 'tpa-work-queue/v1', version: '2.0.0', tasks: queue }, null, 2)}\n`);
 await writeFile(new URL('../public/finite-domain-proofs-v2.json', import.meta.url), `${JSON.stringify(proofIndex, null, 2)}\n`);
 await writeFile(new URL('../public/finite-domain-proof-jobs-v2.json', import.meta.url), `${JSON.stringify(proofJobIndex, null, 2)}\n`);
+await writeFile(new URL('../public/atlas-v2-shards.json', import.meta.url), `${JSON.stringify(shardedRelease.index, null, 2)}\n`);
+for (const [path, shardPayload] of shardedRelease.files) {
+  await writeFile(new URL(`../public/${path}`, import.meta.url), shardPayload);
+}
 await writeFile(new URL('../releases/2.0.0-canonical.json', import.meta.url), `${JSON.stringify({
   format: 'triangle-packing-atlas-release-manifest/v2',
   version: '2.0.0',
@@ -168,6 +176,7 @@ await writeFile(new URL('../releases/2.0.0-canonical.json', import.meta.url), `$
   queue: 'public/work-queue-v2.json',
   finiteDomainProofs: 'public/finite-domain-proofs-v2.json',
   finiteDomainProofJobs: 'public/finite-domain-proof-jobs-v2.json',
+  shardedRelease: 'public/atlas-v2-shards.json',
   sha256: checksum,
   records: records.length,
   audit,

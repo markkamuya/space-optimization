@@ -8,8 +8,8 @@
   "files": [
     {
       "path": "public/atlas-v2.json",
-      "bytes": 12184931,
-      "sha256": "729722421a6dafd4d89fe0350fd2b6978629eb52b059747591eff63d1125a8a8"
+      "bytes": 12184983,
+      "sha256": "97d77aceff2cf70f0358cce2a3c9b9d75e44d971f73f00fd9976c3d9917f6066"
     },
     {
       "path": "public/atlas-v2.csv",
@@ -17,9 +17,34 @@
       "sha256": "171536734dc3188ba000e396c4035a003a874399bc9dbb30283126feab562407"
     },
     {
+      "path": "public/atlas-v2-shards.json",
+      "bytes": 12786,
+      "sha256": "13b720c7392d6d34c101fa1f4549dbb298f79e6c019d3a4a2829f628983b058e"
+    },
+    {
+      "path": "public/atlas-v2-shards/000.json",
+      "bytes": 3291771,
+      "sha256": "ba57742b5f5ab76f0f011af079197ff0a72916deb0e841323b78f6973bd1fd86"
+    },
+    {
+      "path": "public/atlas-v2-shards/001.json",
+      "bytes": 2869120,
+      "sha256": "6ecdc82618c44e423ca15ff6d445bf591c9654b67f1b484ad7881c8b302fc5b1"
+    },
+    {
+      "path": "public/atlas-v2-shards/002.json",
+      "bytes": 2815231,
+      "sha256": "981bb8dee1c80abaedacd5110c05f4ce1839be4f6061967325708277d0d754df"
+    },
+    {
+      "path": "public/atlas-v2-shards/003.json",
+      "bytes": 3202824,
+      "sha256": "dd484ee57fbac2c39cfe2f01ff6e078b958887999c77a5108b14e19169fcf751"
+    },
+    {
       "path": "public/audit-v2.json",
-      "bytes": 1375,
-      "sha256": "4b8bcd3d42c9f9b78f3264d587ced4b7aa14cc1c2d2a9e0ddb7c4b73013d17ac"
+      "bytes": 1402,
+      "sha256": "5a5a3c8814bfbf8d667f255250020ab37236d94e9fa7723d813c2dbce084f945"
     },
     {
       "path": "public/work-queue-v2.json",
@@ -57,6 +82,11 @@
       "sha256": "c94960bbd808240254ae47fef13b4f9a75e93ac1cbfa099b01459d2a7a1bae6b"
     },
     {
+      "path": "schemas/sharded-release.schema.json",
+      "bytes": 1224,
+      "sha256": "4eae64fa765aa9ec9dfdb070277b21745de0aa99e6c57e646fcf8de2d1329e6f"
+    },
+    {
       "path": "schemas/finite-domain-certificate.schema.json",
       "bytes": 3547,
       "sha256": "5450c0333e95491963ce0b65bb7355d7c520e6c7a23e4884310e891f2b948f0a"
@@ -73,8 +103,8 @@
     },
     {
       "path": "docs/ATLAS_V2_RELEASE.md",
-      "bytes": 3252,
-      "sha256": "d75b2d76e3eb7258bdca9a57b96fa7bf296d202a9b7a2716e9b51a25a111a58d"
+      "bytes": 3719,
+      "sha256": "6211326dbea309dbe933c7b19eb29f2562d7edcce9c292369e2841b6e1dbc42a"
     },
     {
       "path": "docs/MATHEMATICAL_CERTIFICATES_V2.md",

@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trianglepackingatlas.org/schemas/sharded-release.json",
+  "title": "Integrity-checked sharded Atlas release",
+  "type": "object",
+  "required": ["format", "version", "recordCount", "recordsPerShard", "release", "shards", "sha256"],
+  "properties": {
+    "format": { "const": "triangle-packing-atlas-sharded-release/v1" },
+    "version": { "type": "string" },
+    "recordCount": { "type": "integer", "minimum": 0 },
+    "recordsPerShard": { "type": "integer", "minimum": 1 },
+    "release": { "type": "object" },
+    "shards": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "order", "records", "firstRecordId", "lastRecordId", "bytes", "sha256"],
+        "properties": {
+          "path": { "type": "string", "pattern": "^atlas-v2-shards/[0-9]{3}\\.json$" },
+          "order": { "type": "integer", "minimum": 0 },
+          "records": { "type": "integer", "minimum": 0 },
+          "bytes": { "type": "integer", "minimum": 0 },
+          "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+        }
+      }
+    },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  }
+}

@@ -32,6 +32,7 @@
     "atlas:finite-domain-proof-jobs-verify": "node cli/verify-finite-domain-proof-jobs.js",
     "atlas:finite-domain-benchmark": "node benchmarks/finiteDomain.js",
     "atlas:finite-domain-scale-benchmark": "node benchmarks/finiteDomainScale.js",
+    "atlas:sharded-release-benchmark": "node benchmarks/shardedRelease.js",
     "atlas:finite-domain-cross-verify": "python3 independent_verifier/verify_finite_domain.py",
     "supply-chain:audit": "node scripts/audit-supply-chain.js && npm audit --audit-level=high",
     "atlas:report": "node cli/report.js",

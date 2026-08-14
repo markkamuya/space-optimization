@@ -1,0 +1,575 @@
+{
+  "format": "triangle-packing-atlas-sharded-release/v1",
+  "version": "2.0.0",
+  "recordCount": 304,
+  "recordsPerShard": 76,
+  "release": {
+    "format": "triangle-packing-atlas/v2",
+    "version": "2.0.0",
+    "releasedAt": "2026-07-26T00:00:00.000Z",
+    "license": "CC-BY-4.0",
+    "citation": "CITATION.cff",
+    "methodology": "docs/METHODOLOGY_V2.md",
+    "claimPolicy": "literature/CLAIM_POLICY.md",
+    "finiteDomainProofIndex": "public/finite-domain-proofs-v2.json",
+    "finiteDomainProofJobIndex": "public/finite-domain-proof-jobs-v2.json",
+    "shardedReleaseIndex": "public/atlas-v2-shards.json",
+    "verificationPolicy": {
+      "independentImplementations": [
+        "src/atlas/verifier.js",
+        "independent_verifier/verify_release.py"
+      ],
+      "tolerancePolicy": "docs/NUMERICAL_POLICY.md",
+      "certificateRequired": true
+    },
+    "coverage": {
+      "records": 304,
+      "verified": 304,
+      "provenOptimal": 3,
+      "families": {
+        "isosceles": 224,
+        "equilateral": 16,
+        "right": 16,
+        "scalene": 48
+      },
+      "openDistributedTasks": 301,
+      "phaseTransitions": 38,
+      "adaptivelyImproved": 11
+    },
+    "transitions": [
+      {
+        "apexAngle": 35,
+        "betweenRatios": [
+          0.75,
+          0.9
+        ],
+        "from": "vertical lattice",
+        "to": "acute horizontal lattice",
+        "evidence": [
+          "iso-a35-r0p75",
+          "iso-a35-r0p9"
+        ]
+      },
+      {
+        "apexAngle": 35,
+        "betweenRatios": [
+          1.05,
+          1.2
+        ],
+        "from": "acute horizontal lattice",
+        "to": "vertical lattice",
+        "evidence": [
+          "iso-a35-r1p05",
+          "iso-a35-r1p2"
+        ]
+      },
+      {
+        "apexAngle": 35,
+        "betweenRatios": [
+          1.35,
+          1.5
+        ],
+        "from": "vertical lattice",
+        "to": "acute horizontal lattice",
+        "evidence": [
+          "iso-a35-r1p35",
+          "iso-a35-r1p5"
+        ]
+      },
+      {
+        "apexAngle": 40,
+        "betweenRatios": [
+          0.75,
+          0.9
+        ],
+        "from": "vertical lattice",
+        "to": "acute horizontal lattice",
+        "evidence": [
+          "iso-a40-r0p75",
+          "iso-a40-r0p9"
+        ]
+      },
+      {
+        "apexAngle": 40,
+        "betweenRatios": [
+          1.05,
+          1.2
+        ],
+        "from": "acute horizontal lattice",
+        "to": "vertical lattice",
+        "evidence": [
+          "iso-a40-r1p05",
+          "iso-a40-r1p2"
+        ]
+      },
+      {
+        "apexAngle": 40,
+        "betweenRatios": [
+          1.35,
+          1.5
+        ],
+        "from": "vertical lattice",
+        "to": "acute horizontal lattice",
+        "evidence": [
+          "iso-a40-r1p35",
+          "iso-a40-r1p5"
+        ]
+      },
+      {
+        "apexAngle": 40,
+        "betweenRatios": [
+          1.5,
+          1.65
+        ],
+        "from": "acute horizontal lattice",
+        "to": "vertical lattice",
+        "evidence": [
+          "iso-a40-r1p5",
+          "iso-a40-r1p65"
+        ]
+      },
+      {
+        "apexAngle": 40,
+        "betweenRatios": [
+          1.65,
+          1.8
+        ],
+        "from": "vertical lattice",
+        "to": "acute horizontal lattice",
+        "evidence": [
+          "iso-a40-r1p65",
+          "iso-a40-r1p8"
+        ]
+      },
+      {
+        "apexAngle": 45,
+        "betweenRatios": [
+          0.9,
+          1.05
+        ],
+        "from": "acute horizontal lattice",
+        "to": "vertical lattice",
+        "evidence": [
+          "iso-a45-r0p9",
+          "iso-a45-r1p05"
+        ]
+      },
+      {
+        "apexAngle": 45,
+        "betweenRatios": [
+          1.05,
+          1.2
+        ],
+        "from": "vertical lattice",
+        "to": "acute horizontal lattice",
+        "evidence": [
+          "iso-a45-r1p05",
+          "iso-a45-r1p2"
+        ]
+      },
+      {
+        "apexAngle": 45,
+        "betweenRatios": [
+          1.5,
+          1.65
+        ],
+        "from": "acute horizontal lattice",
+        "to": "vertical lattice",
+        "evidence": [
+          "iso-a45-r1p5",
+          "iso-a45-r1p65"
+        ]
+      },
+      {
+        "apexAngle": 45,
+        "betweenRatios": [
+          1.65,
+          1.8
+        ],
+        "from": "vertical lattice",
+        "to": "acute horizontal lattice",
+        "evidence": [
+          "iso-a45-r1p65",
+          "iso-a45-r1p8"
+        ]
+      },
+      {
+        "apexAngle": 50,
+        "betweenRatios": [
+          0.9,
+          1.05
+        ],
+        "from": "acute horizontal lattice",
+        "to": "vertical lattice",
+        "evidence": [
+          "iso-a50-r0p9",
+          "iso-a50-r1p05"
+        ]
+      },
+      {
+        "apexAngle": 50,
+        "betweenRatios": [
+          1.05,
+          1.2
+        ],
+        "from": "vertical lattice",
+        "to": "acute horizontal lattice",
+        "evidence": [
+          "iso-a50-r1p05",
+          "iso-a50-r1p2"
+        ]
+      },
+      {
+        "apexAngle": 50,
+        "betweenRatios": [
+          1.35,
+          1.5
+        ],
+        "from": "acute horizontal lattice",
+        "to": "vertical lattice",
+        "evidence": [
+          "iso-a50-r1p35",
+          "iso-a50-r1p5"
+        ]
+      },
+      {
+        "apexAngle": 50,
+        "betweenRatios": [
+          1.5,
+          1.65
+        ],
+        "from": "vertical lattice",
+        "to": "acute horizontal lattice",
+        "evidence": [
+          "iso-a50-r1p5",
+          "iso-a50-r1p65"
+        ]
+      },
+      {
+        "apexAngle": 50,
+        "betweenRatios": [
+          1.8,
+          1.95
+        ],
+        "from": "acute horizontal lattice",
+        "to": "vertical lattice",
+        "evidence": [
+          "iso-a50-r1p8",
+          "iso-a50-r1p95"
+        ]
+      },
+      {
+        "apexAngle": 50,
+        "betweenRatios": [
+          1.95,
+          2.1
+        ],
+        "from": "vertical lattice",
+        "to": "acute horizontal lattice",
+        "evidence": [
+          "iso-a50-r1p95",
+          "iso-a50-r2p1"
+        ]
+      },
+      {
+        "apexAngle": 55,
+        "betweenRatios": [
+          0.75,
+          0.9
+        ],
+        "from": "acute horizontal lattice",
+        "to": "vertical lattice",
+        "evidence": [
+          "iso-a55-r0p75",
+          "iso-a55-r0p9"
+        ]
+      },
+      {
+        "apexAngle": 55,
+        "betweenRatios": [
+          0.9,
+          1.05
+        ],
+        "from": "vertical lattice",
+        "to": "acute horizontal lattice",
+        "evidence": [
+          "iso-a55-r0p9",
+          "iso-a55-r1p05"
+        ]
+      },
+      {
+        "apexAngle": 60,
+        "betweenRatios": [
+          0.75,
+          0.9
+        ],
+        "from": "acute horizontal lattice",
+        "to": "vertical lattice",
+        "evidence": [
+          "iso-a60-r0p75",
+          "iso-a60-r0p9"
+        ]
+      },
+      {
+        "apexAngle": 60,
+        "betweenRatios": [
+          0.9,
+          1.05
+        ],
+        "from": "vertical lattice",
+        "to": "acute horizontal lattice",
+        "evidence": [
+          "iso-a60-r0p9",
+          "iso-a60-r1p05"
+        ]
+      },
+      {
+        "apexAngle": 60,
+        "betweenRatios": [
+          1.05,
+          1.2
+        ],
+        "from": "acute horizontal lattice",
+        "to": "vertical lattice",
+        "evidence": [
+          "iso-a60-r1p05",
+          "iso-a60-r1p2"
+        ]
+      },
+      {
+        "apexAngle": 60,
+        "betweenRatios": [
+          1.2,
+          1.35
+        ],
+        "from": "vertical lattice",
+        "to": "acute horizontal lattice",
+        "evidence": [
+          "iso-a60-r1p2",
+          "iso-a60-r1p35"
+        ]
+      },
+      {
+        "apexAngle": 65,
+        "betweenRatios": [
+          0.75,
+          0.9
+        ],
+        "from": "vertical lattice",
+        "to": "obtuse horizontal lattice",
+        "evidence": [
+          "iso-a65-r0p75",
+          "iso-a65-r0p9"
+        ]
+      },
+      {
+        "apexAngle": 70,
+        "betweenRatios": [
+          0.9,
+          1.05
+        ],
+        "from": "obtuse horizontal lattice",
+        "to": "vertical lattice",
+        "evidence": [
+          "iso-a70-r0p9",
+          "iso-a70-r1p05"
+        ]
+      },
+      {
+        "apexAngle": 70,
+        "betweenRatios": [
+          1.05,
+          1.2
+        ],
+        "from": "vertical lattice",
+        "to": "obtuse horizontal lattice",
+        "evidence": [
+          "iso-a70-r1p05",
+          "iso-a70-r1p2"
+        ]
+      },
+      {
+        "apexAngle": 70,
+        "betweenRatios": [
+          1.2,
+          1.35
+        ],
+        "from": "obtuse horizontal lattice",
+        "to": "vertical lattice",
+        "evidence": [
+          "iso-a70-r1p2",
+          "iso-a70-r1p35"
+        ]
+      },
+      {
+        "apexAngle": 70,
+        "betweenRatios": [
+          1.35,
+          1.5
+        ],
+        "from": "vertical lattice",
+        "to": "obtuse horizontal lattice",
+        "evidence": [
+          "iso-a70-r1p35",
+          "iso-a70-r1p5"
+        ]
+      },
+      {
+        "apexAngle": 75,
+        "betweenRatios": [
+          0.9,
+          1.05
+        ],
+        "from": "vertical lattice",
+        "to": "obtuse horizontal lattice",
+        "evidence": [
+          "iso-a75-r0p9",
+          "iso-a75-r1p05"
+        ]
+      },
+      {
+        "apexAngle": 75,
+        "betweenRatios": [
+          1.05,
+          1.2
+        ],
+        "from": "obtuse horizontal lattice",
+        "to": "vertical lattice",
+        "evidence": [
+          "iso-a75-r1p05",
+          "iso-a75-r1p2"
+        ]
+      },
+      {
+        "apexAngle": 75,
+        "betweenRatios": [
+          1.2,
+          1.35
+        ],
+        "from": "vertical lattice",
+        "to": "obtuse horizontal lattice",
+        "evidence": [
+          "iso-a75-r1p2",
+          "iso-a75-r1p35"
+        ]
+      },
+      {
+        "apexAngle": 85,
+        "betweenRatios": [
+          0.75,
+          0.9
+        ],
+        "from": "vertical lattice",
+        "to": "obtuse horizontal lattice",
+        "evidence": [
+          "iso-a85-r0p75",
+          "iso-a85-r0p9"
+        ]
+      },
+      {
+        "apexAngle": 95,
+        "betweenRatios": [
+          0.9,
+          1.05
+        ],
+        "from": "obtuse horizontal lattice",
+        "to": "diagonal lattice",
+        "evidence": [
+          "iso-a95-r0p9",
+          "iso-a95-r1p05"
+        ]
+      },
+      {
+        "apexAngle": 95,
+        "betweenRatios": [
+          1.05,
+          1.2
+        ],
+        "from": "diagonal lattice",
+        "to": "obtuse horizontal lattice",
+        "evidence": [
+          "iso-a95-r1p05",
+          "iso-a95-r1p2"
+        ]
+      },
+      {
+        "apexAngle": 100,
+        "betweenRatios": [
+          0.9,
+          1.05
+        ],
+        "from": "vertical lattice",
+        "to": "obtuse horizontal lattice",
+        "evidence": [
+          "iso-a100-r0p9",
+          "iso-a100-r1p05"
+        ]
+      },
+      {
+        "apexAngle": 105,
+        "betweenRatios": [
+          0.75,
+          0.9
+        ],
+        "from": "vertical lattice",
+        "to": "obtuse horizontal lattice",
+        "evidence": [
+          "iso-a105-r0p75",
+          "iso-a105-r0p9"
+        ]
+      },
+      {
+        "apexAngle": 110,
+        "betweenRatios": [
+          0.9,
+          1.05
+        ],
+        "from": "vertical lattice",
+        "to": "obtuse horizontal lattice",
+        "evidence": [
+          "iso-a110-r0p9",
+          "iso-a110-r1p05"
+        ]
+      }
+    ]
+  },
+  "shards": [
+    {
+      "path": "atlas-v2-shards/000.json",
+      "order": 0,
+      "records": 76,
+      "firstRecordId": "iso-a35-r0p75",
+      "lastRecordId": "iso-a55-r2p4",
+      "bytes": 3291771,
+      "sha256": "ba57742b5f5ab76f0f011af079197ff0a72916deb0e841323b78f6973bd1fd86"
+    },
+    {
+      "path": "atlas-v2-shards/001.json",
+      "order": 1,
+      "records": 76,
+      "firstRecordId": "iso-a55-r2p55",
+      "lastRecordId": "iso-a80-r1p8",
+      "bytes": 2869120,
+      "sha256": "6ecdc82618c44e423ca15ff6d445bf591c9654b67f1b484ad7881c8b302fc5b1"
+    },
+    {
+      "path": "atlas-v2-shards/002.json",
+      "order": 2,
+      "records": 76,
+      "firstRecordId": "iso-a80-r1p95",
+      "lastRecordId": "iso-a105-r1p2",
+      "bytes": 2815231,
+      "sha256": "981bb8dee1c80abaedacd5110c05f4ce1839be4f6061967325708277d0d754df"
+    },
+    {
+      "path": "atlas-v2-shards/003.json",
+      "order": 3,
+      "records": 76,
+      "firstRecordId": "iso-a105-r1p35",
+      "lastRecordId": "s358065-r3",
+      "bytes": 3202824,
+      "sha256": "dd484ee57fbac2c39cfe2f01ff6e078b958887999c77a5108b14e19169fcf751"
+    }
+  ],
+  "sha256": "e1437b95151472e6df5e5ad80ae8feeac9c487975069b4ec3c2c562412df88bb"
+}

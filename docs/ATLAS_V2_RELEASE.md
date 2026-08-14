@@ -36,9 +36,17 @@ The release checksum is written to `public/atlas-v2.sha256`. Rebuilding on a
 supported runtime must reproduce every record fingerprint. Build-environment
 metadata is not used as scientific evidence.
 
+The same canonical release is also published through
+`public/atlas-v2-shards.json` as four ordered record shards. The root index and
+each shard carry SHA-256 digests, byte counts, order, and boundary record IDs.
+Release audits reject missing, reordered, duplicated, truncated, or modified
+shards and require reconstruction to match `public/atlas-v2.json` exactly. The
+monolithic file remains available for backward compatibility.
+
 The frozen archival manifest records individual SHA-256 digests for the
 canonical JSON, CSV, audit, work queue, challenges, schemas, methodology,
-certificate policy, citation data, and archival-provider metadata.
+certificate policy, sharded release index and payloads, citation data, and
+archival-provider metadata.
 
 ## Claim boundary
 

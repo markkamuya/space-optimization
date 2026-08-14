@@ -48,7 +48,8 @@
       "obtuse horizontal lattice": 131,
       "rectangular pairs": 16,
       "diagonal lattice": 1
-    }
+    },
+    "shardedRecords": 304
   },
   "findings": []
 }
