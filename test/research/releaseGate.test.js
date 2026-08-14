@@ -67,6 +67,13 @@ test('GitHub CI rejects uncommitted generated release drift', async () => {
   ]) assert.ok(workflow.includes(artifact));
 });
 
+test('GitHub CI blocks insecure or integrity-drifted dependencies', async () => {
+  const workflow = await readFile(new URL('../../.github/workflows/ci.yml', import.meta.url), 'utf8');
+  const manifest = JSON.parse(await readFile(new URL('../../package.json', import.meta.url), 'utf8'));
+  assert.match(workflow, /npm run supply-chain:audit/);
+  assert.match(manifest.scripts['supply-chain:audit'], /npm audit --audit-level=high/);
+});
+
 test('submission CI validates all changed records in one incumbent replay', async () => {
   const workflow = await readFile(
     new URL('../../.github/workflows/submission.yml', import.meta.url),

@@ -24,6 +24,7 @@
     "atlas:submission": "node cli/submission.js",
     "atlas:submission-verify": "node cli/verify-submission-bundle.js",
     "atlas:submission-cross-verify": "python3 independent_verifier/verify_submission_bundle.py",
+    "supply-chain:audit": "node scripts/audit-supply-chain.js && npm audit --audit-level=high",
     "atlas:report": "node cli/report.js",
     "atlas:archive": "sh scripts/package-archive.sh",
     "atlas:archive-audit": "node scripts/audit-v2-archive.js",

@@ -18,6 +18,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Verify dependency integrity and security
+        run: npm run supply-chain:audit
       - run: npm test
       - run: npm run benchmark
       - run: npm run atlas:benchmark
