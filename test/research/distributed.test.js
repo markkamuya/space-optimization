@@ -2,7 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { RESEARCH_RECORDS } from '../../src/research/dataset.js';
 import { canonicalRecord } from '../../src/research/registry.js';
-import { buildWorkQueue, validateWorkerResult } from '../../src/research/distributed.js';
+import {
+  buildWorkQueue, checkpointWorkerLease, claimWorkerTask, createLeaseLedger,
+  expireWorkerLeases, validateWorkerResult, workQueueDigest
+} from '../../src/research/distributed.js';
 
 test('distributed queue is prioritized and contains reproducibility contracts', () => {
   const queue = buildWorkQueue(RESEARCH_RECORDS.map(canonicalRecord));
@@ -10,6 +13,39 @@ test('distributed queue is prioritized and contains reproducibility contracts', 
   assert.equal(queue[0].status, 'open');
   assert.equal(queue[0].submissionContract.coordinatesRequired, true);
   assert.ok(queue[0].baselineUtilization <= queue[0].upperBound);
+});
+
+test('workers claim distinct capability-matched tasks from a digest-bound ledger', () => {
+  const tasks = buildWorkQueue(RESEARCH_RECORDS.map(canonicalRecord));
+  let ledger = createLeaseLedger(tasks);
+  assert.equal(ledger.queueDigest, workQueueDigest(tasks));
+  const worker = { workerId: 'worker-a', maxOrientationEvaluations: 5000, maxWallTimeSeconds: 900 };
+  const first = claimWorkerTask(tasks, ledger, worker, 1000, 100);
+  assert.equal(first.valid, true);
+  assert.equal(first.lease.taskId, tasks[0].taskId);
+  ledger = first.ledger;
+  const second = claimWorkerTask(tasks, ledger, { ...worker, workerId: 'worker-b' }, 1000, 100);
+  assert.notEqual(second.lease.taskId, first.lease.taskId);
+  assert.equal(claimWorkerTask([...tasks].reverse(), ledger, worker, 1000).valid, false);
+});
+
+test('expired leases requeue deterministically and checkpoints extend valid ownership', () => {
+  const tasks = buildWorkQueue(RESEARCH_RECORDS.map(canonicalRecord));
+  const worker = { workerId: 'worker-a', maxOrientationEvaluations: 5000, maxWallTimeSeconds: 900 };
+  const claimed = claimWorkerTask(tasks, createLeaseLedger(tasks), worker, 1000, 100);
+  const checkpoint = checkpointWorkerLease(claimed.ledger, {
+    taskId: claimed.lease.taskId,
+    token: claimed.lease.token,
+    workerId: worker.workerId,
+    orientationEvaluations: 100,
+    bestUtilization: claimed.lease.taskId ? 0.5 : 0
+  }, 1050, 200);
+  assert.equal(checkpoint.valid, true);
+  assert.equal(checkpoint.ledger.leases[claimed.lease.taskId].expiresAt, 1250);
+  assert.equal(expireWorkerLeases(checkpoint.ledger, 1251).leases[claimed.lease.taskId], undefined);
+  const reclaimed = claimWorkerTask(tasks, expireWorkerLeases(checkpoint.ledger, 1251), worker, 1251, 100);
+  assert.equal(reclaimed.lease.taskId, claimed.lease.taskId);
+  assert.equal(reclaimed.lease.attempt, 2);
 });
 
 test('worker results must improve the assigned baseline', () => {

@@ -21,6 +21,88 @@ export function buildWorkQueue(records) {
     }));
 }
 
+export function workQueueDigest(tasks) {
+  return createHash('sha256').update(JSON.stringify(tasks)).digest('hex');
+}
+
+export function createLeaseLedger(tasks) {
+  return {
+    format: 'tpa-worker-lease-ledger/v1',
+    queueDigest: workQueueDigest(tasks),
+    leases: {},
+    attempts: {}
+  };
+}
+
+function validWorker(worker) {
+  return worker && typeof worker.workerId === 'string' && /^[a-z0-9][a-z0-9._-]{1,127}$/.test(worker.workerId) &&
+    Number.isInteger(worker.maxOrientationEvaluations) && worker.maxOrientationEvaluations > 0 &&
+    Number.isFinite(worker.maxWallTimeSeconds) && worker.maxWallTimeSeconds > 0;
+}
+
+export function expireWorkerLeases(ledger, now) {
+  const next = structuredClone(ledger);
+  for (const [taskId, lease] of Object.entries(next.leases ?? {})) {
+    if (lease.expiresAt <= now) delete next.leases[taskId];
+  }
+  return next;
+}
+
+export function claimWorkerTask(tasks, ledger, worker, now, leaseSeconds = 900) {
+  if (!Array.isArray(tasks) || ledger?.queueDigest !== workQueueDigest(tasks)) {
+    return { valid: false, errors: ['queue_digest_mismatch'], ledger, lease: null };
+  }
+  if (!validWorker(worker) || !Number.isFinite(now) || !Number.isFinite(leaseSeconds) || leaseSeconds <= 0) {
+    return { valid: false, errors: ['invalid_claim'], ledger, lease: null };
+  }
+  const next = expireWorkerLeases(ledger, now);
+  const task = tasks.find(candidate => candidate.status === 'open' && !next.leases[candidate.taskId] &&
+    candidate.budget.orientationEvaluations <= worker.maxOrientationEvaluations &&
+    candidate.budget.wallTimeSeconds <= worker.maxWallTimeSeconds);
+  if (!task) return { valid: true, errors: [], ledger: next, lease: null };
+  const attempt = (next.attempts[task.taskId] ?? 0) + 1;
+  next.attempts[task.taskId] = attempt;
+  const lease = {
+    taskId: task.taskId,
+    recordId: task.recordId,
+    experimentId: task.experimentId,
+    workerId: worker.workerId,
+    attempt,
+    issuedAt: now,
+    expiresAt: now + leaseSeconds,
+    baselineFingerprint: task.baselineFingerprint,
+    token: createHash('sha256').update([
+      next.queueDigest, task.taskId, worker.workerId, attempt, now, now + leaseSeconds
+    ].join(':')).digest('hex')
+  };
+  next.leases[task.taskId] = lease;
+  return { valid: true, errors: [], ledger: next, lease };
+}
+
+export function checkpointWorkerLease(ledger, checkpoint, now, extendSeconds = 900) {
+  const lease = ledger?.leases?.[checkpoint?.taskId];
+  const errors = [];
+  if (!lease || lease.token !== checkpoint?.token || lease.workerId !== checkpoint?.workerId) {
+    errors.push('lease_identity_mismatch');
+  } else if (lease.expiresAt <= now) errors.push('lease_expired');
+  if (!Number.isInteger(checkpoint?.orientationEvaluations) || checkpoint.orientationEvaluations < 0 ||
+    !Number.isFinite(checkpoint?.bestUtilization) || checkpoint.bestUtilization < 0 || checkpoint.bestUtilization > 1) {
+    errors.push('invalid_checkpoint');
+  }
+  if (errors.length) return { valid: false, errors, ledger };
+  const next = structuredClone(ledger);
+  next.leases[checkpoint.taskId] = {
+    ...lease,
+    expiresAt: now + extendSeconds,
+    checkpoint: {
+      orientationEvaluations: checkpoint.orientationEvaluations,
+      bestUtilization: checkpoint.bestUtilization,
+      updatedAt: now
+    }
+  };
+  return { valid: true, errors: [], ledger: next };
+}
+
 export function validateWorkerResult(task, candidate, assignedRecord) {
   const errors = [];
   const queuedTask = task && typeof task === 'object' && !Array.isArray(task) ? task : {};
@@ -91,3 +173,4 @@ export function validateWorkerResult(task, candidate, assignedRecord) {
 }
 import { packingProblemIdentity } from '../atlas/submission.js';
 import { verifyPacking } from '../atlas/verifier.js';
+import { createHash } from 'node:crypto';
