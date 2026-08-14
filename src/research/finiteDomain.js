@@ -154,6 +154,72 @@ export function solveMaximumIndependentSet(graph, limits = {}) {
   return { selectedIndices: best, optimumLowerBound: best.length, nodesVisited };
 }
 
+export function connectedConflictComponents(graph) {
+  const seen = new Set();
+  const components = [];
+  for (let start = 0; start < graph.adjacency.length; start += 1) {
+    if (seen.has(start)) continue;
+    const pending = [start];
+    const component = [];
+    seen.add(start);
+    while (pending.length > 0) {
+      const vertex = pending.pop();
+      component.push(vertex);
+      for (const neighbor of graph.adjacency[vertex]) {
+        if (seen.has(neighbor)) continue;
+        seen.add(neighbor);
+        pending.push(neighbor);
+      }
+    }
+    component.sort((left, right) => left - right);
+    components.push(component);
+  }
+  return components.sort((left, right) => left[0] - right[0]);
+}
+
+function inducedConflictGraph(graph, vertices) {
+  const localIndex = new Map(vertices.map((vertex, index) => [vertex, index]));
+  return {
+    adjacency: vertices.map(vertex => graph.adjacency[vertex]
+      .filter(neighbor => localIndex.has(neighbor))
+      .map(neighbor => localIndex.get(neighbor))
+      .sort((left, right) => left - right))
+  };
+}
+
+export function solveMaximumIndependentSetBitset(graph, limits = {}) {
+  const maxSearchNodes = limits.maxSearchNodes ?? 2_000_000;
+  if (!Number.isInteger(maxSearchNodes) || maxSearchNodes <= 0) throw new RangeError('maxSearchNodes must be positive');
+  const count = graph.adjacency.length;
+  const neighborMasks = graph.adjacency.map(neighbors =>
+    neighbors.reduce((mask, neighbor) => mask | (1n << BigInt(neighbor)), 0n));
+  let nodesVisited = 0;
+  let best = [];
+  const search = (chosen, remaining) => {
+    nodesVisited += 1;
+    if (nodesVisited > maxSearchNodes) throw new RangeError('independent_set_search_limit_exceeded');
+    if (chosen.length + remaining.toString(2).replaceAll('0', '').length <= best.length) return;
+    if (remaining === 0n) {
+      if (chosen.length > best.length || (chosen.length === best.length && chosen.join(',') < best.join(','))) best = [...chosen];
+      return;
+    }
+    let vertex = 0;
+    let highestDegree = -1;
+    for (let candidate = 0; candidate < count; candidate += 1) {
+      const bit = 1n << BigInt(candidate);
+      if ((remaining & bit) === 0n) continue;
+      const degree = (neighborMasks[candidate] & remaining).toString(2).replaceAll('0', '').length;
+      if (degree > highestDegree) { vertex = candidate; highestDegree = degree; }
+    }
+    const vertexBit = 1n << BigInt(vertex);
+    search([...chosen, vertex], remaining & ~vertexBit & ~neighborMasks[vertex]);
+    search(chosen, remaining & ~vertexBit);
+  };
+  search([], count === 0 ? 0n : (1n << BigInt(count)) - 1n);
+  best.sort((left, right) => left - right);
+  return { selectedIndices: best, optimumLowerBound: best.length, nodesVisited };
+}
+
 export function solveMinimumCliqueCover(graph, upperLimit, limits = {}) {
   const maxSearchNodes = limits.maxSearchNodes ?? 2_000_000;
   const adjacent = adjacencySets(graph);
@@ -189,13 +255,38 @@ export function solveMinimumCliqueCover(graph, upperLimit, limits = {}) {
   return { cliqueCover: best, optimumUpperBound: best?.length ?? null, nodesVisited };
 }
 
+export function solveComponentAwareExact(graph, limits = {}) {
+  const components = connectedConflictComponents(graph);
+  const selectedIndices = [];
+  const cliqueCover = [];
+  let independentSetNodes = 0;
+  let cliqueCoverNodes = 0;
+  for (const vertices of components) {
+    const componentGraph = inducedConflictGraph(graph, vertices);
+    const remainingBudget = (limits.maxSearchNodes ?? 2_000_000) - independentSetNodes - cliqueCoverNodes;
+    if (remainingBudget <= 0) throw new RangeError('component_search_limit_exceeded');
+    const independent = solveMaximumIndependentSetBitset(componentGraph, { ...limits, maxSearchNodes: remainingBudget });
+    independentSetNodes += independent.nodesVisited;
+    const cover = solveMinimumCliqueCover(componentGraph, independent.optimumLowerBound, {
+      ...limits,
+      maxSearchNodes: (limits.maxSearchNodes ?? 2_000_000) - independentSetNodes - cliqueCoverNodes
+    });
+    cliqueCoverNodes += cover.nodesVisited;
+    if (!cover.cliqueCover || cover.optimumUpperBound !== independent.optimumLowerBound) {
+      throw new Error('tight_clique_cover_not_found');
+    }
+    selectedIndices.push(...independent.selectedIndices.map(index => vertices[index]));
+    cliqueCover.push(...cover.cliqueCover.map(clique => clique.map(index => vertices[index])));
+  }
+  selectedIndices.sort((left, right) => left - right);
+  cliqueCover.sort((left, right) => left[0] - right[0]);
+  return { components, selectedIndices, cliqueCover, independentSetNodes, cliqueCoverNodes };
+}
+
 export function solveFiniteDomainCertificate(domain, graph, limits = {}) {
   if (graph?.domainSha256 !== domain?.sha256) throw new Error('graph_domain_mismatch');
-  const independent = solveMaximumIndependentSet(graph, limits);
-  const cover = solveMinimumCliqueCover(graph, independent.optimumLowerBound, limits);
-  if (!cover.cliqueCover || cover.optimumUpperBound !== independent.optimumLowerBound) {
-    throw new Error('tight_clique_cover_not_found');
-  }
+  const result = solveComponentAwareExact(graph, limits);
+  const { components, selectedIndices, cliqueCover, independentSetNodes, cliqueCoverNodes } = result;
   const statement = {
     format: 'triangle-packing-certificate/v3',
     type: 'finite_candidate_domain',
@@ -203,13 +294,15 @@ export function solveFiniteDomainCertificate(domain, graph, limits = {}) {
     globallyOptimal: false,
     domain,
     conflictGraph: graph,
-    selectedIndices: independent.selectedIndices,
-    cliqueCover: cover.cliqueCover,
-    optimum: independent.optimumLowerBound,
+    selectedIndices,
+    cliqueCover,
+    optimum: selectedIndices.length,
     solver: {
-      algorithm: 'deterministic-branch-and-bound/v1',
-      independentSetNodes: independent.nodesVisited,
-      cliqueCoverNodes: cover.nodesVisited,
+      algorithm: 'component-aware-bitset-branch-and-bound/v1',
+      components: components.length,
+      componentSizes: components.map(component => component.length),
+      independentSetNodes,
+      cliqueCoverNodes,
       maxSearchNodes: limits.maxSearchNodes ?? 2_000_000
     }
   };

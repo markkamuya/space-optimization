@@ -29,6 +29,7 @@
     "atlas:distributed-benchmark": "node benchmarks/distributed.js",
     "atlas:finite-domain-proof": "node cli/finite-domain-proof.js",
     "atlas:finite-domain-benchmark": "node benchmarks/finiteDomain.js",
+    "atlas:finite-domain-scale-benchmark": "node benchmarks/finiteDomainScale.js",
     "atlas:finite-domain-cross-verify": "python3 independent_verifier/verify_finite_domain.py",
     "supply-chain:audit": "node scripts/audit-supply-chain.js && npm audit --audit-level=high",
     "atlas:report": "node cli/report.js",

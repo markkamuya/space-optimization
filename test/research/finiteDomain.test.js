@@ -6,7 +6,8 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import {
   buildFiniteConflictGraph, finiteDomainDigest, generateFiniteCandidateDomain,
-  solveFiniteDomainCertificate, solveMaximumIndependentSet, solveMinimumCliqueCover,
+  connectedConflictComponents, solveComponentAwareExact, solveFiniteDomainCertificate,
+  solveMaximumIndependentSet, solveMaximumIndependentSetBitset, solveMinimumCliqueCover,
   verifyFiniteDomainProof
 } from '../../src/research/finiteDomain.js';
 
@@ -27,6 +28,19 @@ test('finite candidate domains are canonical, bounded, and byte-deterministic', 
   assert.equal(first.sha256, finiteDomainDigest(first.problem, first.specification, first.candidates));
   assert.deepEqual(first.candidates, [...first.candidates].sort((left, right) =>
     left.x - right.x || left.y - right.y || left.angle - right.angle || Number(left.reflect) - Number(right.reflect)));
+});
+
+test('component-aware bitset search composes exact witnesses deterministically', () => {
+  const graph = { adjacency: [[1, 2], [0, 2], [0, 1], [4], [3], []] };
+  assert.deepEqual(connectedConflictComponents(graph), [[0, 1, 2], [3, 4], [5]]);
+  const direct = solveMaximumIndependentSetBitset(graph);
+  assert.equal(direct.optimumLowerBound, 3);
+  const first = solveComponentAwareExact(graph);
+  const second = solveComponentAwareExact(structuredClone(graph));
+  assert.deepEqual(first, second);
+  assert.deepEqual(first.selectedIndices, [0, 3, 5]);
+  assert.equal(first.cliqueCover.length, 3);
+  assert.deepEqual(first.cliqueCover.flat().sort((a, b) => a - b), [0, 1, 2, 3, 4, 5]);
 });
 
 test('conflict graphs are symmetric, digest-bound, and deterministic', () => {
