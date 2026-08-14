@@ -55,3 +55,24 @@ and incumbent comparison. Proofs and citations still require human review.
 Workers may select tasks from `public/work-queue-v2.json`; results without an
 explicit seed, complete placements, or a strict improvement are rejected before
 the ordinary submission pipeline.
+
+### Coordinated worker runs
+
+The queue supports durable, digest-bound leases so parallel workers do not
+silently duplicate the same task:
+
+```sh
+npm run atlas:worker-leases -- claim leases.json worker.json
+npm run atlas:worker-leases -- checkpoint leases.json checkpoint.json
+```
+
+Completed envelopes are tied to the exact task, baseline, worker, lease token,
+budget, deterministic seed, and solver version. Ingest results with:
+
+```sh
+npm run atlas:worker-results -- leases.json result-a.json result-b.json --output evidence.json
+```
+
+Ingestion replays geometry, rejects expired or stolen leases, deduplicates
+fingerprints, ranks improvements deterministically, and seals the review in a
+SHA-256 evidence statement.

@@ -171,6 +171,83 @@ export function validateWorkerResult(task, candidate, assignedRecord) {
   }
   return { valid: errors.length === 0, errors, verification };
 }
+
+export function rankVerifiedWorkerResults(results) {
+  const ordered = [...results].sort((left, right) =>
+    left.taskId.localeCompare(right.taskId) ||
+    right.utilization - left.utilization ||
+    left.fingerprint.localeCompare(right.fingerprint) ||
+    left.workerId.localeCompare(right.workerId));
+  const winners = [];
+  const seenTasks = new Set();
+  const seenFingerprints = new Set();
+  for (const result of ordered) {
+    if (seenTasks.has(result.taskId) || seenFingerprints.has(result.fingerprint)) continue;
+    winners.push(result);
+    seenTasks.add(result.taskId);
+    seenFingerprints.add(result.fingerprint);
+  }
+  return winners;
+}
+
+export function ingestWorkerResults(tasks, ledger, candidates, records, now) {
+  const taskById = new Map(tasks.map(task => [task.taskId, task]));
+  const recordById = new Map(records.map(record => [record.id, record]));
+  const accepted = [];
+  const rejected = [];
+  for (const candidate of candidates) {
+    const task = taskById.get(candidate?.taskId);
+    const lease = ledger?.leases?.[candidate?.taskId];
+    const leaseErrors = [];
+    if (!task) leaseErrors.push('unknown_task');
+    if (!lease || lease.token !== candidate?.leaseToken || lease.workerId !== candidate?.workerId) {
+      leaseErrors.push('lease_identity_mismatch');
+    } else if (lease.expiresAt <= now) leaseErrors.push('lease_expired');
+    const validation = task
+      ? validateWorkerResult(task, candidate, recordById.get(task.recordId))
+      : { valid: false, errors: [], verification: null };
+    const errors = [...leaseErrors, ...validation.errors];
+    if (errors.length) {
+      rejected.push({ taskId: candidate?.taskId ?? null, workerId: candidate?.workerId ?? null, errors });
+    } else {
+      accepted.push({
+        taskId: task.taskId,
+        recordId: task.recordId,
+        experimentId: task.experimentId,
+        workerId: candidate.workerId,
+        leaseToken: candidate.leaseToken,
+        seed: candidate.seed,
+        solverVersion: candidate.solverVersion,
+        utilization: validation.verification.metrics.utilization,
+        improvement: validation.verification.metrics.utilization - task.baselineUtilization,
+        fingerprint: validation.verification.fingerprint,
+        problem: candidate.problem,
+        placements: candidate.placements,
+        budgetUsed: candidate.budgetUsed
+      });
+    }
+  }
+  const winners = rankVerifiedWorkerResults(accepted);
+  const statement = {
+    format: 'tpa-worker-ingestion/v1',
+    queueDigest: workQueueDigest(tasks),
+    accepted,
+    rejected,
+    winners
+  };
+  return {
+    ...statement,
+    sha256: createHash('sha256').update(JSON.stringify(statement)).digest('hex')
+  };
+}
+
+export function verifyWorkerIngestionEvidence(evidence) {
+  if (evidence?.format !== 'tpa-worker-ingestion/v1' || !Array.isArray(evidence.accepted) ||
+    !Array.isArray(evidence.rejected) || !Array.isArray(evidence.winners)) return false;
+  const { sha256, ...statement } = evidence;
+  return sha256 === createHash('sha256').update(JSON.stringify(statement)).digest('hex') &&
+    JSON.stringify(rankVerifiedWorkerResults(evidence.accepted)) === JSON.stringify(evidence.winners);
+}
 import { packingProblemIdentity } from '../atlas/submission.js';
 import { verifyPacking } from '../atlas/verifier.js';
 import { createHash } from 'node:crypto';

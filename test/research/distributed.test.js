@@ -4,7 +4,8 @@ import { RESEARCH_RECORDS } from '../../src/research/dataset.js';
 import { canonicalRecord } from '../../src/research/registry.js';
 import {
   buildWorkQueue, checkpointWorkerLease, claimWorkerTask, createLeaseLedger,
-  expireWorkerLeases, validateWorkerResult, workQueueDigest
+  expireWorkerLeases, ingestWorkerResults, rankVerifiedWorkerResults,
+  validateWorkerResult, verifyWorkerIngestionEvidence, workQueueDigest
 } from '../../src/research/distributed.js';
 
 test('distributed queue is prioritized and contains reproducibility contracts', () => {
@@ -220,4 +221,43 @@ test('worker results must report valid usage within the assigned budget', () => 
   candidate.budgetUsed = { orientationEvaluations: -1, wallTimeSeconds: Number.NaN };
   const malformed = validateWorkerResult(task, candidate, record);
   assert.ok(malformed.errors.includes('invalid_budget_usage'));
+});
+
+test('verified worker ranking is deterministic and keeps one best result per task', () => {
+  const results = [
+    { taskId: 'b', utilization: 0.8, fingerprint: 'f3', workerId: 'w2' },
+    { taskId: 'a', utilization: 0.7, fingerprint: 'f1', workerId: 'w1' },
+    { taskId: 'a', utilization: 0.9, fingerprint: 'f2', workerId: 'w2' },
+    { taskId: 'c', utilization: 0.95, fingerprint: 'f2', workerId: 'w3' }
+  ];
+  assert.deepEqual(rankVerifiedWorkerResults(results).map(result => result.taskId), ['a', 'b']);
+  assert.equal(rankVerifiedWorkerResults(results)[0].utilization, 0.9);
+});
+
+test('ingestion rejects stale or stolen leases before ranking geometry', () => {
+  const records = RESEARCH_RECORDS.map(canonicalRecord);
+  const tasks = buildWorkQueue(records);
+  const worker = { workerId: 'worker-a', maxOrientationEvaluations: 5000, maxWallTimeSeconds: 900 };
+  const claimed = claimWorkerTask(tasks, createLeaseLedger(tasks), worker, 1000, 100);
+  const task = tasks[0];
+  const record = records.find(candidate => candidate.id === task.recordId);
+  const evidence = ingestWorkerResults(tasks, claimed.ledger, [{
+    taskId: task.taskId,
+    recordId: task.recordId,
+    experimentId: task.experimentId,
+    workerId: 'worker-thief',
+    leaseToken: claimed.lease.token,
+    seed: 'stolen',
+    solverVersion: 'atlas-worker/1.0.0',
+    budgetUsed: { orientationEvaluations: 1, wallTimeSeconds: 1 },
+    problem: record.problem,
+    placements: record.solution.placements,
+    utilization: record.verification.utilization
+  }], records, 1050);
+  assert.equal(evidence.accepted.length, 0);
+  assert.ok(evidence.rejected[0].errors.includes('lease_identity_mismatch'));
+  assert.match(evidence.sha256, /^[0-9a-f]{64}$/);
+  assert.equal(verifyWorkerIngestionEvidence(evidence), true);
+  evidence.rejected[0].errors.push('tampered');
+  assert.equal(verifyWorkerIngestionEvidence(evidence), false);
 });
