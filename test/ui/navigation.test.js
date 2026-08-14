@@ -19,6 +19,8 @@ test('homepage provides descriptive navigation and mobile menu semantics', async
   assert.match(script, /history\.replaceState\(null, '', dialogReturnHash\)/);
   assert.match(styles, /\.topbar nav\.open/);
   assert.match(html, /FINITE-DOMAIN PROOFS/);
+  assert.match(html, /PROOF CHECKPOINTS/);
   assert.match(html, /Machine-checkable finite-domain proofs/);
   assert.match(script, /not a claim about the global optimum/);
+  assert.match(script, /Completed and replayable/);
 });

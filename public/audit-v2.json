@@ -10,6 +10,7 @@
   "summary": {
     "records": 304,
     "finiteDomainProofs": 1,
+    "finiteDomainProofJobs": 1,
     "replayed": 304,
     "uniqueExperiments": 304,
     "critical": 0,

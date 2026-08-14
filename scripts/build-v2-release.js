@@ -12,10 +12,12 @@ import {
 import { buildWorkQueue } from '../src/research/distributed.js';
 import { canonicalCoverage } from '../src/research/release.js';
 import { buildCanonicalCsv } from '../src/research/exports.js';
+import { verifyFiniteDomainProof } from '../src/research/finiteDomain.js';
 import {
-  buildFiniteConflictGraph, generateFiniteCandidateDomain, solveFiniteDomainCertificate,
-  verifyFiniteDomainProof
-} from '../src/research/finiteDomain.js';
+  advanceFiniteDomainProofJob,
+  createFiniteDomainProofJob,
+  verifyFiniteDomainProofJob
+} from '../src/research/proofJobs.js';
 
 const adaptiveTargets = new Set([...RESEARCH_RECORDS]
   .filter(record => record.bounds.optimalityGap > 0 && record.verification.pieceCount < 300)
@@ -100,17 +102,12 @@ const queue = buildWorkQueue(records);
 const proofSpecification = JSON.parse(await readFile(
   new URL('../proofs/finite-domain-right-control.spec.json', import.meta.url), 'utf8'
 ));
-const proofDomain = generateFiniteCandidateDomain(
-  proofSpecification.problem, proofSpecification.specification, proofSpecification.limits
-);
-const proofCertificate = solveFiniteDomainCertificate(
-  proofDomain,
-  buildFiniteConflictGraph(proofDomain, proofSpecification.limits),
-  proofSpecification.limits
-);
+const proofJob = advanceFiniteDomainProofJob(createFiniteDomainProofJob(proofSpecification), 'proof_ready');
+const proofCertificate = proofJob.artifacts.certificate;
 if (!verifyFiniteDomainProof(proofCertificate, proofSpecification.limits).valid) {
   throw new Error('Generated finite-domain control proof failed replay');
 }
+if (!verifyFiniteDomainProofJob(proofJob).valid) throw new Error('Generated finite-domain proof job failed replay');
 const proofIndex = {
   format: 'triangle-packing-finite-domain-proofs/v1',
   version: '2.0.0',
@@ -122,6 +119,16 @@ const proofIndex = {
     certificate: proofCertificate
   }]
 };
+const proofJobIndex = {
+  format: 'tpa-finite-domain-proof-jobs/v1',
+  version: '2.0.0',
+  jobs: [{
+    jobId: proofSpecification.proofId,
+    linkedRecordId: proofSpecification.linkedRecordId,
+    proofSha256: proofCertificate.sha256,
+    checkpoint: proofJob
+  }]
+};
 const release = {
   format: CANONICAL_FORMAT,
   version: '2.0.0',
@@ -131,6 +138,7 @@ const release = {
   methodology: 'docs/METHODOLOGY_V2.md',
   claimPolicy: 'literature/CLAIM_POLICY.md',
   finiteDomainProofIndex: 'public/finite-domain-proofs-v2.json',
+  finiteDomainProofJobIndex: 'public/finite-domain-proof-jobs-v2.json',
   verificationPolicy: {
     independentImplementations: ['src/atlas/verifier.js', 'independent_verifier/verify_release.py'],
     tolerancePolicy: 'docs/NUMERICAL_POLICY.md',
@@ -151,6 +159,7 @@ await writeFile(new URL('../public/atlas-v2.csv', import.meta.url), buildCanonic
 await writeFile(new URL('../public/atlas-v2.sha256', import.meta.url), `${checksum}  atlas-v2.json\n`);
 await writeFile(new URL('../public/work-queue-v2.json', import.meta.url), `${JSON.stringify({ format: 'tpa-work-queue/v1', version: '2.0.0', tasks: queue }, null, 2)}\n`);
 await writeFile(new URL('../public/finite-domain-proofs-v2.json', import.meta.url), `${JSON.stringify(proofIndex, null, 2)}\n`);
+await writeFile(new URL('../public/finite-domain-proof-jobs-v2.json', import.meta.url), `${JSON.stringify(proofJobIndex, null, 2)}\n`);
 await writeFile(new URL('../releases/2.0.0-canonical.json', import.meta.url), `${JSON.stringify({
   format: 'triangle-packing-atlas-release-manifest/v2',
   version: '2.0.0',
@@ -158,6 +167,7 @@ await writeFile(new URL('../releases/2.0.0-canonical.json', import.meta.url), `$
   csv: 'public/atlas-v2.csv',
   queue: 'public/work-queue-v2.json',
   finiteDomainProofs: 'public/finite-domain-proofs-v2.json',
+  finiteDomainProofJobs: 'public/finite-domain-proof-jobs-v2.json',
   sha256: checksum,
   records: records.length,
   audit,

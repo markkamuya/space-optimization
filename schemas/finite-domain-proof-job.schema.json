@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trianglepackingatlas.org/schemas/finite-domain-proof-job.json",
+  "title": "Resumable finite-domain proof job",
+  "type": "object",
+  "required": ["format", "stage", "specification", "artifacts", "canonicalPayload", "sha256"],
+  "properties": {
+    "format": { "const": "tpa-finite-domain-proof-job/v1" },
+    "stage": { "enum": ["initialized", "domain_ready", "graph_ready", "proof_ready"] },
+    "specification": {
+      "type": "object",
+      "required": ["problem", "specification", "limits"],
+      "properties": {
+        "problem": { "type": "object" },
+        "specification": { "type": "object" },
+        "limits": { "type": "object" }
+      }
+    },
+    "artifacts": { "type": "object" },
+    "canonicalPayload": { "type": "string" },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  }
+}

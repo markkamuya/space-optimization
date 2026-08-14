@@ -12,6 +12,7 @@ import {
   generateFiniteCandidateDomain,
   solveFiniteDomainCertificate
 } from '../../src/research/finiteDomain.js';
+import { advanceFiniteDomainProofJob, createFiniteDomainProofJob } from '../../src/research/proofJobs.js';
 
 function finiteProofIndex(record) {
   const problem = { width: 3, height: 2, sides: record.problem.triangles[0].sides };
@@ -25,6 +26,20 @@ function finiteProofIndex(record) {
       proofId: 'control-proof', linkedRecordId: record.id, relation: 'same_piece_family_control',
       claim: 'Optimal only within the declared finite candidate domain; not a global packing claim.', certificate
     }]
+  };
+}
+
+function finiteProofJobIndex(record, proofIndex) {
+  const proof = proofIndex.proofs[0];
+  const specification = {
+    problem: proof.certificate.domain.problem,
+    specification: proof.certificate.domain.specification,
+    limits: { maxCandidates: 1000, maxConflictEdges: 100000, maxSearchNodes: 100000 }
+  };
+  const checkpoint = advanceFiniteDomainProofJob(createFiniteDomainProofJob(specification), 'proof_ready');
+  return {
+    format: 'tpa-finite-domain-proof-jobs/v1', version: '2.0.0',
+    jobs: [{ jobId: proof.proofId, linkedRecordId: record.id, proofSha256: proof.certificate.sha256, checkpoint }]
   };
 }
 
@@ -54,6 +69,21 @@ test('scientific audit rejects tampered finite-domain proof links and certificat
   assert.equal(report.passed, false);
   assert.ok(report.findings.some(finding => finding.code === 'FINITE_DOMAIN_PROOF_LINK_INVALID'));
   assert.ok(report.findings.some(finding => finding.code === 'FINITE_DOMAIN_PROOF_INVALID'));
+});
+
+test('scientific audit binds completed proof jobs to their published proof and record', () => {
+  const record = canonicalRecord(RESEARCH_RECORDS.find(item => item.id === 'iso-a90-r0p75'));
+  const proofs = finiteProofIndex(record);
+  const jobs = finiteProofJobIndex(record, proofs);
+  // Use the job certificate as the published certificate so their digest identity is exact.
+  proofs.proofs[0].certificate = jobs.jobs[0].checkpoint.artifacts.certificate;
+  jobs.jobs[0].proofSha256 = proofs.proofs[0].certificate.sha256;
+  const report = auditRecords([record], { finiteDomainProofs: proofs, finiteDomainProofJobs: jobs });
+  assert.equal(report.passed, true);
+  assert.equal(report.summary.finiteDomainProofJobs, 1);
+  jobs.jobs[0].proofSha256 = '0'.repeat(64);
+  const rejected = auditRecords([record], { finiteDomainProofs: proofs, finiteDomainProofJobs: jobs });
+  assert.ok(rejected.findings.some(finding => finding.code === 'FINITE_DOMAIN_PROOF_JOB_LINK_INVALID'));
 });
 
 test('scientific audit catches evidence that exceeds its bound support', () => {

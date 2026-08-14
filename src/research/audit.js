@@ -4,6 +4,7 @@ import { buildCommunityChallenges } from './challenges.js';
 import { canonicalCoverage } from './release.js';
 import { buildCanonicalCsv } from './exports.js';
 import { verifyFiniteDomainProof } from './finiteDomain.js';
+import { verifyFiniteDomainProofJob } from './proofJobs.js';
 import {
   detectPhaseTransitions,
   experimentId,
@@ -253,6 +254,37 @@ export function auditRecords(records, options = {}) {
       }
     }
   }
+  let finiteDomainProofJobs = 0;
+  if (options.finiteDomainProofJobs !== undefined) {
+    const index = options.finiteDomainProofJobs;
+    if (index?.format !== 'tpa-finite-domain-proof-jobs/v1' || !Array.isArray(index?.jobs)) {
+      findings.push({ severity: 'critical', code: 'FINITE_DOMAIN_PROOF_JOB_INDEX_INVALID' });
+    } else {
+      const jobIds = new Set();
+      const recordsById = new Set(records.map(record => record.id));
+      const proofsById = new Map((options.finiteDomainProofs?.proofs ?? []).map(proof => [proof.proofId, proof]));
+      for (const entry of index.jobs) {
+        finiteDomainProofJobs += 1;
+        const jobVerification = verifyFiniteDomainProofJob(entry.checkpoint);
+        const proof = proofsById.get(entry.jobId);
+        if (typeof entry.jobId !== 'string' || jobIds.has(entry.jobId)) {
+          findings.push({ severity: 'critical', code: 'FINITE_DOMAIN_PROOF_JOB_ID_INVALID', jobId: entry.jobId });
+        }
+        jobIds.add(entry.jobId);
+        if (!recordsById.has(entry.linkedRecordId) || !proof || proof.linkedRecordId !== entry.linkedRecordId ||
+          entry.proofSha256 !== proof.certificate?.sha256 ||
+          entry.checkpoint?.artifacts?.certificate?.sha256 !== entry.proofSha256) {
+          findings.push({ severity: 'critical', code: 'FINITE_DOMAIN_PROOF_JOB_LINK_INVALID', jobId: entry.jobId });
+        }
+        if (!jobVerification.valid || jobVerification.stage !== 'proof_ready') {
+          findings.push({
+            severity: 'critical', code: 'FINITE_DOMAIN_PROOF_JOB_INVALID', jobId: entry.jobId,
+            errors: jobVerification.errors
+          });
+        }
+      }
+    }
+  }
 
   const slices = Map.groupBy(records.filter(record => record.family !== 'scalene'), key);
   for (const [slice, values] of slices) {
@@ -279,6 +311,7 @@ export function auditRecords(records, options = {}) {
   const summary = {
     records: records.length,
     finiteDomainProofs,
+    finiteDomainProofJobs,
     replayed,
     uniqueExperiments: registry.uniqueExperiments,
     critical: findings.filter(finding => finding.severity === 'critical').length,

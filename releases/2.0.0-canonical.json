@@ -5,7 +5,8 @@
   "csv": "public/atlas-v2.csv",
   "queue": "public/work-queue-v2.json",
   "finiteDomainProofs": "public/finite-domain-proofs-v2.json",
-  "sha256": "af1b49ba6894312ab01a571ef2433460e9db6dad997cf5d3ceed6f36c46d8b56",
+  "finiteDomainProofJobs": "public/finite-domain-proof-jobs-v2.json",
+  "sha256": "729722421a6dafd4d89fe0350fd2b6978629eb52b059747591eff63d1125a8a8",
   "records": 304,
   "audit": {
     "valid": true,

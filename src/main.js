@@ -401,16 +401,18 @@ function renderResearchExplorer() {
 
 async function loadV1Context() {
   try {
-    const [auditResponse, literatureResponse, challengeResponse, proofResponse] = await Promise.all([
+    const [auditResponse, literatureResponse, challengeResponse, proofResponse, proofJobResponse] = await Promise.all([
       fetch('/audit-v2.json'),
       fetch('/literature/registry.json'),
       fetch('/community-challenges-v2.json'),
-      fetch('/finite-domain-proofs-v2.json')
+      fetch('/finite-domain-proofs-v2.json'),
+      fetch('/finite-domain-proof-jobs-v2.json')
     ]);
     const audit = auditResponse.ok ? await auditResponse.json() : null;
     const literature = literatureResponse.ok ? await literatureResponse.json() : null;
     const challenges = challengeResponse.ok ? await challengeResponse.json() : null;
     const proofIndex = proofResponse.ok ? await proofResponse.json() : null;
+    const proofJobIndex = proofJobResponse.ok ? await proofJobResponse.json() : null;
     if (audit) {
       $('#release-gates').innerHTML = [
         ['Canonical geometry replay', `${audit.summary.replayed}/${audit.summary.records} passed`, 'passed'],
@@ -437,10 +439,12 @@ async function loadV1Context() {
     if (proofIndex?.proofs?.length) {
       const proof = proofIndex.proofs[0];
       const certificate = proof.certificate;
+      const job = proofJobIndex?.jobs?.find(entry => entry.jobId === proof.proofId);
+      const jobStage = job?.checkpoint?.stage === 'proof_ready' ? 'Completed and replayable' : 'Checkpoint unavailable';
       $('#finite-domain-proof-summary').innerHTML = `
         <div><p class="kicker">CERTIFIED CONTROL</p><h3>${escapeHtml(proof.proofId)}</h3></div>
         <p><b>${certificate.optimum} placements</b> is proven best among ${certificate.domain.candidateCount} declared candidates. This is a finite search result, not a claim about the global optimum.</p>
-        <dl><div><dt>Linked atlas result</dt><dd>${escapeHtml(proof.linkedRecordId)}</dd></div><div><dt>Certificate digest</dt><dd>${escapeHtml(certificate.sha256.slice(0, 12))}…</dd></div></dl>`;
+        <dl><div><dt>Proof job</dt><dd>${escapeHtml(jobStage)}</dd></div><div><dt>Linked atlas result</dt><dd>${escapeHtml(proof.linkedRecordId)}</dd></div><div><dt>Certificate digest</dt><dd>${escapeHtml(certificate.sha256.slice(0, 12))}…</dd></div></dl>`;
     }
   } catch {
     $('#release-gates').innerHTML = '<div><dt>Release status</dt><dd>Verification details could not be loaded. Try refreshing the page.</dd></div>';

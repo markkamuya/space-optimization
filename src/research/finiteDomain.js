@@ -3,7 +3,7 @@ import { fromSSS, isInsideBounds, overlaps, transform } from '../geometry/triang
 
 const DEFAULT_LIMITS = Object.freeze({ maxCandidates: 10_000, maxConflictEdges: 2_000_000 });
 
-function canonicalJson(value) {
+export function canonicalJson(value) {
   if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`;
   if (value && typeof value === 'object') {
     return `{${Object.keys(value).sort().map(key => `${JSON.stringify(key)}:${canonicalJson(value[key])}`).join(',')}}`;

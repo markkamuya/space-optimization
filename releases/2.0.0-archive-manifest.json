@@ -8,8 +8,8 @@
   "files": [
     {
       "path": "public/atlas-v2.json",
-      "bytes": 12184861,
-      "sha256": "af1b49ba6894312ab01a571ef2433460e9db6dad997cf5d3ceed6f36c46d8b56"
+      "bytes": 12184931,
+      "sha256": "729722421a6dafd4d89fe0350fd2b6978629eb52b059747591eff63d1125a8a8"
     },
     {
       "path": "public/atlas-v2.csv",
@@ -18,8 +18,8 @@
     },
     {
       "path": "public/audit-v2.json",
-      "bytes": 1343,
-      "sha256": "616b346cdd5f6c0bd16ba908550258dbfa7922adbe164ea9266859924756aa68"
+      "bytes": 1375,
+      "sha256": "4b8bcd3d42c9f9b78f3264d587ced4b7aa14cc1c2d2a9e0ddb7c4b73013d17ac"
     },
     {
       "path": "public/work-queue-v2.json",
@@ -33,8 +33,13 @@
     },
     {
       "path": "public/finite-domain-proofs-v2.json",
-      "bytes": 7104,
-      "sha256": "02cc2121f3ad01afb8ab9d26ffc183c7d90b324a8002d0751d9c87b98056c449"
+      "bytes": 7263,
+      "sha256": "6a87eb9eed68567b78fe72ecf9d92fb08e37319fa43c74f70782ea2d036406bb"
+    },
+    {
+      "path": "public/finite-domain-proof-jobs-v2.json",
+      "bytes": 20927,
+      "sha256": "9aa4c428fbafb755dd990e4ae0dc344d09cf00a3fd63093c304d39519183071b"
     },
     {
       "path": "proofs/finite-domain-right-control.spec.json",
@@ -57,6 +62,11 @@
       "sha256": "5450c0333e95491963ce0b65bb7355d7c520e6c7a23e4884310e891f2b948f0a"
     },
     {
+      "path": "schemas/finite-domain-proof-job.schema.json",
+      "bytes": 899,
+      "sha256": "71a9080911157a54304ab3a7203bd8ab34660130096eaa1d02ca12bc9c6ec29f"
+    },
+    {
       "path": "docs/METHODOLOGY_V2.md",
       "bytes": 2280,
       "sha256": "7a3dc28d0965a89ef6247d26d9f71f67471fc4ea1d39d5a594ec6bedaf839144"
@@ -68,8 +78,8 @@
     },
     {
       "path": "docs/MATHEMATICAL_CERTIFICATES_V2.md",
-      "bytes": 2561,
-      "sha256": "0901bf31f808bb73cf7966479a9ab6629f60a0995dec53701a4e1c1f83b8df2b"
+      "bytes": 3907,
+      "sha256": "ae35acc110a13fdb631d77f6e80e7d9a8a28e4a7b8ba6a264952b7f330ff84cc"
     },
     {
       "path": "CITATION.cff",

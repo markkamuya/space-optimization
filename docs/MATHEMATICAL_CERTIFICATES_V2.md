@@ -60,3 +60,28 @@ The original generation parameters are archived at
 `proofs/finite-domain-right-control.spec.json`. The schema continues to accept
 legacy v2 finite-domain certificates while the verifier and published index use
 the digest-bound v3 format.
+
+### Scaling and resuming exact searches
+
+The exact solver separates disconnected conflict-graph components before
+searching them. Each component uses deterministic bitset branch-and-bound, and
+the selected placements and clique covers are mapped back to the full candidate
+domain. This preserves the same proof boundary while avoiding exponential work
+across unrelated components.
+
+Longer jobs can stop after domain generation or conflict-graph construction and
+resume from `tpa-finite-domain-proof-job/v1` checkpoints. Every checkpoint binds
+the original specification and all completed artifacts with a canonical
+payload digest. Resuming regenerates completed stages and rejects changed
+coordinates, graphs, specifications, stage regression, or digest drift before
+continuing. Checkpoints are written atomically.
+
+```sh
+npm run atlas:finite-domain-proof-job -- proofs/finite-domain-right-control.spec.json checkpoint.json --stop-after graph_ready
+npm run atlas:finite-domain-proof-job -- proofs/finite-domain-right-control.spec.json checkpoint.json --stop-after proof_ready
+npm run atlas:finite-domain-proof-jobs-verify -- checkpoint.json
+```
+
+The release publishes completed checkpoints in
+`public/finite-domain-proof-jobs-v2.json`; these are independently tied to the
+corresponding proof digest and canonical record by the scientific audit.
