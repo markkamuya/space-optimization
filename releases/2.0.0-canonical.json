@@ -4,7 +4,8 @@
   "dataset": "public/atlas-v2.json",
   "csv": "public/atlas-v2.csv",
   "queue": "public/work-queue-v2.json",
-  "sha256": "2013749cb0e4a1874dd201d5ec3c83649f1c157e72d484a09510bb3d23852b01",
+  "finiteDomainProofs": "public/finite-domain-proofs-v2.json",
+  "sha256": "af1b49ba6894312ab01a571ef2433460e9db6dad997cf5d3ceed6f36c46d8b56",
   "records": 304,
   "audit": {
     "valid": true,

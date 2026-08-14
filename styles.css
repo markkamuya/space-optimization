@@ -116,6 +116,13 @@ dt { color:var(--muted); } dd { margin:0; font-weight:700; text-align:right; }
 .research-toolbar input,.research-toolbar select { display:block; width:100%; margin-top:8px; padding:11px; border:1px solid var(--line); background:white; }
 .research-downloads { display:flex; gap:10px; padding-bottom:11px; }
 .research-downloads a { font:9px "DM Mono"; white-space:nowrap; }
+.proof-summary { margin:0 4vw 28px; padding:24px; border:1px solid var(--ink); display:grid; grid-template-columns:1fr 1.5fr 1fr; gap:24px; align-items:start; }
+.proof-summary h3 { margin:6px 0; }
+.proof-summary p { margin:0; font-size:11px; line-height:1.6; }
+.proof-summary dl { margin:0; font:9px "DM Mono"; }
+.proof-summary dl div { padding:6px 0; border-top:1px solid var(--line); }
+.proof-summary dd { margin:3px 0 0; overflow-wrap:anywhere; }
+@media(max-width:720px){.proof-summary{grid-template-columns:1fr;margin-inline:24px}}
 .registry-head,.registry-results button { margin-inline:6vw; display:grid; grid-template-columns:2fr 1.2fr 1fr .7fr; gap:18px; align-items:center; }
 .registry-head { padding:14px 18px; background:var(--dark); color:white; font:9px "DM Mono"; text-transform:uppercase; }
 .registry-results button { width:88%; text-align:left; padding:15px 18px; border:0; border-bottom:1px solid var(--line); background:var(--panel); cursor:pointer; }

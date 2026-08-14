@@ -2,10 +2,11 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { auditRecords } from '../src/research/audit.js';
 import { auditArtifactChecksum, auditReleaseManifest } from '../src/research/artifacts.js';
 
-const [datasetPayload, queue, challengeBoard, csv, checksumFile, manifest] = await Promise.all([
+const [datasetPayload, queue, challengeBoard, finiteDomainProofs, csv, checksumFile, manifest] = await Promise.all([
   readFile(new URL('../public/atlas-v2.json', import.meta.url), 'utf8'),
   readFile(new URL('../public/work-queue-v2.json', import.meta.url), 'utf8').then(JSON.parse),
   readFile(new URL('../public/community-challenges-v2.json', import.meta.url), 'utf8').then(JSON.parse),
+  readFile(new URL('../public/finite-domain-proofs-v2.json', import.meta.url), 'utf8').then(JSON.parse),
   readFile(new URL('../public/atlas-v2.csv', import.meta.url), 'utf8'),
   readFile(new URL('../public/atlas-v2.sha256', import.meta.url), 'utf8'),
   readFile(new URL('../releases/2.0.0-canonical.json', import.meta.url), 'utf8').then(JSON.parse)
@@ -15,6 +16,7 @@ const report = auditRecords(release.records, {
   transitions: release.transitions,
   workQueue: queue.tasks,
   challenges: challengeBoard.challenges,
+  finiteDomainProofs,
   coverage: release.coverage,
   csv
 });

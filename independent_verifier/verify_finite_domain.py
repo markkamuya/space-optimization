@@ -154,14 +154,21 @@ def main():
     if len(sys.argv) != 2:
         print("Usage: verify_finite_domain.py certificate.json", file=sys.stderr)
         return 2
-    certificate = json.loads(Path(sys.argv[1]).read_text())
-    errors = verify_certificate(certificate)
+    payload = json.loads(Path(sys.argv[1]).read_text())
+    certificates = ([proof.get("certificate") for proof in payload.get("proofs", [])]
+                    if payload.get("format") == "triangle-packing-finite-domain-proofs/v1" else [payload])
+    reports = [{"errors": verify_certificate(certificate), "certificate": certificate}
+               for certificate in certificates]
+    errors = [error for report in reports for error in report["errors"]]
+    candidate_count = sum(len((report["certificate"].get("domain") or {}).get("candidates") or [])
+                          for report in reports)
     print(json.dumps({
         "format": "tpa-finite-domain-cross-verification/v1",
         "implementation": "python-stdlib-independent",
         "valid": not errors,
-        "candidateCount": len((certificate.get("domain") or {}).get("candidates") or []),
-        "optimum": certificate.get("optimum") if not errors else None,
+        "certificateCount": len(certificates),
+        "candidateCount": candidate_count,
+        "optimum": reports[0]["certificate"].get("optimum") if len(reports) == 1 and not errors else None,
         "globallyOptimal": False,
         "errors": errors,
     }, indent=2))

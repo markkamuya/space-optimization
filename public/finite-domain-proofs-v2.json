@@ -1,0 +1,171 @@
+{
+  "format": "triangle-packing-finite-domain-proofs/v1",
+  "version": "2.0.0",
+  "proofs": [
+    {
+      "proofId": "finite-right-grid-control-v1",
+      "linkedRecordId": "iso-a90-r0p75",
+      "relation": "same_piece_family_control",
+      "claim": "Optimal only within the declared finite candidate domain; not a global packing claim.",
+      "certificate": {
+        "format": "triangle-packing-certificate/v3",
+        "type": "finite_candidate_domain",
+        "claim": "optimal_within_declared_finite_candidate_domain",
+        "globallyOptimal": false,
+        "domain": {
+          "format": "tpa-finite-candidate-domain/v1",
+          "problem": {
+            "width": 3,
+            "height": 2,
+            "sides": [
+              1,
+              1,
+              1.414213562373095
+            ]
+          },
+          "specification": {
+            "generator": "cartesian-grid/v1",
+            "xStep": 1,
+            "yStep": 1,
+            "angles": [
+              0,
+              6.283185307179586
+            ],
+            "reflections": [
+              false
+            ],
+            "quantum": 1e-9
+          },
+          "candidates": [
+            {
+              "x": 0,
+              "y": 0,
+              "angle": 0,
+              "reflect": false
+            },
+            {
+              "x": 0,
+              "y": 0,
+              "angle": 6.283185307,
+              "reflect": false
+            },
+            {
+              "x": 0,
+              "y": 1,
+              "angle": 0,
+              "reflect": false
+            },
+            {
+              "x": 0,
+              "y": 1,
+              "angle": 6.283185307,
+              "reflect": false
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "angle": 0,
+              "reflect": false
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "angle": 6.283185307,
+              "reflect": false
+            },
+            {
+              "x": 1,
+              "y": 1,
+              "angle": 0,
+              "reflect": false
+            },
+            {
+              "x": 1,
+              "y": 1,
+              "angle": 6.283185307,
+              "reflect": false
+            }
+          ],
+          "candidateCount": 8,
+          "canonicalPayload": "{\"candidates\":[{\"angle\":0,\"reflect\":false,\"x\":0,\"y\":0},{\"angle\":6.283185307,\"reflect\":false,\"x\":0,\"y\":0},{\"angle\":0,\"reflect\":false,\"x\":0,\"y\":1},{\"angle\":6.283185307,\"reflect\":false,\"x\":0,\"y\":1},{\"angle\":0,\"reflect\":false,\"x\":1,\"y\":0},{\"angle\":6.283185307,\"reflect\":false,\"x\":1,\"y\":0},{\"angle\":0,\"reflect\":false,\"x\":1,\"y\":1},{\"angle\":6.283185307,\"reflect\":false,\"x\":1,\"y\":1}],\"problem\":{\"height\":2,\"sides\":[1,1,1.414213562373095],\"width\":3},\"specification\":{\"angles\":[0,6.283185307179586],\"generator\":\"cartesian-grid/v1\",\"quantum\":1e-9,\"reflections\":[false],\"xStep\":1,\"yStep\":1}}",
+          "sha256": "7e5df5ed2aa8221bcafd7292e6d8c814ff0b1dbf5838c786b36cba3e7fa2a432"
+        },
+        "conflictGraph": {
+          "format": "tpa-finite-conflict-graph/v1",
+          "domainSha256": "7e5df5ed2aa8221bcafd7292e6d8c814ff0b1dbf5838c786b36cba3e7fa2a432",
+          "adjacency": [
+            [
+              1,
+              4,
+              5
+            ],
+            [
+              0,
+              4,
+              5
+            ],
+            [
+              3,
+              6,
+              7
+            ],
+            [
+              2,
+              6,
+              7
+            ],
+            [
+              0,
+              1,
+              5
+            ],
+            [
+              0,
+              1,
+              4
+            ],
+            [
+              2,
+              3,
+              7
+            ],
+            [
+              2,
+              3,
+              6
+            ]
+          ],
+          "edgeCount": 12,
+          "sha256": "b38ea11316b3664ce8f63f5a27b2a0633815208f902d85778b7f9cd02e3118b0"
+        },
+        "selectedIndices": [
+          0,
+          2
+        ],
+        "cliqueCover": [
+          [
+            0,
+            1,
+            4,
+            5
+          ],
+          [
+            2,
+            3,
+            6,
+            7
+          ]
+        ],
+        "optimum": 2,
+        "solver": {
+          "algorithm": "deterministic-branch-and-bound/v1",
+          "independentSetNodes": 33,
+          "cliqueCoverNodes": 10,
+          "maxSearchNodes": 100000
+        },
+        "canonicalPayload": "{\"claim\":\"optimal_within_declared_finite_candidate_domain\",\"cliqueCover\":[[0,1,4,5],[2,3,6,7]],\"conflictGraph\":{\"adjacency\":[[1,4,5],[0,4,5],[3,6,7],[2,6,7],[0,1,5],[0,1,4],[2,3,7],[2,3,6]],\"domainSha256\":\"7e5df5ed2aa8221bcafd7292e6d8c814ff0b1dbf5838c786b36cba3e7fa2a432\",\"edgeCount\":12,\"format\":\"tpa-finite-conflict-graph/v1\",\"sha256\":\"b38ea11316b3664ce8f63f5a27b2a0633815208f902d85778b7f9cd02e3118b0\"},\"domain\":{\"candidateCount\":8,\"candidates\":[{\"angle\":0,\"reflect\":false,\"x\":0,\"y\":0},{\"angle\":6.283185307,\"reflect\":false,\"x\":0,\"y\":0},{\"angle\":0,\"reflect\":false,\"x\":0,\"y\":1},{\"angle\":6.283185307,\"reflect\":false,\"x\":0,\"y\":1},{\"angle\":0,\"reflect\":false,\"x\":1,\"y\":0},{\"angle\":6.283185307,\"reflect\":false,\"x\":1,\"y\":0},{\"angle\":0,\"reflect\":false,\"x\":1,\"y\":1},{\"angle\":6.283185307,\"reflect\":false,\"x\":1,\"y\":1}],\"canonicalPayload\":\"{\\\"candidates\\\":[{\\\"angle\\\":0,\\\"reflect\\\":false,\\\"x\\\":0,\\\"y\\\":0},{\\\"angle\\\":6.283185307,\\\"reflect\\\":false,\\\"x\\\":0,\\\"y\\\":0},{\\\"angle\\\":0,\\\"reflect\\\":false,\\\"x\\\":0,\\\"y\\\":1},{\\\"angle\\\":6.283185307,\\\"reflect\\\":false,\\\"x\\\":0,\\\"y\\\":1},{\\\"angle\\\":0,\\\"reflect\\\":false,\\\"x\\\":1,\\\"y\\\":0},{\\\"angle\\\":6.283185307,\\\"reflect\\\":false,\\\"x\\\":1,\\\"y\\\":0},{\\\"angle\\\":0,\\\"reflect\\\":false,\\\"x\\\":1,\\\"y\\\":1},{\\\"angle\\\":6.283185307,\\\"reflect\\\":false,\\\"x\\\":1,\\\"y\\\":1}],\\\"problem\\\":{\\\"height\\\":2,\\\"sides\\\":[1,1,1.414213562373095],\\\"width\\\":3},\\\"specification\\\":{\\\"angles\\\":[0,6.283185307179586],\\\"generator\\\":\\\"cartesian-grid/v1\\\",\\\"quantum\\\":1e-9,\\\"reflections\\\":[false],\\\"xStep\\\":1,\\\"yStep\\\":1}}\",\"format\":\"tpa-finite-candidate-domain/v1\",\"problem\":{\"height\":2,\"sides\":[1,1,1.414213562373095],\"width\":3},\"sha256\":\"7e5df5ed2aa8221bcafd7292e6d8c814ff0b1dbf5838c786b36cba3e7fa2a432\",\"specification\":{\"angles\":[0,6.283185307179586],\"generator\":\"cartesian-grid/v1\",\"quantum\":1e-9,\"reflections\":[false],\"xStep\":1,\"yStep\":1}},\"format\":\"triangle-packing-certificate/v3\",\"globallyOptimal\":false,\"optimum\":2,\"selectedIndices\":[0,2],\"solver\":{\"algorithm\":\"deterministic-branch-and-bound/v1\",\"cliqueCoverNodes\":10,\"independentSetNodes\":33,\"maxSearchNodes\":100000},\"type\":\"finite_candidate_domain\"}",
+        "sha256": "1360b00c41b083190d8e9cefcae141d2326468fca4984a3c86fc4353a9496070"
+      }
+    }
+  ]
+}

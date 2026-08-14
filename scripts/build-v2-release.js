@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { RESEARCH_RECORDS } from '../src/research/dataset.js';
 import { adaptiveBoundarySearch } from '../src/solvers/adaptive.js';
@@ -12,6 +12,10 @@ import {
 import { buildWorkQueue } from '../src/research/distributed.js';
 import { canonicalCoverage } from '../src/research/release.js';
 import { buildCanonicalCsv } from '../src/research/exports.js';
+import {
+  buildFiniteConflictGraph, generateFiniteCandidateDomain, solveFiniteDomainCertificate,
+  verifyFiniteDomainProof
+} from '../src/research/finiteDomain.js';
 
 const adaptiveTargets = new Set([...RESEARCH_RECORDS]
   .filter(record => record.bounds.optimalityGap > 0 && record.verification.pieceCount < 300)
@@ -93,6 +97,31 @@ if (!audit.valid) throw new Error(`Canonical registry failed: ${JSON.stringify(a
 
 const transitions = detectPhaseTransitions(records);
 const queue = buildWorkQueue(records);
+const proofSpecification = JSON.parse(await readFile(
+  new URL('../proofs/finite-domain-right-control.spec.json', import.meta.url), 'utf8'
+));
+const proofDomain = generateFiniteCandidateDomain(
+  proofSpecification.problem, proofSpecification.specification, proofSpecification.limits
+);
+const proofCertificate = solveFiniteDomainCertificate(
+  proofDomain,
+  buildFiniteConflictGraph(proofDomain, proofSpecification.limits),
+  proofSpecification.limits
+);
+if (!verifyFiniteDomainProof(proofCertificate, proofSpecification.limits).valid) {
+  throw new Error('Generated finite-domain control proof failed replay');
+}
+const proofIndex = {
+  format: 'triangle-packing-finite-domain-proofs/v1',
+  version: '2.0.0',
+  proofs: [{
+    proofId: proofSpecification.proofId,
+    linkedRecordId: proofSpecification.linkedRecordId,
+    relation: proofSpecification.relation,
+    claim: 'Optimal only within the declared finite candidate domain; not a global packing claim.',
+    certificate: proofCertificate
+  }]
+};
 const release = {
   format: CANONICAL_FORMAT,
   version: '2.0.0',
@@ -101,6 +130,7 @@ const release = {
   citation: 'CITATION.cff',
   methodology: 'docs/METHODOLOGY_V2.md',
   claimPolicy: 'literature/CLAIM_POLICY.md',
+  finiteDomainProofIndex: 'public/finite-domain-proofs-v2.json',
   verificationPolicy: {
     independentImplementations: ['src/atlas/verifier.js', 'independent_verifier/verify_release.py'],
     tolerancePolicy: 'docs/NUMERICAL_POLICY.md',
@@ -120,12 +150,14 @@ await writeFile(new URL('../public/atlas-v2.json', import.meta.url), payload);
 await writeFile(new URL('../public/atlas-v2.csv', import.meta.url), buildCanonicalCsv(records));
 await writeFile(new URL('../public/atlas-v2.sha256', import.meta.url), `${checksum}  atlas-v2.json\n`);
 await writeFile(new URL('../public/work-queue-v2.json', import.meta.url), `${JSON.stringify({ format: 'tpa-work-queue/v1', version: '2.0.0', tasks: queue }, null, 2)}\n`);
+await writeFile(new URL('../public/finite-domain-proofs-v2.json', import.meta.url), `${JSON.stringify(proofIndex, null, 2)}\n`);
 await writeFile(new URL('../releases/2.0.0-canonical.json', import.meta.url), `${JSON.stringify({
   format: 'triangle-packing-atlas-release-manifest/v2',
   version: '2.0.0',
   dataset: 'public/atlas-v2.json',
   csv: 'public/atlas-v2.csv',
   queue: 'public/work-queue-v2.json',
+  finiteDomainProofs: 'public/finite-domain-proofs-v2.json',
   sha256: checksum,
   records: records.length,
   audit,

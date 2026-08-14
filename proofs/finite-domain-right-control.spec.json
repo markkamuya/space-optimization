@@ -1,0 +1,22 @@
+{
+  "proofId": "finite-right-grid-control-v1",
+  "linkedRecordId": "iso-a90-r0p75",
+  "relation": "same_piece_family_control",
+  "problem": {
+    "width": 3,
+    "height": 2,
+    "sides": [1, 1, 1.414213562373095]
+  },
+  "specification": {
+    "xStep": 1,
+    "yStep": 1,
+    "angles": [0, 6.283185307179586],
+    "reflections": [false],
+    "quantum": 1e-9
+  },
+  "limits": {
+    "maxCandidates": 1000,
+    "maxConflictEdges": 100000,
+    "maxSearchNodes": 100000
+  }
+}

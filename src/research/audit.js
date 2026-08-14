@@ -3,6 +3,7 @@ import { buildWorkQueue } from './distributed.js';
 import { buildCommunityChallenges } from './challenges.js';
 import { canonicalCoverage } from './release.js';
 import { buildCanonicalCsv } from './exports.js';
+import { verifyFiniteDomainProof } from './finiteDomain.js';
 import {
   detectPhaseTransitions,
   experimentId,
@@ -217,6 +218,41 @@ export function auditRecords(records, options = {}) {
       code: 'CSV_EXPORT_DRIFT'
     });
   }
+  let finiteDomainProofs = 0;
+  if (options.finiteDomainProofs !== undefined) {
+    const index = options.finiteDomainProofs;
+    if (index?.format !== 'triangle-packing-finite-domain-proofs/v1' || !Array.isArray(index?.proofs)) {
+      findings.push({ severity: 'critical', code: 'FINITE_DOMAIN_PROOF_INDEX_INVALID' });
+    } else {
+      const proofIds = new Set();
+      const recordsById = new Map(records.map(record => [record.id, record]));
+      for (const proof of index.proofs) {
+        finiteDomainProofs += 1;
+        if (typeof proof.proofId !== 'string' || proofIds.has(proof.proofId)) {
+          findings.push({ severity: 'critical', code: 'FINITE_DOMAIN_PROOF_ID_INVALID', proofId: proof.proofId });
+        }
+        proofIds.add(proof.proofId);
+        const linkedRecord = recordsById.get(proof.linkedRecordId);
+        if (!linkedRecord || proof.relation !== 'same_piece_family_control') {
+          findings.push({ severity: 'critical', code: 'FINITE_DOMAIN_PROOF_LINK_INVALID', proofId: proof.proofId });
+        } else {
+          const expectedSides = [...linkedRecord.problem.triangles[0].sides].sort((a, b) => a - b);
+          const actualSides = [...(proof.certificate?.domain?.problem?.sides ?? [])].sort((a, b) => a - b);
+          if (expectedSides.length !== actualSides.length || expectedSides.some((side, i) => Math.abs(side - actualSides[i]) > 1e-12)) {
+            findings.push({ severity: 'critical', code: 'FINITE_DOMAIN_PROOF_FAMILY_DRIFT', proofId: proof.proofId });
+          }
+        }
+        const verification = verifyFiniteDomainProof(proof.certificate);
+        if (!verification.valid || verification.globallyOptimal !== false ||
+          proof.claim !== 'Optimal only within the declared finite candidate domain; not a global packing claim.') {
+          findings.push({
+            severity: 'critical', code: 'FINITE_DOMAIN_PROOF_INVALID', proofId: proof.proofId,
+            errors: verification.errors
+          });
+        }
+      }
+    }
+  }
 
   const slices = Map.groupBy(records.filter(record => record.family !== 'scalene'), key);
   for (const [slice, values] of slices) {
@@ -242,6 +278,7 @@ export function auditRecords(records, options = {}) {
   const familyGroups = Map.groupBy(records, record => record.family);
   const summary = {
     records: records.length,
+    finiteDomainProofs,
     replayed,
     uniqueExperiments: registry.uniqueExperiments,
     critical: findings.filter(finding => finding.severity === 'critical').length,

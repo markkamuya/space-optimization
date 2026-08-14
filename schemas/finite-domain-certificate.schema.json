@@ -1,13 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://trianglepackingatlas.org/schemas/finite-domain-certificate.v1.json",
+  "$id": "https://trianglepackingatlas.org/schemas/finite-domain-certificate.json",
   "title": "Finite candidate-domain packing certificate",
-  "type": "object",
-  "required": ["format", "type", "problem", "candidates", "selectedIndices", "cliqueCover", "claim"],
-  "properties": {
-    "format": { "const": "triangle-packing-certificate/v2" },
-    "type": { "const": "finite_candidate_domain" },
-    "claim": { "const": "optimal_within_declared_finite_candidate_domain" },
+  "oneOf": [
+    { "$ref": "#/$defs/legacyV2" },
+    { "$ref": "#/$defs/certifiedV3" }
+  ],
+  "$defs": {
     "problem": {
       "type": "object",
       "required": ["width", "height", "sides"],
@@ -15,18 +14,66 @@
         "width": { "type": "number", "exclusiveMinimum": 0 },
         "height": { "type": "number", "exclusiveMinimum": 0 },
         "sides": {
-          "type": "array",
-          "minItems": 3,
-          "maxItems": 3,
+          "type": "array", "minItems": 3, "maxItems": 3,
           "items": { "type": "number", "exclusiveMinimum": 0 }
         }
       }
     },
-    "candidates": { "type": "array", "items": { "type": "object" } },
-    "selectedIndices": { "type": "array", "items": { "type": "integer", "minimum": 0 } },
-    "cliqueCover": {
-      "type": "array",
-      "items": { "type": "array", "items": { "type": "integer", "minimum": 0 } }
-    }
+    "legacyV2": {
+      "type": "object",
+      "required": ["format", "type", "problem", "candidates", "selectedIndices", "cliqueCover", "claim"],
+      "properties": {
+        "format": { "const": "triangle-packing-certificate/v2" },
+        "type": { "const": "finite_candidate_domain" },
+        "claim": { "const": "optimal_within_declared_finite_candidate_domain" },
+        "problem": { "$ref": "#/$defs/problem" },
+        "candidates": { "type": "array", "items": { "type": "object" } },
+        "selectedIndices": { "$ref": "#/$defs/indices" },
+        "cliqueCover": { "$ref": "#/$defs/cliqueCover" }
+      }
+    },
+    "certifiedV3": {
+      "type": "object",
+      "required": ["format", "type", "claim", "globallyOptimal", "domain", "conflictGraph", "selectedIndices", "cliqueCover", "optimum", "solver", "canonicalPayload", "sha256"],
+      "properties": {
+        "format": { "const": "triangle-packing-certificate/v3" },
+        "type": { "const": "finite_candidate_domain" },
+        "claim": { "const": "optimal_within_declared_finite_candidate_domain" },
+        "globallyOptimal": { "const": false },
+        "domain": {
+          "type": "object",
+          "required": ["format", "problem", "specification", "candidates", "candidateCount", "canonicalPayload", "sha256"],
+          "properties": {
+            "format": { "const": "tpa-finite-candidate-domain/v1" },
+            "problem": { "$ref": "#/$defs/problem" },
+            "specification": { "type": "object" },
+            "candidates": { "type": "array", "items": { "type": "object" } },
+            "candidateCount": { "type": "integer", "minimum": 0 },
+            "canonicalPayload": { "type": "string" },
+            "sha256": { "$ref": "#/$defs/sha256" }
+          }
+        },
+        "conflictGraph": {
+          "type": "object",
+          "required": ["format", "domainSha256", "adjacency", "edgeCount", "sha256"],
+          "properties": {
+            "format": { "const": "tpa-finite-conflict-graph/v1" },
+            "domainSha256": { "$ref": "#/$defs/sha256" },
+            "adjacency": { "type": "array", "items": { "$ref": "#/$defs/indices" } },
+            "edgeCount": { "type": "integer", "minimum": 0 },
+            "sha256": { "$ref": "#/$defs/sha256" }
+          }
+        },
+        "selectedIndices": { "$ref": "#/$defs/indices" },
+        "cliqueCover": { "$ref": "#/$defs/cliqueCover" },
+        "optimum": { "type": "integer", "minimum": 0 },
+        "solver": { "type": "object" },
+        "canonicalPayload": { "type": "string" },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "indices": { "type": "array", "items": { "type": "integer", "minimum": 0 } },
+    "cliqueCover": { "type": "array", "items": { "$ref": "#/$defs/indices" } },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
   }
 }

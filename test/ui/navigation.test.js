@@ -18,4 +18,7 @@ test('homepage provides descriptive navigation and mobile menu semantics', async
   assert.match(script, /dialogTrigger\.focus/);
   assert.match(script, /history\.replaceState\(null, '', dialogReturnHash\)/);
   assert.match(styles, /\.topbar nav\.open/);
+  assert.match(html, /FINITE-DOMAIN PROOFS/);
+  assert.match(html, /Machine-checkable finite-domain proofs/);
+  assert.match(script, /not a claim about the global optimum/);
 });

@@ -7,6 +7,26 @@ import { buildWorkQueue } from '../../src/research/distributed.js';
 import { buildCommunityChallenges } from '../../src/research/challenges.js';
 import { canonicalCoverage } from '../../src/research/release.js';
 import { buildCanonicalCsv } from '../../src/research/exports.js';
+import {
+  buildFiniteConflictGraph,
+  generateFiniteCandidateDomain,
+  solveFiniteDomainCertificate
+} from '../../src/research/finiteDomain.js';
+
+function finiteProofIndex(record) {
+  const problem = { width: 3, height: 2, sides: record.problem.triangles[0].sides };
+  const specification = { xStep: 1, yStep: 1, angles: [0, Math.PI * 2], reflections: [false], quantum: 1e-9 };
+  const limits = { maxCandidates: 1000, maxConflictEdges: 100000, maxSearchNodes: 100000 };
+  const domain = generateFiniteCandidateDomain(problem, specification, limits);
+  const certificate = solveFiniteDomainCertificate(domain, buildFiniteConflictGraph(domain, limits), limits);
+  return {
+    format: 'triangle-packing-finite-domain-proofs/v1', version: '2.0.0',
+    proofs: [{
+      proofId: 'control-proof', linkedRecordId: record.id, relation: 'same_piece_family_control',
+      claim: 'Optimal only within the declared finite candidate domain; not a global packing claim.', certificate
+    }]
+  };
+}
 
 test('scientific audit independently replays the canonical registry', () => {
   const report = auditRecords(RESEARCH_RECORDS.map(canonicalRecord));
@@ -15,6 +35,25 @@ test('scientific audit independently replays the canonical registry', () => {
   assert.equal(report.summary.replayed, 304);
   assert.equal(report.summary.critical, 0);
   assert.equal(report.summary.major, 0);
+});
+
+test('scientific audit verifies linked finite-domain proofs without promoting them to global claims', () => {
+  const record = canonicalRecord(RESEARCH_RECORDS.find(item => item.id === 'iso-a90-r0p75'));
+  const index = finiteProofIndex(record);
+  const report = auditRecords([record], { finiteDomainProofs: index });
+  assert.equal(report.passed, true);
+  assert.equal(report.summary.finiteDomainProofs, 1);
+});
+
+test('scientific audit rejects tampered finite-domain proof links and certificate payloads', () => {
+  const record = canonicalRecord(RESEARCH_RECORDS.find(item => item.id === 'iso-a90-r0p75'));
+  const index = finiteProofIndex(record);
+  index.proofs[0].linkedRecordId = 'missing-record';
+  index.proofs[0].certificate.optimum += 1;
+  const report = auditRecords([record], { finiteDomainProofs: index });
+  assert.equal(report.passed, false);
+  assert.ok(report.findings.some(finding => finding.code === 'FINITE_DOMAIN_PROOF_LINK_INVALID'));
+  assert.ok(report.findings.some(finding => finding.code === 'FINITE_DOMAIN_PROOF_INVALID'));
 });
 
 test('scientific audit catches evidence that exceeds its bound support', () => {
