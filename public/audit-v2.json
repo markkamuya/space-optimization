@@ -50,7 +50,8 @@
       "diagonal lattice": 1
     },
     "shardedRecords": 304,
-    "contributionsTracked": 0
+    "contributionsTracked": 0,
+    "reviewAuthorityKeys": 0
   },
   "findings": []
 }

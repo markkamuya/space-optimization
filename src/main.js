@@ -457,6 +457,11 @@ async function loadV1Context() {
       $('#contribution-status').innerHTML = `
         <div><dt>Awaiting evidence review</dt><dd>${awaiting}</dd></div>
         <div><dt>Approved for the next release</dt><dd>${approved}</dd></div>
+        <div><dt>Signed review policy</dt><dd>${contributionStatus.reviewAuthority?.enforced ?
+          (contributionStatus.reviewAuthority.activeKeys > 0 ?
+            `${contributionStatus.reviewAuthority.activeKeys} active keys · two reviewers for proofs` :
+            'Enforced · no review keys registered yet') :
+          'Not available'}</dd></div>
         <div><dt>Process integrity</dt><dd>Ledger ${escapeHtml(contributionStatus.ledgerSha256.slice(0, 12))}…</dd></div>`;
     }
     if (proofIndex?.proofs?.length) {

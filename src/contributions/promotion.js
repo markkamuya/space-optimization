@@ -177,7 +177,7 @@ export function verifyPromotionPlan(plan, ledger) {
   return { valid: errors.length === 0, errors, operations: plan?.operations?.length ?? 0 };
 }
 
-export function contributionStatus(ledger) {
+export function contributionStatus(ledger, reviewAuthority = null) {
   const verification = verifyContributionLedger(ledger);
   if (!verification.valid) throw new Error('invalid_contribution_ledger');
   const counts = {};
@@ -187,6 +187,13 @@ export function contributionStatus(ledger) {
     ledgerSha256: ledger.sha256,
     updatedAt: ledger.issuedAt,
     counts,
+    reviewAuthority: reviewAuthority ? {
+      enforced: true,
+      sha256: reviewAuthority.sha256,
+      registeredKeys: reviewAuthority.keys.length,
+      activeKeys: reviewAuthority.keys.filter(key => key.revokedAt === null).length,
+      proofReviewQuorum: 2
+    } : { enforced: false, registeredKeys: 0, activeKeys: 0, proofReviewQuorum: 2 },
     stages: [
       { id: 'verify', label: 'Geometry and record comparison', automatic: true },
       { id: 'quarantine', label: 'Quarantined evidence review', automatic: false },

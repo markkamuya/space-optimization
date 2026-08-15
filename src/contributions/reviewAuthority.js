@@ -114,3 +114,37 @@ export function authorizeReview(registry, ledger, entry, review) {
   } else errors.push('review_signature_missing');
   return { valid: errors.length === 0, errors, statement, key };
 }
+
+export function verifyAuthorizedReviewLedger(ledger, registry) {
+  const errors = [];
+  const authority = verifyReviewAuthority(registry);
+  if (!authority.valid) errors.push(...authority.errors);
+  for (const entry of ledger?.entries ?? []) {
+    const reviewers = new Set();
+    for (const event of entry.events ?? []) {
+      const authorization = event.authorization;
+      if (authorization?.mode === 'unsigned_migration') {
+        if (entry.scientificReviewRequired || authorization.cutoff !== UNSIGNED_MIGRATION_CUTOFF ||
+          Date.parse(ledger.issuedAt) >= Date.parse(UNSIGNED_MIGRATION_CUTOFF)) {
+          errors.push(`unsigned_migration_invalid:${entry.candidateId}`);
+        }
+      } else if (authorization?.mode === 'ed25519') {
+        const review = { reviewer: event.reviewer, keyId: authorization.keyId,
+          decidedAt: event.decidedAt, decision: event.decision, reason: event.reason,
+          scientificReview: event.scientificReview, canonicalMetadata: event.canonicalMetadata,
+          signature: authorization.signature };
+        const result = authorizeReview(registry, { sha256: authorization.ledgerSha256 },
+          { ...entry, events: entry.events.filter(candidate => candidate.sha256 === event.previousSha256) }, review);
+        if (!result.valid || result.statement?.previousEventSha256 !== event.previousSha256) {
+          errors.push(`signed_review_invalid:${entry.candidateId}:${result.errors.join(',')}`);
+        }
+      } else errors.push(`review_authorization_missing:${entry.candidateId}`);
+      if (event.decision === 'approve') reviewers.add(event.reviewer.toLowerCase());
+    }
+    if (entry.state === 'approved_for_promotion' &&
+      reviewers.size < (entry.scientificReviewRequired ? 2 : 1)) {
+      errors.push(`review_quorum_invalid:${entry.candidateId}`);
+    }
+  }
+  return { valid: errors.length === 0, errors, entries: ledger?.entries?.length ?? 0 };
+}

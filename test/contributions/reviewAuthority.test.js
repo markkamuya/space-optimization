@@ -1,11 +1,15 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createHash, generateKeyPairSync } from 'node:crypto';
+import { mkdtemp, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { createSubmissionAttestation } from '../../src/atlas/attestation.js';
 import { createContributionLedger, recordContributionReview } from '../../src/contributions/ledger.js';
 import {
   REVIEW_AUTHORITY_FORMAT, reviewSigningStatement, sealReviewAuthority, signReviewStatement
-  , updateReviewAuthority, verifyReviewAuthority
+  , updateReviewAuthority, verifyAuthorizedReviewLedger, verifyReviewAuthority
 } from '../../src/contributions/reviewAuthority.js';
 
 const metadata = { family: 'isosceles', pattern: 'reviewed pattern', parameters: { apexAngle: 60 } };
@@ -120,4 +124,46 @@ test('key additions and revocations are deterministic, ordered, and public-only'
     '2026-08-17T00:00:00.000Z');
   assert.throws(() => updateReviewAuthority(initial, { ...change,
     key: { ...second.key, privateKeyPem: second.privateKey } }), /authority_key_add_invalid/);
+});
+
+test('stored review authorization is replayable and tamper-evident', () => {
+  const reviewer = identity('reviewer-1');
+  const authority = registry(reviewer);
+  const ledger = fixture();
+  const reviewed = recordContributionReview(ledger, signedReview(ledger, reviewer), authority);
+  assert.equal(verifyAuthorizedReviewLedger(reviewed, authority).valid, true);
+  reviewed.entries[0].events[0].authorization.signature = 'AAAA';
+  assert.equal(verifyAuthorizedReviewLedger(reviewed, authority).valid, false);
+});
+
+test('independent verifier agrees on signed review evidence', async () => {
+  const reviewer = identity('reviewer-1');
+  const authority = registry(reviewer);
+  const ledger = fixture();
+  const reviewed = recordContributionReview(ledger, signedReview(ledger, reviewer), authority);
+  const directory = await mkdtemp(join(tmpdir(), 'tpa-review-authority-'));
+  const authorityPath = join(directory, 'authority.json');
+  const ledgerPath = join(directory, 'ledger.json');
+  await writeFile(authorityPath, JSON.stringify(authority));
+  await writeFile(ledgerPath, JSON.stringify(reviewed));
+  const result = spawnSync('python3', ['independent_verifier/verify_review_authority.py',
+    authorityPath, ledgerPath], { cwd: new URL('../..', import.meta.url), encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const tampered = structuredClone(reviewed);
+  tampered.entries[0].events[0].authorization.signature = 'AAAA';
+  await writeFile(ledgerPath, JSON.stringify(tampered));
+  const rejected = spawnSync('python3', ['independent_verifier/verify_review_authority.py',
+    authorityPath, ledgerPath], { cwd: new URL('../..', import.meta.url), encoding: 'utf8' });
+  assert.equal(rejected.status, 1, rejected.stderr || rejected.stdout);
+});
+
+test('published schemas require signed authorization evidence and public keys only', async () => {
+  const authoritySchema = JSON.parse(await (await import('node:fs/promises')).readFile(
+    new URL('../../schemas/review-authority.schema.json', import.meta.url), 'utf8'));
+  const ledgerSchema = JSON.parse(await (await import('node:fs/promises')).readFile(
+    new URL('../../schemas/contribution-ledger.schema.json', import.meta.url), 'utf8'));
+  assert.equal(authoritySchema.additionalProperties, false);
+  assert.equal(JSON.stringify(authoritySchema).includes('privateKey'), false);
+  assert.match(JSON.stringify(ledgerSchema), /ledgerSha256/);
+  assert.match(JSON.stringify(ledgerSchema), /unsigned_migration/);
 });

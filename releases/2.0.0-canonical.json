@@ -7,7 +7,8 @@
   "finiteDomainProofs": "public/finite-domain-proofs-v2.json",
   "finiteDomainProofJobs": "public/finite-domain-proof-jobs-v2.json",
   "shardedRelease": "public/atlas-v2-shards.json",
-  "sha256": "51c29f948b93456e19778e4d72e1dcfba3e6edf88e29864d5990fcea990fa007",
+  "reviewAuthority": "review-authority/registry.json",
+  "sha256": "e67c4201613e7ab74b6396cdcc943f9151074d42034c2afa7900268cd67f181b",
   "records": 304,
   "audit": {
     "valid": true,

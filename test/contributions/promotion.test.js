@@ -89,10 +89,11 @@ test('promotion verification rejects evidence overpromotion', () => {
 });
 
 test('public status summarizes each contribution state without candidate payloads', () => {
-  const status = contributionStatus(approvedLedger());
+  const status = contributionStatus(approvedLedger(), { sha256: 'a'.repeat(64), keys: [] });
   assert.equal(status.counts.approved_for_promotion, 1);
   assert.equal(status.stages.length, 4);
   assert.equal(JSON.stringify(status).includes('candidatePayloadBase64'), false);
+  assert.equal(status.reviewAuthority.enforced, true);
 });
 
 test('website explains live quarantine and promotion status in plain language', async () => {
@@ -101,6 +102,8 @@ test('website explains live quarantine and promotion status in plain language', 
     readFile(new URL('../../src/main.js', import.meta.url), 'utf8')
   ]);
   assert.match(html, /id="contribution-status"/);
+  assert.match(source, /Signed review policy/);
+  assert.match(source, /no review keys registered yet/);
   assert.match(source, /Awaiting evidence review/);
   assert.match(source, /Approved for the next release/);
 });

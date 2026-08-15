@@ -3,6 +3,13 @@
   "ledgerSha256": "f0086db58ded3ff2d72dc2b694375da48828095f66f9fdd4e3c75e5d74bf3171",
   "updatedAt": "2026-08-15T00:00:00.000Z",
   "counts": {},
+  "reviewAuthority": {
+    "enforced": true,
+    "sha256": "2a613f8201d46fd44005a065e01ea767502b6a7e9b56af77568757b2e39a5c14",
+    "registeredKeys": 0,
+    "activeKeys": 0,
+    "proofReviewQuorum": 2
+  },
   "stages": [
     {
       "id": "verify",

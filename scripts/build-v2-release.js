@@ -20,6 +20,7 @@ import {
   verifyFiniteDomainProofJob
 } from '../src/research/proofJobs.js';
 import { contributionStatus } from '../src/contributions/promotion.js';
+import { verifyAuthorizedReviewLedger, verifyReviewAuthority } from '../src/contributions/reviewAuthority.js';
 
 const adaptiveTargets = new Set([...RESEARCH_RECORDS]
   .filter(record => record.bounds.optimalityGap > 0 && record.verification.pieceCount < 300)
@@ -107,7 +108,14 @@ const proofSpecification = JSON.parse(await readFile(
 const contributionLedger = JSON.parse(await readFile(
   new URL('../contributions/ledger.json', import.meta.url), 'utf8'
 ));
-const publicContributionStatus = contributionStatus(contributionLedger);
+const reviewAuthority = JSON.parse(await readFile(
+  new URL('../review-authority/registry.json', import.meta.url), 'utf8'
+));
+if (!verifyReviewAuthority(reviewAuthority).valid ||
+  !verifyAuthorizedReviewLedger(contributionLedger, reviewAuthority).valid) {
+  throw new Error('Contribution review authority failed replay');
+}
+const publicContributionStatus = contributionStatus(contributionLedger, reviewAuthority);
 const proofJob = advanceFiniteDomainProofJob(createFiniteDomainProofJob(proofSpecification), 'proof_ready');
 const proofCertificate = proofJob.artifacts.certificate;
 if (!verifyFiniteDomainProof(proofCertificate, proofSpecification.limits).valid) {
@@ -147,6 +155,7 @@ const release = {
   finiteDomainProofJobIndex: 'public/finite-domain-proof-jobs-v2.json',
   shardedReleaseIndex: 'public/atlas-v2-shards.json',
   contributionStatus: 'public/contribution-status-v2.json',
+  reviewAuthority: 'review-authority/registry.json',
   verificationPolicy: {
     independentImplementations: ['src/atlas/verifier.js', 'independent_verifier/verify_release.py'],
     tolerancePolicy: 'docs/NUMERICAL_POLICY.md',
@@ -184,6 +193,7 @@ await writeFile(new URL('../releases/2.0.0-canonical.json', import.meta.url), `$
   finiteDomainProofs: 'public/finite-domain-proofs-v2.json',
   finiteDomainProofJobs: 'public/finite-domain-proof-jobs-v2.json',
   shardedRelease: 'public/atlas-v2-shards.json',
+  reviewAuthority: 'review-authority/registry.json',
   sha256: checksum,
   records: records.length,
   audit,

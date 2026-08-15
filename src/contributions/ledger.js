@@ -154,7 +154,7 @@ export function recordContributionReview(ledger, review, authorityRegistry = nul
     } : null,
     authorization: authorization.statement ? {
       mode: 'ed25519', keyId: review.keyId, authoritySha256: authorityRegistry.sha256,
-      signature: review.signature
+      ledgerSha256: ledger.sha256, signature: review.signature
     } : { mode: 'unsigned_migration', cutoff: UNSIGNED_MIGRATION_CUTOFF },
     previousSha256
   };

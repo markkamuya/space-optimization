@@ -9,6 +9,8 @@
     "version": { "const": "2.0.0" },
     "releasedAt": { "type": "string", "format": "date-time" },
     "license": { "const": "CC-BY-4.0" },
+    "contributionStatus": { "const": "public/contribution-status-v2.json" },
+    "reviewAuthority": { "const": "review-authority/registry.json" },
     "coverage": {
       "type": "object",
       "required": ["records", "verified", "provenOptimal", "openDistributedTasks", "phaseTransitions"]
