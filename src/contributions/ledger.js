@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { incumbentSnapshotDigest, verifySubmissionAttestation } from '../atlas/attestation.js';
+import { authorizeReview, UNSIGNED_MIGRATION_CUTOFF } from './reviewAuthority.js';
 
 export const CONTRIBUTION_LEDGER_FORMAT = 'triangle-packing-contribution-ledger/v1';
 
@@ -40,6 +41,11 @@ export function createContributionLedger(bundle, issuedAt) {
     if (seen.has(id)) throw new Error('duplicate_candidate');
     seen.add(id);
     const disposition = result.report?.disposition ?? result.error?.code ?? 'unknown';
+    let contributor = null;
+    try {
+      contributor = JSON.parse(Buffer.from(result.candidatePayloadBase64, 'base64').toString('utf8'))
+        ?.provenance?.contributor ?? null;
+    } catch {}
     const eligible = ['new_problem', 'improves_record'].includes(disposition);
     return {
       candidateId: id,
@@ -49,6 +55,7 @@ export function createContributionLedger(bundle, issuedAt) {
       disposition,
       state: eligible ? 'quarantined_for_review' : 'rejected_automatically',
       scientificReviewRequired: result.report?.humanReviewRequired === true,
+      contributor,
       incumbentIndexDigest: result.report?.comparison?.incumbentIndexDigest ?? null,
       automatedEvidenceSha256: digestObject(result.report ?? result.error ?? null),
       events: []
@@ -100,7 +107,7 @@ export function verifyContributionLedger(ledger) {
   return { valid: errors.length === 0, errors, entries: ledger?.entries?.length ?? 0 };
 }
 
-export function recordContributionReview(ledger, review) {
+export function recordContributionReview(ledger, review, authorityRegistry = null) {
   const verification = verifyContributionLedger(ledger);
   if (!verification.valid) throw new Error(`invalid_ledger:${verification.errors.join(',')}`);
   if (!review || typeof review.reviewer !== 'string' || review.reviewer.trim().length < 2 ||
@@ -122,6 +129,17 @@ export function recordContributionReview(ledger, review) {
     throw new Error('canonical_metadata_required');
   }
   const previousSha256 = entry.events.at(-1)?.sha256 ?? null;
+  let authorization;
+  if (review.signature || authorityRegistry) {
+    authorization = authorizeReview(authorityRegistry, ledger, entry, review);
+    if (!authorization.valid) throw new Error(`review_unauthorized:${authorization.errors.join(',')}`);
+  } else if (review.allowUnsignedMigration === true &&
+    Date.parse(ledger.issuedAt) < Date.parse(UNSIGNED_MIGRATION_CUTOFF) &&
+    entry.scientificReviewRequired !== true) {
+    authorization = { valid: true, statement: null, key: null };
+  } else {
+    throw new Error('signed_review_required');
+  }
   const event = {
     type: 'maintainer_review',
     reviewer: review.reviewer.trim(),
@@ -134,9 +152,19 @@ export function recordContributionReview(ledger, review) {
       pattern: metadata.pattern.trim(),
       parameters: structuredClone(metadata.parameters)
     } : null,
+    authorization: authorization.statement ? {
+      mode: 'ed25519', keyId: review.keyId, authoritySha256: authorityRegistry.sha256,
+      signature: review.signature
+    } : { mode: 'unsigned_migration', cutoff: UNSIGNED_MIGRATION_CUTOFF },
     previousSha256
   };
   entry.events.push({ ...event, sha256: digestObject(event) });
-  entry.state = review.decision === 'approve' ? 'approved_for_promotion' : 'rejected_by_review';
+  if (review.decision === 'reject') entry.state = 'rejected_by_review';
+  else {
+    const distinctApprovers = new Set(entry.events
+      .filter(item => item.decision === 'approve').map(item => item.reviewer.toLowerCase()));
+    const quorum = entry.scientificReviewRequired ? 2 : 1;
+    entry.state = distinctApprovers.size >= quorum ? 'approved_for_promotion' : 'quarantined_for_review';
+  }
   return seal(next);
 }

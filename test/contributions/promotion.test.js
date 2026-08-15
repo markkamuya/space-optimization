@@ -50,6 +50,7 @@ function approvedLedger() {
   const ledger = createContributionLedger(bundle, '2026-08-15T00:00:00.000Z');
   return recordContributionReview(ledger, { candidateId: ledger.entries[0].candidateId,
     reviewer: 'maintainer', decidedAt: '2026-08-15T01:00:00.000Z', decision: 'approve',
+    allowUnsignedMigration: true,
     canonicalMetadata: { family: 'isosceles', pattern: 'reviewed contribution', parameters: {} } });
 }
 

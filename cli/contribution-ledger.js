@@ -25,12 +25,16 @@ let result;
 if (command === 'init') {
   result = createContributionLedger(JSON.parse(await readFile(source, 'utf8')), option('--at'));
 } else if (command === 'review') {
+  const authorityPath = option('--authority');
+  const authority = authorityPath ? JSON.parse(await readFile(authorityPath, 'utf8')) : null;
   result = recordContributionReview(JSON.parse(await readFile(source, 'utf8')), {
     candidateId: option('--candidate'), reviewer: option('--reviewer'), decidedAt: option('--at'),
     decision: option('--decision'), reason: option('--reason'),
+    keyId: option('--key-id'), signature: option('--signature'),
+    allowUnsignedMigration: args.includes('--allow-unsigned-migration'),
     scientificReview: args.includes('--scientific-review'),
     canonicalMetadata: option('--metadata') ? JSON.parse(option('--metadata')) : undefined
-  });
+  }, authority);
 } else if (command === 'verify') {
   result = verifyContributionLedger(JSON.parse(await readFile(source, 'utf8')));
   if (!result.valid) process.exitCode = 1;

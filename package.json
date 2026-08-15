@@ -27,6 +27,8 @@
     "atlas:contribution-ledger": "node cli/contribution-ledger.js",
     "atlas:contribution-benchmark": "node benchmarks/contributionLedger.js",
     "atlas:contribution-status": "node scripts/build-contribution-status.js",
+    "atlas:review-authority": "node cli/review-authority.js",
+    "atlas:review-authority-benchmark": "node benchmarks/reviewAuthority.js",
     "atlas:worker-leases": "node cli/worker-leases.js",
     "atlas:worker-results": "node cli/worker-results.js",
     "atlas:distributed-benchmark": "node benchmarks/distributed.js",

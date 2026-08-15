@@ -39,6 +39,7 @@ test('review decisions form a tamper-evident event chain', () => {
   const reviewed = recordContributionReview(ledger, {
     candidateId: `candidate-${'a'.repeat(64)}`, reviewer: 'maintainer-1',
     decidedAt: '2026-08-15T00:05:00.000Z', decision: 'approve', reason: 'coordinates reviewed',
+    allowUnsignedMigration: true,
     canonicalMetadata: { family: 'isosceles', pattern: 'reviewed pattern', parameters: { apexAngle: 60 } }
   });
   assert.equal(reviewed.entries[0].state, 'approved_for_promotion');
@@ -78,6 +79,7 @@ test('CLI writes and resumes the ledger atomically', async () => {
     'cli/contribution-ledger.js', 'review', ledgerPath,
     '--candidate', ledger.entries[0].candidateId, '--reviewer', 'maintainer-1',
     '--at', '2026-08-15T00:05:00.000Z', '--decision', 'approve',
+    '--allow-unsigned-migration',
     '--metadata', JSON.stringify({ family: 'isosceles', pattern: 'reviewed pattern', parameters: { apexAngle: 60 } }),
     '--output', ledgerPath
   ], { cwd: new URL('../..', import.meta.url), encoding: 'utf8' });
