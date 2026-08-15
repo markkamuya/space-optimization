@@ -38,7 +38,8 @@ test('review decisions form a tamper-evident event chain', () => {
   const ledger = createContributionLedger(bundle(), '2026-08-15T00:00:00.000Z');
   const reviewed = recordContributionReview(ledger, {
     candidateId: `candidate-${'a'.repeat(64)}`, reviewer: 'maintainer-1',
-    decidedAt: '2026-08-15T00:05:00.000Z', decision: 'approve', reason: 'coordinates reviewed'
+    decidedAt: '2026-08-15T00:05:00.000Z', decision: 'approve', reason: 'coordinates reviewed',
+    canonicalMetadata: { family: 'isosceles', pattern: 'reviewed pattern', parameters: { apexAngle: 60 } }
   });
   assert.equal(reviewed.entries[0].state, 'approved_for_promotion');
   assert.equal(verifyContributionLedger(reviewed).valid, true);
@@ -50,7 +51,8 @@ test('scientific claims cannot be approved without explicit scientific review', 
   const ledger = createContributionLedger(bundle(true), '2026-08-15T00:00:00.000Z');
   assert.throws(() => recordContributionReview(ledger, {
     candidateId: `candidate-${'a'.repeat(64)}`, reviewer: 'maintainer-1',
-    decidedAt: '2026-08-15T00:05:00.000Z', decision: 'approve'
+    decidedAt: '2026-08-15T00:05:00.000Z', decision: 'approve',
+    canonicalMetadata: { family: 'isosceles', pattern: 'reviewed pattern', parameters: { apexAngle: 60 } }
   }), /scientific_review_required/);
 });
 
@@ -75,7 +77,9 @@ test('CLI writes and resumes the ledger atomically', async () => {
   const reviewed = spawnSync(process.execPath, [
     'cli/contribution-ledger.js', 'review', ledgerPath,
     '--candidate', ledger.entries[0].candidateId, '--reviewer', 'maintainer-1',
-    '--at', '2026-08-15T00:05:00.000Z', '--decision', 'approve', '--output', ledgerPath
+    '--at', '2026-08-15T00:05:00.000Z', '--decision', 'approve',
+    '--metadata', JSON.stringify({ family: 'isosceles', pattern: 'reviewed pattern', parameters: { apexAngle: 60 } }),
+    '--output', ledgerPath
   ], { cwd: new URL('../..', import.meta.url), encoding: 'utf8' });
   assert.equal(reviewed.status, 0, reviewed.stderr);
   assert.equal(JSON.parse(await readFile(ledgerPath, 'utf8')).entries[0].state,

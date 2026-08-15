@@ -8,8 +8,8 @@
   "files": [
     {
       "path": "public/atlas-v2.json",
-      "bytes": 12274608,
-      "sha256": "461417922e03ace904a6678cf8d63cc161c3734722e8637299c4873dd6dbc58e"
+      "bytes": 12274666,
+      "sha256": "51c29f948b93456e19778e4d72e1dcfba3e6edf88e29864d5990fcea990fa007"
     },
     {
       "path": "public/atlas-v2.csv",
@@ -18,8 +18,8 @@
     },
     {
       "path": "public/atlas-v2-shards.json",
-      "bytes": 12786,
-      "sha256": "8123bf38a84b632d04c63acdc40b35a2a562505d2c4f28f7a1775588ebd12a0e"
+      "bytes": 12850,
+      "sha256": "1e8c8680272abed30af80f8b2388e575b5996bd642c0b0b6b3981d8975ce9397"
     },
     {
       "path": "public/atlas-v2-shards/000.json",
@@ -43,8 +43,8 @@
     },
     {
       "path": "public/audit-v2.json",
-      "bytes": 1402,
-      "sha256": "5a5a3c8814bfbf8d667f255250020ab37236d94e9fa7723d813c2dbce084f945"
+      "bytes": 1433,
+      "sha256": "72fe919cce75a0e86d6bdd2302a9690c9165bb411fe82f27ebe0c7218f775c10"
     },
     {
       "path": "public/work-queue-v2.json",
