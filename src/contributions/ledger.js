@@ -64,6 +64,18 @@ export function createContributionLedger(bundle, issuedAt) {
   });
 }
 
+export function createEmptyContributionLedger(issuedAt) {
+  if (!validIsoDate(issuedAt)) throw new TypeError('issuedAt must be an ISO date');
+  return seal({
+    format: CONTRIBUTION_LEDGER_FORMAT,
+    issuedAt,
+    submissionAttestationSha256: null,
+    incumbentIndexDigest: null,
+    incumbentSnapshotSha256: null,
+    entries: []
+  });
+}
+
 export function verifyContributionLedger(ledger) {
   const errors = [];
   if (ledger?.format !== CONTRIBUTION_LEDGER_FORMAT || !validIsoDate(ledger?.issuedAt) ||
@@ -102,6 +114,13 @@ export function recordContributionReview(ledger, review) {
   if (entry.scientificReviewRequired && review.decision === 'approve' && review.scientificReview !== true) {
     throw new Error('scientific_review_required');
   }
+  const metadata = review.canonicalMetadata;
+  if (review.decision === 'approve' && (!metadata || typeof metadata.family !== 'string' ||
+    typeof metadata.pattern !== 'string' || metadata.family.trim().length === 0 ||
+    metadata.pattern.trim().length === 0 || !metadata.parameters ||
+    typeof metadata.parameters !== 'object' || Array.isArray(metadata.parameters))) {
+    throw new Error('canonical_metadata_required');
+  }
   const previousSha256 = entry.events.at(-1)?.sha256 ?? null;
   const event = {
     type: 'maintainer_review',
@@ -110,6 +129,11 @@ export function recordContributionReview(ledger, review) {
     decision: review.decision,
     reason: typeof review.reason === 'string' ? review.reason.trim() : '',
     scientificReview: review.scientificReview === true,
+    canonicalMetadata: review.decision === 'approve' ? {
+      family: metadata.family.trim(),
+      pattern: metadata.pattern.trim(),
+      parameters: structuredClone(metadata.parameters)
+    } : null,
     previousSha256
   };
   entry.events.push({ ...event, sha256: digestObject(event) });

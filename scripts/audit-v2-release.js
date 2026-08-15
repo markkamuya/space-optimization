@@ -2,6 +2,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { auditRecords } from '../src/research/audit.js';
 import { auditArtifactChecksum, auditReleaseManifest } from '../src/research/artifacts.js';
 import { verifyShardedRelease } from '../src/research/shardedRelease.js';
+import { contributionStatus } from '../src/contributions/promotion.js';
 
 const [datasetPayload, queue, challengeBoard, finiteDomainProofs, finiteDomainProofJobs, csv, checksumFile, manifest] = await Promise.all([
   readFile(new URL('../public/atlas-v2.json', import.meta.url), 'utf8'),
@@ -14,6 +15,8 @@ const [datasetPayload, queue, challengeBoard, finiteDomainProofs, finiteDomainPr
   readFile(new URL('../releases/2.0.0-canonical.json', import.meta.url), 'utf8').then(JSON.parse)
 ]);
 const release = JSON.parse(datasetPayload);
+const contributionLedger = JSON.parse(await readFile(new URL('../contributions/ledger.json', import.meta.url), 'utf8'));
+const storedContributionStatus = JSON.parse(await readFile(new URL('../public/contribution-status-v2.json', import.meta.url), 'utf8'));
 const shardedIndex = JSON.parse(await readFile(new URL('../public/atlas-v2-shards.json', import.meta.url), 'utf8'));
 const shardFiles = new Map(await Promise.all(shardedIndex.shards.map(async descriptor => [
   descriptor.path,
@@ -34,8 +37,12 @@ const shardedRelease = verifyShardedRelease(shardedIndex, shardFiles, release);
 for (const code of [...artifactChecksum.errors, ...releaseManifest.errors, ...shardedRelease.errors]) {
   report.findings.push({ severity: 'critical', code });
 }
+if (JSON.stringify(contributionStatus(contributionLedger)) !== JSON.stringify(storedContributionStatus)) {
+  report.findings.push({ severity: 'critical', code: 'CONTRIBUTION_STATUS_DRIFT' });
+}
 report.summary.critical = report.findings.filter(finding => finding.severity === 'critical').length;
 report.summary.shardedRecords = shardedRelease.records;
+report.summary.contributionsTracked = contributionLedger.entries.length;
 report.passed = report.passed && artifactChecksum.valid && releaseManifest.valid && shardedRelease.valid;
 await writeFile(new URL('../public/audit-v2.json', import.meta.url), `${JSON.stringify(report, null, 2)}\n`);
 console.log(JSON.stringify({

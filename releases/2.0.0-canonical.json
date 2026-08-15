@@ -7,7 +7,7 @@
   "finiteDomainProofs": "public/finite-domain-proofs-v2.json",
   "finiteDomainProofJobs": "public/finite-domain-proof-jobs-v2.json",
   "shardedRelease": "public/atlas-v2-shards.json",
-  "sha256": "461417922e03ace904a6678cf8d63cc161c3734722e8637299c4873dd6dbc58e",
+  "sha256": "51c29f948b93456e19778e4d72e1dcfba3e6edf88e29864d5990fcea990fa007",
   "records": 304,
   "audit": {
     "valid": true,

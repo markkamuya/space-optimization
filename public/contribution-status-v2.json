@@ -1,0 +1,28 @@
+{
+  "format": "triangle-packing-contribution-status/v1",
+  "ledgerSha256": "f0086db58ded3ff2d72dc2b694375da48828095f66f9fdd4e3c75e5d74bf3171",
+  "updatedAt": "2026-08-15T00:00:00.000Z",
+  "counts": {},
+  "stages": [
+    {
+      "id": "verify",
+      "label": "Geometry and record comparison",
+      "automatic": true
+    },
+    {
+      "id": "quarantine",
+      "label": "Quarantined evidence review",
+      "automatic": false
+    },
+    {
+      "id": "promotion",
+      "label": "Stale-safe promotion plan",
+      "automatic": false
+    },
+    {
+      "id": "release",
+      "label": "Full release checks and publication",
+      "automatic": false
+    }
+  ]
+}

@@ -19,6 +19,7 @@ import {
   createFiniteDomainProofJob,
   verifyFiniteDomainProofJob
 } from '../src/research/proofJobs.js';
+import { contributionStatus } from '../src/contributions/promotion.js';
 
 const adaptiveTargets = new Set([...RESEARCH_RECORDS]
   .filter(record => record.bounds.optimalityGap > 0 && record.verification.pieceCount < 300)
@@ -103,6 +104,10 @@ const queue = buildWorkQueue(records);
 const proofSpecification = JSON.parse(await readFile(
   new URL('../proofs/finite-domain-right-control.spec.json', import.meta.url), 'utf8'
 ));
+const contributionLedger = JSON.parse(await readFile(
+  new URL('../contributions/ledger.json', import.meta.url), 'utf8'
+));
+const publicContributionStatus = contributionStatus(contributionLedger);
 const proofJob = advanceFiniteDomainProofJob(createFiniteDomainProofJob(proofSpecification), 'proof_ready');
 const proofCertificate = proofJob.artifacts.certificate;
 if (!verifyFiniteDomainProof(proofCertificate, proofSpecification.limits).valid) {
@@ -141,6 +146,7 @@ const release = {
   finiteDomainProofIndex: 'public/finite-domain-proofs-v2.json',
   finiteDomainProofJobIndex: 'public/finite-domain-proof-jobs-v2.json',
   shardedReleaseIndex: 'public/atlas-v2-shards.json',
+  contributionStatus: 'public/contribution-status-v2.json',
   verificationPolicy: {
     independentImplementations: ['src/atlas/verifier.js', 'independent_verifier/verify_release.py'],
     tolerancePolicy: 'docs/NUMERICAL_POLICY.md',
@@ -164,6 +170,7 @@ await writeFile(new URL('../public/atlas-v2.sha256', import.meta.url), `${checks
 await writeFile(new URL('../public/work-queue-v2.json', import.meta.url), `${JSON.stringify({ format: 'tpa-work-queue/v1', version: '2.0.0', tasks: queue }, null, 2)}\n`);
 await writeFile(new URL('../public/finite-domain-proofs-v2.json', import.meta.url), `${JSON.stringify(proofIndex, null, 2)}\n`);
 await writeFile(new URL('../public/finite-domain-proof-jobs-v2.json', import.meta.url), `${JSON.stringify(proofJobIndex, null, 2)}\n`);
+await writeFile(new URL('../public/contribution-status-v2.json', import.meta.url), `${JSON.stringify(publicContributionStatus, null, 2)}\n`);
 await writeFile(new URL('../public/atlas-v2-shards.json', import.meta.url), `${JSON.stringify(shardedRelease.index, null, 2)}\n`);
 for (const [path, shardPayload] of shardedRelease.files) {
   await writeFile(new URL(`../public/${path}`, import.meta.url), shardPayload);

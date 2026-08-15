@@ -12,6 +12,8 @@ export const V2_ARCHIVE_PATHS = Object.freeze([
   'public/community-challenges-v2.json',
   'public/finite-domain-proofs-v2.json',
   'public/finite-domain-proof-jobs-v2.json',
+  'public/contribution-status-v2.json',
+  'contributions/ledger.json',
   'proofs/finite-domain-right-control.spec.json',
   'independent_verifier/verify_finite_domain.py',
   'schemas/canonical-release.schema.json',
@@ -32,5 +34,6 @@ export const V2_ARCHIVE_PATHS = Object.freeze([
   'docs/ATLAS_V2_RELEASE.md',
   'docs/MATHEMATICAL_CERTIFICATES_V2.md',
   'docs/COMMUNITY_CHALLENGE_V2.md',
+  'docs/CONTRIBUTION_PIPELINE.md',
   'docs/RELEASE_POLICY.md'
 ]);

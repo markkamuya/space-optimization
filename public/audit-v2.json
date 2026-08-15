@@ -49,7 +49,8 @@
       "rectangular pairs": 16,
       "diagonal lattice": 1
     },
-    "shardedRecords": 304
+    "shardedRecords": 304,
+    "contributionsTracked": 0
   },
   "findings": []
 }

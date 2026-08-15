@@ -414,18 +414,20 @@ function renderResearchExplorer() {
 
 async function loadV1Context() {
   try {
-    const [auditResponse, literatureResponse, challengeResponse, proofResponse, proofJobResponse] = await Promise.all([
+    const [auditResponse, literatureResponse, challengeResponse, proofResponse, proofJobResponse, contributionResponse] = await Promise.all([
       fetch('/audit-v2.json'),
       fetch('/literature/registry.json'),
       fetch('/community-challenges-v2.json'),
       fetch('/finite-domain-proofs-v2.json'),
-      fetch('/finite-domain-proof-jobs-v2.json')
+      fetch('/finite-domain-proof-jobs-v2.json'),
+      fetch('/contribution-status-v2.json')
     ]);
     const audit = auditResponse.ok ? await auditResponse.json() : null;
     const literature = literatureResponse.ok ? await literatureResponse.json() : null;
     const challenges = challengeResponse.ok ? await challengeResponse.json() : null;
     const proofIndex = proofResponse.ok ? await proofResponse.json() : null;
     const proofJobIndex = proofJobResponse.ok ? await proofJobResponse.json() : null;
+    const contributionStatus = contributionResponse.ok ? await contributionResponse.json() : null;
     if (audit) {
       $('#release-gates').innerHTML = [
         ['Canonical geometry replay', `${audit.summary.replayed}/${audit.summary.records} passed`, 'passed'],
@@ -448,6 +450,14 @@ async function loadV1Context() {
         $('#challenge-grid').append(article);
       });
       $('#open-count').textContent = String(challenges.challenges.length).padStart(2, '0');
+    }
+    if (contributionStatus) {
+      const awaiting = contributionStatus.counts.quarantined_for_review ?? 0;
+      const approved = contributionStatus.counts.approved_for_promotion ?? 0;
+      $('#contribution-status').innerHTML = `
+        <div><dt>Awaiting evidence review</dt><dd>${awaiting}</dd></div>
+        <div><dt>Approved for the next release</dt><dd>${approved}</dd></div>
+        <div><dt>Process integrity</dt><dd>Ledger ${escapeHtml(contributionStatus.ledgerSha256.slice(0, 12))}…</dd></div>`;
     }
     if (proofIndex?.proofs?.length) {
       const proof = proofIndex.proofs[0];

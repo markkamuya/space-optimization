@@ -14,6 +14,7 @@
     "finiteDomainProofIndex": "public/finite-domain-proofs-v2.json",
     "finiteDomainProofJobIndex": "public/finite-domain-proof-jobs-v2.json",
     "shardedReleaseIndex": "public/atlas-v2-shards.json",
+    "contributionStatus": "public/contribution-status-v2.json",
     "verificationPolicy": {
       "independentImplementations": [
         "src/atlas/verifier.js",
@@ -571,5 +572,5 @@
       "sha256": "6cdc6283065775e0d70c3d6c7c5cf05f89ae3349caa823041fbec7dd07fd0ea6"
     }
   ],
-  "sha256": "38f3fd7acd39b8b7fc836120a46fedec261661dc8f65e45166b2de14fe015490"
+  "sha256": "242ac33eac2300bc4cb3419108a896d928181747dcc055b97f027eda4b0bc72e"
 }

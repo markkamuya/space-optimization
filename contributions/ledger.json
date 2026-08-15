@@ -1,0 +1,9 @@
+{
+  "format": "triangle-packing-contribution-ledger/v1",
+  "issuedAt": "2026-08-15T00:00:00.000Z",
+  "submissionAttestationSha256": null,
+  "incumbentIndexDigest": null,
+  "incumbentSnapshotSha256": null,
+  "entries": [],
+  "sha256": "f0086db58ded3ff2d72dc2b694375da48828095f66f9fdd4e3c75e5d74bf3171"
+}
