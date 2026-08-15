@@ -540,8 +540,8 @@
       "records": 76,
       "firstRecordId": "iso-a35-r0p75",
       "lastRecordId": "iso-a55-r2p4",
-      "bytes": 3291771,
-      "sha256": "ba57742b5f5ab76f0f011af079197ff0a72916deb0e841323b78f6973bd1fd86"
+      "bytes": 3313777,
+      "sha256": "64a2c02cbdd4ae96321fd84b3019a93164da59313153cdd3a7c6c43bf81cd96a"
     },
     {
       "path": "atlas-v2-shards/001.json",
@@ -549,8 +549,8 @@
       "records": 76,
       "firstRecordId": "iso-a55-r2p55",
       "lastRecordId": "iso-a80-r1p8",
-      "bytes": 2869120,
-      "sha256": "6ecdc82618c44e423ca15ff6d445bf591c9654b67f1b484ad7881c8b302fc5b1"
+      "bytes": 2891846,
+      "sha256": "a275aee924fc7b651b86b6afa975c571087a2425bbf02357ea391f75756b2a15"
     },
     {
       "path": "atlas-v2-shards/002.json",
@@ -558,8 +558,8 @@
       "records": 76,
       "firstRecordId": "iso-a80-r1p95",
       "lastRecordId": "iso-a105-r1p2",
-      "bytes": 2815231,
-      "sha256": "981bb8dee1c80abaedacd5110c05f4ce1839be4f6061967325708277d0d754df"
+      "bytes": 2838341,
+      "sha256": "5951de4d6edcd13f375a1a4ab3f2f87c4f7a3c04c579a460782bc17112366444"
     },
     {
       "path": "atlas-v2-shards/003.json",
@@ -567,9 +567,9 @@
       "records": 76,
       "firstRecordId": "iso-a105-r1p35",
       "lastRecordId": "s358065-r3",
-      "bytes": 3202824,
-      "sha256": "dd484ee57fbac2c39cfe2f01ff6e078b958887999c77a5108b14e19169fcf751"
+      "bytes": 3224607,
+      "sha256": "6cdc6283065775e0d70c3d6c7c5cf05f89ae3349caa823041fbec7dd07fd0ea6"
     }
   ],
-  "sha256": "e1437b95151472e6df5e5ad80ae8feeac9c487975069b4ec3c2c562412df88bb"
+  "sha256": "38f3fd7acd39b8b7fc836120a46fedec261661dc8f65e45166b2de14fe015490"
 }

@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { verifyPacking } from '../atlas/verifier.js';
+import { certifyPackingStability } from './stability.js';
 
 export const CANONICAL_FORMAT = 'triangle-packing-atlas/v2';
 export const VERIFIER_VERSION = 'geometry-verifier/2.0.0';
@@ -24,8 +25,10 @@ export function evidenceState(record) {
 }
 
 export function canonicalRecord(record) {
+  const stability = certifyPackingStability(record.problem, record.solution.placements);
   const verification = {
     ...record.verification,
+    stability,
     verifier: VERIFIER_VERSION,
     tolerancePolicy: 'docs/NUMERICAL_POLICY.md',
     certificate: verificationCertificate(
@@ -87,6 +90,10 @@ export function validateCanonicalRecords(records) {
       record.verification.utilization
     )) {
       errors.push({ code: 'CERTIFICATE_DRIFT', recordId: record.id });
+    }
+    if (record.verification?.stability?.format !== 'triangle-packing-stability/v1' ||
+      record.verification.stability.valid !== true) {
+      errors.push({ code: 'MISSING_STABILITY_CERTIFICATE', recordId: record.id });
     }
     if (!record.reproducibility?.command) errors.push({ code: 'MISSING_REPRODUCTION', recordId: record.id });
     const incumbent = experiments.get(record.experimentId);
