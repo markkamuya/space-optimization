@@ -24,6 +24,8 @@
     "atlas:submission": "node cli/submission.js",
     "atlas:submission-verify": "node cli/verify-submission-bundle.js",
     "atlas:submission-cross-verify": "python3 independent_verifier/verify_submission_bundle.py",
+    "atlas:contribution-ledger": "node cli/contribution-ledger.js",
+    "atlas:contribution-benchmark": "node benchmarks/contributionLedger.js",
     "atlas:worker-leases": "node cli/worker-leases.js",
     "atlas:worker-results": "node cli/worker-results.js",
     "atlas:distributed-benchmark": "node benchmarks/distributed.js",
