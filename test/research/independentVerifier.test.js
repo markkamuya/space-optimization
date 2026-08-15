@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { packingFingerprint } from '../../src/atlas/fingerprint.js';
 import { normalizeProblem, serializableProblem } from '../../src/core/problem.js';
 import { verifyPacking } from '../../src/atlas/verifier.js';
+import { certifyPackingStability } from '../../src/research/stability.js';
 
 async function crossVerify(record) {
   const directory = await mkdtemp(join(tmpdir(), 'tpa-cross-verifier-'));
@@ -21,6 +22,27 @@ async function crossVerify(record) {
   await rm(directory, { recursive: true });
   return { ...result, report: JSON.parse(result.stdout) };
 }
+
+test('independent verifier reproduces stored numerical stability evidence', async () => {
+  const problem = normalizeProblem({
+    name: 'stability cross-verification fixture', width: 4, height: 4, margin: 0,
+    kerf: 0, fillSheet: false, maxPieces: 1, allowRotation: true,
+    allowReflection: false, seed: 'stability', triangles: [{ id: 'piece', sides: [1, 1, 1] }]
+  });
+  const placements = [{ x: 0, y: 0, angle: 0, reflect: false }];
+  const serialized = serializableProblem(problem);
+  const verification = verifyPacking(serialized, placements);
+  const result = await crossVerify({
+    id: 'stability-fixture', problem: serialized, solution: { placements },
+    verification: {
+      fingerprint: packingFingerprint(serialized, placements),
+      utilization: verification.metrics.utilization,
+      stability: certifyPackingStability(serialized, placements)
+    }
+  });
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.equal(result.report.stabilityCertificates, 1);
+});
 
 test('independent verifier handles heterogeneous triangle inventories', async () => {
   const problem = normalizeProblem({

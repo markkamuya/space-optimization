@@ -202,6 +202,32 @@ def fingerprint(record):
     return f"tpa1-{value:016x}"
 
 
+def stability_certificate(problem, placed, has_geometry_errors):
+    margin = problem.get("margin", 0.0)
+    kerf = problem.get("kerf", 0.0)
+    boundary_slacks = []
+    for points in placed:
+        xs, ys = [point[0] for point in points], [point[1] for point in points]
+        boundary_slacks.extend((min(xs) - margin, problem["width"] - margin - max(xs),
+                                min(ys) - margin, problem["height"] - margin - max(ys)))
+    pair_clearances = [polygon_distance(placed[left], placed[right]) - kerf
+                       for left in range(len(placed))
+                       for right in range(left + 1, len(placed))]
+    minimum_boundary = min(boundary_slacks) if boundary_slacks else None
+    minimum_pair = min(pair_clearances) if pair_clearances else None
+    if has_geometry_errors:
+        classification = "invalid"
+    elif ((minimum_boundary is not None and minimum_boundary < -1e-9)
+          or (minimum_pair is not None and minimum_pair < -1e-9)):
+        classification = "tolerance_dependent"
+    elif ((minimum_boundary is not None and minimum_boundary <= 1e-9)
+          or (minimum_pair is not None and minimum_pair <= 1e-9)):
+        classification = "contact"
+    else:
+        classification = "robust"
+    return classification, minimum_boundary, minimum_pair
+
+
 def verify(record):
     errors = validate_record(record)
     if errors:
@@ -258,6 +284,20 @@ def verify(record):
         errors.append("fingerprint_mismatch")
     if abs(utilization - record["verification"]["utilization"]) > EPSILON:
         errors.append("utilization_mismatch")
+    stored_stability = record["verification"].get("stability")
+    if stored_stability is not None:
+        geometry_errors = any(error.startswith(("out_of_bounds", "overlap", "spacing_violation"))
+                              for error in errors)
+        classification, boundary, pair = stability_certificate(problem, placed, geometry_errors)
+        if stored_stability.get("format") != "triangle-packing-stability/v1":
+            errors.append("stability_format_mismatch")
+        if stored_stability.get("classification") != classification:
+            errors.append("stability_classification_mismatch")
+        for key, actual in (("minimumBoundarySlack", boundary), ("minimumPairClearance", pair)):
+            expected = stored_stability.get(key)
+            if ((expected is None) != (actual is None)
+                    or (actual is not None and abs(expected - actual) > 1e-9)):
+                errors.append(f"stability_margin_mismatch:{key}")
     return errors
 
 
@@ -278,6 +318,10 @@ def main():
         "implementation": "python-stdlib-independent",
         "records": len(release["records"]),
         "passed": len(release["records"]) - len(failures),
+        "stabilityCertificates": sum(
+            isinstance(record.get("verification", {}).get("stability"), dict)
+            for record in release["records"] if isinstance(record, dict)
+        ),
         "failures": failures,
     }
     print(json.dumps(report, indent=2))

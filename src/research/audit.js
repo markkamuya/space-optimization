@@ -5,6 +5,7 @@ import { canonicalCoverage } from './release.js';
 import { buildCanonicalCsv } from './exports.js';
 import { verifyFiniteDomainProof } from './finiteDomain.js';
 import { verifyFiniteDomainProofJob } from './proofJobs.js';
+import { certifyPackingStability } from './stability.js';
 import {
   detectPhaseTransitions,
   experimentId,
@@ -53,6 +54,10 @@ export function auditRecords(records, options = {}) {
     }
     if (Math.abs(replay.metrics.utilization - record.verification.utilization) > 1e-10) {
       findings.push({ severity: 'critical', code: 'METRIC_DRIFT', recordId: record.id });
+    }
+    const stability = certifyPackingStability(record.problem, record.solution.placements);
+    if (JSON.stringify(stability) !== JSON.stringify(record.verification.stability)) {
+      findings.push({ severity: 'critical', code: 'STABILITY_CERTIFICATE_DRIFT', recordId: record.id });
     }
     if (!Number.isInteger(record.verification.pieceCount) ||
       record.verification.pieceCount !== record.solution.placements.length) {

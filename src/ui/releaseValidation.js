@@ -15,6 +15,8 @@ export function validatePublicRelease(release) {
   }
   for (const [index, record] of (release?.records ?? []).entries()) {
     if (record?.verification?.valid !== true) errors.push(`record_unverified:${index}`);
+    if (record?.verification?.stability?.format !== 'triangle-packing-stability/v1' ||
+      record.verification.stability.valid !== true) errors.push(`record_stability_invalid:${index}`);
     if (!record?.id || typeof record.id !== 'string') errors.push(`record_id_invalid:${index}`);
     if (!record?.problem || !Array.isArray(record?.solution?.placements)) {
       errors.push(`record_geometry_missing:${index}`);

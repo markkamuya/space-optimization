@@ -6,7 +6,11 @@ const record = {
   id: 'verified-record',
   problem: { width: 1, height: 1 },
   solution: { placements: [] },
-  verification: { valid: true, utilization: 0 },
+  verification: {
+    valid: true,
+    utilization: 0,
+    stability: { format: 'triangle-packing-stability/v1', valid: true }
+  },
   bounds: { optimalityGap: 1 }
 };
 

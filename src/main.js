@@ -336,6 +336,13 @@ function researchRecordLabel(record) {
     : `${record.family} · ${record.parameters.apexAngle}° · ${record.parameters.rectangleRatio}:1`;
 }
 
+function stabilityLabel(stability) {
+  if (stability?.classification === 'robust') return 'Clear of numerical limits';
+  if (stability?.classification === 'contact') return 'Exact contact, independently checked';
+  if (stability?.classification === 'tolerance_dependent') return 'Depends on numerical tolerance';
+  return 'Stability check unavailable';
+}
+
 function filteredResearchRecords() {
   const query = $('#research-search').value.trim().toLowerCase();
   const family = $('#research-family').value;
@@ -357,7 +364,7 @@ function openResearchRecord(record) {
       <div class="detail-stat"><b>${percent(record.verification.utilization)}</b><span>verified lower bound</span></div></div>
     <canvas width="1000" height="560" aria-label="${escapeHtml(record.id)} packing coordinates"></canvas>
     <div class="detail-grid">
-      <section><h3>Verification certificate</h3><p><code>${escapeHtml(record.verification.certificate)}</code></p><dl><div><dt>Pieces</dt><dd>${record.verification.pieceCount}</dd></div><div><dt>Overlap</dt><dd>0</dd></div><div><dt>Verifier</dt><dd>${escapeHtml(record.verification.verifier)}</dd></div></dl></section>
+      <section><h3>Verification certificate</h3><p><code>${escapeHtml(record.verification.certificate)}</code></p><dl><div><dt>Pieces</dt><dd>${record.verification.pieceCount}</dd></div><div><dt>Overlap</dt><dd>0</dd></div><div><dt>Numerical stability</dt><dd>${escapeHtml(stabilityLabel(record.verification.stability))}</dd></div><div><dt>Verifier</dt><dd>${escapeHtml(record.verification.verifier)}</dd></div></dl></section>
       <section><h3>Best result and proven limit</h3><dl><div><dt>Verified fill</dt><dd>${percent(record.bounds.lowerBound)}</dd></div><div><dt>Proven maximum</dt><dd>${percent(record.bounds.upperBound)}</dd></div><div><dt>Room for improvement</dt><dd>${percent(record.bounds.optimalityGap)}</dd></div></dl><p>Priority for checking empty boundary space: ${escapeHtml(record.descriptors.boundaryGapAnalysis.priority)}.</p></section>
       <section><h3>Reproduce this result</h3><p><code>${escapeHtml(record.reproducibility.command)}</code></p><p>Seed <code>${escapeHtml(record.reproducibility.seed)}</code><br>Fingerprint <code>${escapeHtml(record.verification.fingerprint)}</code></p><a href="/atlas-v2.json" download>Download coordinates ↓</a></section>
     </div>`;

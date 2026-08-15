@@ -36,3 +36,11 @@ test('preserves invalid verifier decisions', () => {
   assert.equal(result.valid, false);
   assert.equal(result.classification, 'invalid');
 });
+
+test('public UI names the numerical stability result in plain language', async () => {
+  const source = await import('node:fs/promises').then(fs => fs.readFile(
+    new URL('../../src/main.js', import.meta.url), 'utf8'));
+  assert.match(source, /Numerical stability/);
+  assert.match(source, /Exact contact, independently checked/);
+  assert.match(source, /Depends on numerical tolerance/);
+});
