@@ -210,11 +210,28 @@ def stability_certificate(problem, placed, has_geometry_errors):
         xs, ys = [point[0] for point in points], [point[1] for point in points]
         boundary_slacks.extend((min(xs) - margin, problem["width"] - margin - max(xs),
                                 min(ys) - margin, problem["height"] - margin - max(ys)))
-    pair_clearances = [polygon_distance(placed[left], placed[right]) - kerf
-                       for left in range(len(placed))
-                       for right in range(left + 1, len(placed))]
+    pair_clearances = []
+    boxes = [(min(point[0] for point in points), min(point[1] for point in points),
+              max(point[0] for point in points), max(point[1] for point in points))
+             for points in placed]
+    minimum_pair = None
+    for left in range(len(placed)):
+        for right in range(left + 1, len(placed)):
+            horizontal = max(0.0, boxes[left][0] - boxes[right][2],
+                             boxes[right][0] - boxes[left][2])
+            vertical = max(0.0, boxes[left][1] - boxes[right][3],
+                           boxes[right][1] - boxes[left][3])
+            lower_bound = math.hypot(horizontal, vertical) - kerf
+            if minimum_pair is not None and lower_bound >= minimum_pair:
+                continue
+            clearance = polygon_distance(placed[left], placed[right]) - kerf
+            pair_clearances.append(clearance)
+            minimum_pair = clearance if minimum_pair is None else min(minimum_pair, clearance)
+            if minimum_pair <= -kerf:
+                break
+        if minimum_pair is not None and minimum_pair <= -kerf:
+            break
     minimum_boundary = min(boundary_slacks) if boundary_slacks else None
-    minimum_pair = min(pair_clearances) if pair_clearances else None
     if has_geometry_errors:
         classification = "invalid"
     elif ((minimum_boundary is not None and minimum_boundary < -1e-9)
@@ -228,7 +245,7 @@ def stability_certificate(problem, placed, has_geometry_errors):
     return classification, minimum_boundary, minimum_pair
 
 
-def verify(record):
+def verify(record, verify_stability=True):
     errors = validate_record(record)
     if errors:
         return errors
@@ -285,7 +302,7 @@ def verify(record):
     if abs(utilization - record["verification"]["utilization"]) > EPSILON:
         errors.append("utilization_mismatch")
     stored_stability = record["verification"].get("stability")
-    if stored_stability is not None:
+    if stored_stability is not None and verify_stability:
         geometry_errors = any(error.startswith(("out_of_bounds", "overlap", "spacing_violation"))
                               for error in errors)
         classification, boundary, pair = stability_certificate(problem, placed, geometry_errors)

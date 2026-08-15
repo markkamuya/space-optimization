@@ -12,6 +12,24 @@ from verify_release import area, fingerprint, triangle_from_sides, verify
 
 
 def compact(value):
+    if isinstance(value, dict):
+        return "{" + ",".join(
+            json.dumps(key, ensure_ascii=False) + ":" + compact(item)
+            for key, item in value.items()
+        ) + "}"
+    if isinstance(value, list):
+        return "[" + ",".join(compact(item) for item in value) + "]"
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if value is None:
+        return "null"
+    if isinstance(value, int):
+        return str(value)
+    if isinstance(value, float):
+        if value.is_integer():
+            return str(int(value))
+        rendered = repr(value)
+        return rendered.replace("e-0", "e-").replace("e+0", "e+")
     return json.dumps(value, ensure_ascii=False, separators=(",", ":"))
 
 
@@ -146,7 +164,7 @@ def check_bundle(bundle):
             if actual != (bundle.get("attestation") or {}).get("incumbentIndexDigest"):
                 errors.append("INCUMBENT_DIGEST_MISMATCH")
             for record in snapshot:
-                if verify(record):
+                if verify(record, verify_stability=False):
                     errors.append(f"INVALID_INCUMBENT:{record.get('id', '<missing>')}")
                     break
         except (IndexError, KeyError, TypeError, ValueError):

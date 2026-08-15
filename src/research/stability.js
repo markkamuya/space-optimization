@@ -35,16 +35,26 @@ export function certifyPackingStability(problemInput, state) {
       box.minY - usable.minY, usable.maxY - box.maxY];
   });
   const pairClearances = [];
+  let minimumPairClearance = null;
   for (let left = 0; left < placed.length; left += 1) {
     for (let right = left + 1; right < placed.length; right += 1) {
-      pairClearances.push(polygonDistance(
-        placed[left].placed, placed[right].placed
-      ) - problem.kerf);
+      const leftBox = bounds(placed[left].placed);
+      const rightBox = bounds(placed[right].placed);
+      const horizontal = Math.max(0, leftBox.minX - rightBox.maxX, rightBox.minX - leftBox.maxX);
+      const vertical = Math.max(0, leftBox.minY - rightBox.maxY, rightBox.minY - leftBox.maxY);
+      const lowerBound = Math.hypot(horizontal, vertical) - problem.kerf;
+      if (minimumPairClearance !== null && lowerBound >= minimumPairClearance) continue;
+      const clearance = polygonDistance(placed[left].placed, placed[right].placed) - problem.kerf;
+      pairClearances.push(clearance);
+      minimumPairClearance = minimumPairClearance === null
+        ? clearance
+        : Math.min(minimumPairClearance, clearance);
+      if (minimumPairClearance <= -problem.kerf) break;
     }
+    if (minimumPairClearance !== null && minimumPairClearance <= -problem.kerf) break;
   }
 
   const minimumBoundarySlack = minimum(boundarySlacks);
-  const minimumPairClearance = minimum(pairClearances);
   const acceptedViolation = Math.max(verification.metrics.overlapArea,
     verification.metrics.boundaryOverflow, verification.metrics.spacingViolation);
   let classification = 'robust';
@@ -66,6 +76,6 @@ export function certifyPackingStability(problemInput, state) {
     acceptanceTolerance: Math.max(VERIFICATION_TOLERANCE.overlapAreaEpsilon,
       VERIFICATION_TOLERANCE.boundaryEpsilon, VERIFICATION_TOLERANCE.spacingEpsilon),
     boundaryConstraints: boundarySlacks.length,
-    pairConstraints: pairClearances.length
+    pairConstraints: placed.length * (placed.length - 1) / 2
   };
 }
