@@ -4,6 +4,7 @@ import { renderPacking } from './rendering/canvas.js';
 import { escapeHtml, safeExternalUrl } from './ui/safeText.js';
 import { validatePublicRelease } from './ui/releaseValidation.js';
 import { loadIntegrityCheckedRelease } from './ui/shardedReleaseLoader.js';
+import { describePhaseSelection, phaseGridDestination } from './ui/phaseGrid.js';
 
 const $ = selector => document.querySelector(selector);
 const percent = value => `${(value * 100).toFixed(1)}%`;
@@ -101,54 +102,102 @@ function nearestComputed(angle, ratio) {
     .sort((left, right) => left.distance - right.distance)[0];
 }
 
+function choosePhaseCell(cell) {
+  $('#angle').value = cell.dataset.angle;
+  $('#ratio').value = cell.dataset.ratio;
+  updatePhase();
+}
+
+function handlePhaseGridKeydown(event) {
+  const cell = event.target.closest('.phase-cell');
+  if (!cell) return;
+  const cells = [...$('#phase-grid').querySelectorAll('.phase-cell')];
+  const columns = Number($('#phase-grid').dataset.columns || 1);
+  const index = cells.indexOf(cell);
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    choosePhaseCell(cell);
+    return;
+  }
+  const nextIndex = phaseGridDestination({ key: event.key, index, columns, count: cells.length, ctrlKey: event.ctrlKey });
+  if (nextIndex == null) return;
+  event.preventDefault();
+  cells[nextIndex].tabIndex = 0;
+  cell.tabIndex = -1;
+  cells[nextIndex].focus();
+}
+
+function createPhaseCell({ angle, ratio, phase, computed = false, confidence = 1 }) {
+  const cell = document.createElement('button');
+  cell.type = 'button';
+  cell.className = `phase-cell${computed ? ' computed' : ''}`;
+  cell.dataset.angle = angle;
+  cell.dataset.ratio = ratio;
+  cell.tabIndex = -1;
+  cell.setAttribute('role', 'gridcell');
+  cell.setAttribute('aria-selected', 'false');
+  cell.style.setProperty('--phase-color', phase.color);
+  if (computed) cell.style.setProperty('--confidence', Math.max(.45, confidence));
+  cell.title = `${angle}°, ${ratio}:1 — ${phase.name}${phase.utilization == null ? '' : `, ${percent(phase.utilization)} filled`}`;
+  cell.setAttribute('aria-label', cell.title);
+  cell.addEventListener('click', () => choosePhaseCell(cell));
+  return cell;
+}
+
+function syncPhaseGridSelection(angle, ratio) {
+  const cells = [...$('#phase-grid').querySelectorAll('.phase-cell')];
+  if (!cells.length) return;
+  const selected = cells.reduce((nearest, cell) => {
+    const distance = Math.hypot(Number(cell.dataset.angle) - angle, Number(cell.dataset.ratio) - ratio);
+    return !nearest || distance < nearest.distance ? { cell, distance } : nearest;
+  }, null).cell;
+  cells.forEach(cell => {
+    const active = cell === selected;
+    cell.tabIndex = active ? 0 : -1;
+    cell.setAttribute('aria-selected', String(active));
+  });
+}
+
 function makePhaseMap() {
   const grid = $('#phase-grid');
   grid.replaceChildren();
   if (researchRelease) {
     const records = researchRelease.records.filter(record => record.family !== 'scalene');
-    grid.style.gridTemplateColumns = `repeat(${researchRelease.sampling.rectangleRatios.length}, 1fr)`;
+    const columns = researchRelease.sampling.rectangleRatios.length;
+    grid.dataset.columns = columns;
+    grid.setAttribute('aria-colcount', columns);
+    grid.setAttribute('aria-rowcount', Math.ceil(records.length / columns));
+    grid.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
     records
       .sort((left, right) =>
         right.parameters.apexAngle - left.parameters.apexAngle ||
         left.parameters.rectangleRatio - right.parameters.rectangleRatio)
       .forEach(record => {
-        const cell = document.createElement('button');
-        cell.type = 'button';
-        cell.className = 'phase-cell computed';
-        cell.style.setProperty('--phase-color', recordColor(record));
-        cell.style.setProperty('--confidence', Math.max(.45, 1 - record.bounds.optimalityGap));
-        cell.title = `${record.parameters.apexAngle}°, ${record.parameters.rectangleRatio}:1 — ${record.pattern}, ${percent(record.verification.utilization)}`;
-        cell.setAttribute('aria-label', cell.title);
-        cell.addEventListener('click', () => {
-          $('#angle').value = record.parameters.apexAngle;
-          $('#ratio').value = record.parameters.rectangleRatio;
-          updatePhase();
-        });
-        grid.append(cell);
+        grid.append(createPhaseCell({
+          angle: record.parameters.apexAngle,
+          ratio: record.parameters.rectangleRatio,
+          phase: { name: record.pattern, color: recordColor(record), utilization: record.verification.utilization },
+          computed: true,
+          confidence: 1 - record.bounds.optimalityGap
+        }));
       });
     $('#resolution-label').textContent = researchRelease.sampling.resolution;
+    syncPhaseGridSelection(Number($('#angle').value), Number($('#ratio').value));
     return;
   }
   const angles = [110, 95, 80, 65, 50, 35];
   const ratios = [0.75, 1.1, 1.5, 2, 2.5, 3];
+  grid.dataset.columns = ratios.length;
+  grid.setAttribute('aria-colcount', ratios.length);
+  grid.setAttribute('aria-rowcount', angles.length);
   grid.style.gridTemplateColumns = 'repeat(6, 1fr)';
   for (const angle of angles) {
     for (const ratio of ratios) {
       const phase = phaseAt(angle, ratio);
-      const cell = document.createElement('button');
-      cell.type = 'button';
-      cell.className = 'phase-cell';
-      cell.style.setProperty('--phase-color', phase.color);
-      cell.title = `${angle}°, ${ratio}:1 — ${phase.name}`;
-      cell.setAttribute('aria-label', cell.title);
-      cell.addEventListener('click', () => {
-        $('#angle').value = angle;
-        $('#ratio').value = ratio;
-        updatePhase();
-      });
-      grid.append(cell);
+      grid.append(createPhaseCell({ angle, ratio, phase }));
     }
   }
+  syncPhaseGridSelection(Number($('#angle').value), Number($('#ratio').value));
 }
 
 function updatePhase() {
@@ -173,6 +222,13 @@ function updatePhase() {
   $('#phase-waste').textContent = percent(1 - selectedPhase.utilization);
   $('#phase-gap').textContent = nearest ? percent(nearest.record.bounds.optimalityGap) : 'Not calculated';
   $('#phase-distance').textContent = nearest ? nearest.distance.toFixed(3) : 'Preview only';
+  syncPhaseGridSelection(angle, ratio);
+  $('#phase-summary').textContent = describePhaseSelection({
+    angle,
+    ratio,
+    phase: selectedPhase,
+    nearestDistance: nearest?.distance ?? null
+  });
   $('#phase-dot').style.background = selectedPhase.color;
   $('#live-label').textContent = `${angle}° / ${ratio.toFixed(2)}:1`;
   $('#used-bar').style.width = percent(selectedPhase.utilization);
@@ -490,6 +546,7 @@ async function loadV1Context() {
 
 $('#angle').addEventListener('input', updatePhase);
 $('#ratio').addEventListener('input', updatePhase);
+$('#phase-grid').addEventListener('keydown', handlePhaseGridKeydown);
 for (const selector of ['#research-search', '#research-family', '#research-evidence']) {
   $(selector).addEventListener(selector === '#research-search' ? 'input' : 'change', () => {
     researchLimit = 24;
