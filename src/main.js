@@ -5,6 +5,7 @@ import { escapeHtml, safeExternalUrl } from './ui/safeText.js';
 import { validatePublicRelease } from './ui/releaseValidation.js';
 import { loadIntegrityCheckedRelease } from './ui/shardedReleaseLoader.js';
 import { describePhaseSelection, phaseGridDestination } from './ui/phaseGrid.js';
+import { formatResearchHash, parseResearchHash } from './ui/researchState.js';
 
 const $ = selector => document.querySelector(selector);
 const percent = value => `${(value * 100).toFixed(1)}%`;
@@ -382,6 +383,7 @@ async function loadResearchRelease() {
     makePhaseMap();
     updatePhase();
     renderLeaderboard();
+    applyResearchState(parseResearchHash(location.hash));
     renderResearchExplorer();
   } catch {
     $('#resolution-label').textContent = 'verified dataset unavailable';
@@ -417,9 +419,32 @@ function filteredResearchRecords() {
   });
 }
 
+function currentResearchState({ record = null } = {}) {
+  return {
+    query: $('#research-search').value,
+    family: $('#research-family').value,
+    evidence: $('#research-evidence').value,
+    record
+  };
+}
+
+function applyResearchState(state) {
+  $('#research-search').value = state.query;
+  $('#research-family').value = state.family;
+  $('#research-evidence').value = state.evidence;
+  researchLimit = 24;
+}
+
+function clearResearchFilters({ updateHistory = true } = {}) {
+  applyResearchState({ query: '', family: 'all', evidence: 'all' });
+  if (updateHistory) history.pushState(null, '', '#research');
+  renderResearchExplorer();
+  $('#research-search').focus();
+}
+
 function openResearchRecord(record) {
   dialogTrigger = document.activeElement;
-  dialogReturnHash = '#research';
+  dialogReturnHash = formatResearchHash(currentResearchState());
   const detail = $('#record-detail');
   detail.innerHTML = `
     <div class="detail-header"><div><p class="kicker">${escapeHtml(record.family)} / ${escapeHtml(record.evidence.state.replaceAll('_', ' '))}</p><h2>${escapeHtml(record.experimentId)}</h2><p>${escapeHtml(record.evidence.claim)}</p></div>
@@ -436,7 +461,7 @@ function openResearchRecord(record) {
     normalizeProblem(record.problem),
     { state: record.solution.placements }
   ));
-  history.replaceState(null, '', `#research?record=${encodeURIComponent(record.id)}`);
+  history.pushState(null, '', formatResearchHash(currentResearchState({ record: record.id })));
 }
 
 function renderResearchExplorer() {
@@ -451,25 +476,27 @@ function renderResearchExplorer() {
     ['Adaptive improvements', canonicalRelease.coverage.adaptivelyImproved ?? 0],
     ['Open compute tasks', canonicalRelease.coverage.openDistributedTasks]
   ].map(([label, value]) => `<div><b>${value}</b><span>${label}</span></div>`).join('');
-  $('#research-results').innerHTML = visible.map(record => `
+  $('#research-results').innerHTML = visible.length ? visible.map(record => `
     <button type="button" data-record="${escapeHtml(record.id)}">
       <span><b>${escapeHtml(researchRecordLabel(record))}</b><small>${escapeHtml(record.experimentId)}</small></span>
       <span>${escapeHtml(record.pattern)}</span>
       <span><i class="${escapeHtml(record.evidence.state)}">${escapeHtml(record.evidence.state.replaceAll('_', ' '))}</i></span>
       <span><b>${percent(record.verification.utilization)}</b><small>gap ${percent(record.bounds.optimalityGap)}</small></span>
-    </button>`).join('');
+    </button>`).join('') : `<div class="research-empty" role="status"><h3>No verified results match these filters.</h3><p>Change the search terms or clear every filter to return to all ${canonicalRelease.coverage.records} records.</p><button type="button" data-clear-research>Clear filters</button></div>`;
   $('#research-results').querySelectorAll('[data-record]').forEach(button => {
     button.addEventListener('click', () =>
       openResearchRecord(canonicalRelease.records.find(record => record.id === button.dataset.record)));
   });
   $('#research-result-count').textContent = `Showing ${visible.length} of ${records.length} matching records`;
   $('#research-more').hidden = visible.length >= records.length;
+  $('#research-clear').hidden = !($('#research-search').value || $('#research-family').value !== 'all' || $('#research-evidence').value !== 'all');
+  $('#research-results [data-clear-research]')?.addEventListener('click', () => clearResearchFilters());
   $('#transition-list').innerHTML = canonicalRelease.transitions.slice(0, 8).map(transition => `
     <article><b>${transition.apexAngle}°</b><span>${transition.betweenRatios.join('–')}:1</span><p>${escapeHtml(transition.from)} → ${escapeHtml(transition.to)}</p><small>${escapeHtml(transition.evidence.join(' / '))}</small></article>`).join('') ||
     '<p>No pattern transition was observed at this sampling resolution.</p>';
-  const match = location.hash.match(/^#research\?record=([^&]+)/);
-  if (match) {
-    const record = canonicalRelease.records.find(item => item.id === decodeURIComponent(match[1]));
+  const linkedState = parseResearchHash(location.hash);
+  if (linkedState.record) {
+    const record = canonicalRelease.records.find(item => item.id === linkedState.record);
     if (record && !$('#record-dialog').open) openResearchRecord(record);
   }
 }
@@ -550,9 +577,18 @@ $('#phase-grid').addEventListener('keydown', handlePhaseGridKeydown);
 for (const selector of ['#research-search', '#research-family', '#research-evidence']) {
   $(selector).addEventListener(selector === '#research-search' ? 'input' : 'change', () => {
     researchLimit = 24;
+    const hash = formatResearchHash(currentResearchState());
+    if (selector === '#research-search') history.replaceState(null, '', hash);
+    else history.pushState(null, '', hash);
     renderResearchExplorer();
   });
 }
+$('#research-clear').addEventListener('click', () => clearResearchFilters());
+window.addEventListener('popstate', () => {
+  if (!location.hash.startsWith('#research')) return;
+  applyResearchState(parseResearchHash(location.hash));
+  renderResearchExplorer();
+});
 $('#research-more').addEventListener('click', () => {
   researchLimit += 24;
   renderResearchExplorer();

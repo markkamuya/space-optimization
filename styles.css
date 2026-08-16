@@ -118,6 +118,7 @@ dt { color:var(--muted); } dd { margin:0; font-weight:700; text-align:right; }
 .research-toolbar { margin:0 6vw; display:grid; grid-template-columns:2fr 1fr 1fr auto; gap:12px; align-items:end; padding:20px; border:1px solid var(--ink); background:var(--panel); }
 .research-toolbar label { font:9px "DM Mono"; text-transform:uppercase; color:var(--muted); }
 .research-toolbar input,.research-toolbar select { display:block; width:100%; margin-top:8px; padding:11px; border:1px solid var(--line); background:white; }
+.secondary-action { min-height:42px; padding:10px 14px; border:1px solid var(--ink); background:var(--panel); cursor:pointer; white-space:nowrap; }
 .research-downloads { display:flex; gap:10px; padding-bottom:11px; }
 .research-downloads a { font:9px "DM Mono"; white-space:nowrap; }
 .proof-summary { margin:0 4vw 28px; padding:24px; border:1px solid var(--ink); display:grid; grid-template-columns:1fr 1.5fr 1fr; gap:24px; align-items:start; }
@@ -139,6 +140,10 @@ dt { color:var(--muted); } dd { margin:0; font-weight:700; text-align:right; }
 .registry-footer { margin:16px 6vw 0; display:flex; justify-content:space-between; align-items:center; font:9px "DM Mono"; }
 .registry-footer button { border:1px solid var(--ink); background:var(--panel); padding:9px 14px; cursor:pointer; }
 .load-error { margin:24px 6vw; padding:18px; border:1px solid var(--ink); background:var(--panel); font-size:12px; line-height:1.6; }
+.research-empty { margin:0 6vw; padding:42px 24px; border:1px solid var(--ink); background:var(--panel); text-align:center; }
+.research-empty h3 { margin:0 0 8px; font-size:22px; }
+.research-empty p { color:var(--muted); font-size:12px; }
+.research-empty button { min-height:44px; margin-top:10px; padding:10px 16px; border:1px solid var(--ink); background:var(--acid); cursor:pointer; }
 .transition-panel { margin:55px 6vw 0; display:grid; grid-template-columns:.65fr 1.35fr; gap:40px; border-top:1px solid var(--ink); padding-top:28px; }
 .transition-panel h3 { font-size:26px; margin:8px 0; }
 #transition-list { display:grid; grid-template-columns:1fr 1fr; border:1px solid var(--ink); background:var(--panel); }
