@@ -17,6 +17,12 @@ let dialogReturnHash = '#research';
 const navToggle = $('#nav-toggle');
 const primaryNav = $('#primary-nav');
 
+function closePrimaryNavigation({ restoreFocus = false } = {}) {
+  navToggle.setAttribute('aria-expanded', 'false');
+  primaryNav.classList.remove('open');
+  if (restoreFocus && getComputedStyle(navToggle).display !== 'none') navToggle.focus();
+}
+
 $('#record-count').textContent = String(ATLAS_RECORDS.length).padStart(2, '0');
 $('#open-count').textContent = String(OPEN_PROBLEMS.length).padStart(2, '0');
 
@@ -510,13 +516,28 @@ $('#record-dialog').addEventListener('close', () => {
 });
 navToggle.addEventListener('click', () => {
   const open = navToggle.getAttribute('aria-expanded') === 'true';
-  navToggle.setAttribute('aria-expanded', String(!open));
-  primaryNav.classList.toggle('open', !open);
+  if (open) closePrimaryNavigation();
+  else {
+    navToggle.setAttribute('aria-expanded', 'true');
+    primaryNav.classList.add('open');
+    primaryNav.querySelector('a')?.focus();
+  }
 });
 primaryNav.addEventListener('click', event => {
   if (!event.target.closest('a')) return;
-  navToggle.setAttribute('aria-expanded', 'false');
-  primaryNav.classList.remove('open');
+  closePrimaryNavigation();
+});
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && navToggle.getAttribute('aria-expanded') === 'true') {
+    closePrimaryNavigation({ restoreFocus: true });
+  }
+});
+document.addEventListener('pointerdown', event => {
+  if (navToggle.getAttribute('aria-expanded') !== 'true') return;
+  if (!primaryNav.contains(event.target) && event.target !== navToggle) closePrimaryNavigation();
+});
+matchMedia('(min-width: 721px)').addEventListener('change', event => {
+  if (event.matches) closePrimaryNavigation();
 });
 window.addEventListener('resize', updatePhase);
 
