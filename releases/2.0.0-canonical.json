@@ -8,7 +8,9 @@
   "finiteDomainProofJobs": "public/finite-domain-proof-jobs-v2.json",
   "shardedRelease": "public/atlas-v2-shards.json",
   "reviewAuthority": "review-authority/registry.json",
-  "sha256": "e67c4201613e7ab74b6396cdcc943f9151074d42034c2afa7900268cd67f181b",
+  "distributedRecoveryHealth": "public/distributed-recovery-health-v2.json",
+  "ingestionJournal": "public/worker-ingestion-journal-v2.json",
+  "sha256": "a733c09e22b92f8179b4801fd98ce3ef6488455b677a3542892826d2d1253b2b",
   "records": 304,
   "audit": {
     "valid": true,

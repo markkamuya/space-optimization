@@ -1,0 +1,13 @@
+{
+  "format": "tpa-distributed-recovery-health/v1",
+  "ready": true,
+  "queueDigest": "60c995ddef4474ba0d693a024613259994fb6f7d2022df00a204b8ce0938683e",
+  "activeLeases": 0,
+  "leaseEvents": 0,
+  "ingestionReceipts": 0,
+  "acceptedResults": 0,
+  "rejectedResults": 0,
+  "crashRecovery": true,
+  "independentReceiptVerification": true,
+  "errors": []
+}

@@ -414,13 +414,14 @@ function renderResearchExplorer() {
 
 async function loadV1Context() {
   try {
-    const [auditResponse, literatureResponse, challengeResponse, proofResponse, proofJobResponse, contributionResponse] = await Promise.all([
+    const [auditResponse, literatureResponse, challengeResponse, proofResponse, proofJobResponse, contributionResponse, recoveryResponse] = await Promise.all([
       fetch('/audit-v2.json'),
       fetch('/literature/registry.json'),
       fetch('/community-challenges-v2.json'),
       fetch('/finite-domain-proofs-v2.json'),
       fetch('/finite-domain-proof-jobs-v2.json'),
-      fetch('/contribution-status-v2.json')
+      fetch('/contribution-status-v2.json'),
+      fetch('/distributed-recovery-health-v2.json')
     ]);
     const audit = auditResponse.ok ? await auditResponse.json() : null;
     const literature = literatureResponse.ok ? await literatureResponse.json() : null;
@@ -428,11 +429,13 @@ async function loadV1Context() {
     const proofIndex = proofResponse.ok ? await proofResponse.json() : null;
     const proofJobIndex = proofJobResponse.ok ? await proofJobResponse.json() : null;
     const contributionStatus = contributionResponse.ok ? await contributionResponse.json() : null;
+    const recoveryHealth = recoveryResponse.ok ? await recoveryResponse.json() : null;
     if (audit) {
       $('#release-gates').innerHTML = [
         ['Canonical geometry replay', `${audit.summary.replayed}/${audit.summary.records} passed`, 'passed'],
         ['Critical audit findings', audit.summary.critical, audit.summary.critical === 0 ? 'passed' : 'pending_external'],
         ['Evidence mismatches', audit.summary.major, audit.summary.major === 0 ? 'passed' : 'pending_external'],
+        ['Distributed recovery', recoveryHealth?.ready ? 'Ready · restart-safe' : 'Unavailable', recoveryHealth?.ready ? 'passed' : 'pending_external'],
         ['Archive DOI', 'pending provider deposit', 'pending_external']
       ].map(([label, value, status]) => `
         <div><dt>${label}</dt><dd class="${status}">${value}</dd></div>`).join('');

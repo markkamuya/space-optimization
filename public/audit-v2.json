@@ -51,7 +51,8 @@
     },
     "shardedRecords": 304,
     "contributionsTracked": 0,
-    "reviewAuthorityKeys": 0
+    "reviewAuthorityKeys": 0,
+    "ingestionReceipts": 0
   },
   "findings": []
 }

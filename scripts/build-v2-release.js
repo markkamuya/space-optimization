@@ -9,7 +9,9 @@ import {
   detectPhaseTransitions,
   validateCanonicalRecords
 } from '../src/research/registry.js';
-import { buildWorkQueue } from '../src/research/distributed.js';
+import {
+  buildWorkQueue, createIngestionJournal, createLeaseLedger, distributedRecoveryHealth
+} from '../src/research/distributed.js';
 import { canonicalCoverage } from '../src/research/release.js';
 import { buildCanonicalCsv } from '../src/research/exports.js';
 import { buildShardedRelease } from '../src/research/shardedRelease.js';
@@ -102,6 +104,10 @@ if (!audit.valid) throw new Error(`Canonical registry failed: ${JSON.stringify(a
 
 const transitions = detectPhaseTransitions(records);
 const queue = buildWorkQueue(records);
+const releaseLeaseLedger = createLeaseLedger(queue);
+const ingestionJournal = createIngestionJournal(queue);
+const recoveryHealth = distributedRecoveryHealth(releaseLeaseLedger, ingestionJournal);
+if (!recoveryHealth.ready) throw new Error('Distributed recovery health failed');
 const proofSpecification = JSON.parse(await readFile(
   new URL('../proofs/finite-domain-right-control.spec.json', import.meta.url), 'utf8'
 ));
@@ -156,6 +162,8 @@ const release = {
   shardedReleaseIndex: 'public/atlas-v2-shards.json',
   contributionStatus: 'public/contribution-status-v2.json',
   reviewAuthority: 'review-authority/registry.json',
+  distributedRecoveryHealth: 'public/distributed-recovery-health-v2.json',
+  ingestionJournal: 'public/worker-ingestion-journal-v2.json',
   verificationPolicy: {
     independentImplementations: ['src/atlas/verifier.js', 'independent_verifier/verify_release.py'],
     tolerancePolicy: 'docs/NUMERICAL_POLICY.md',
@@ -180,6 +188,8 @@ await writeFile(new URL('../public/work-queue-v2.json', import.meta.url), `${JSO
 await writeFile(new URL('../public/finite-domain-proofs-v2.json', import.meta.url), `${JSON.stringify(proofIndex, null, 2)}\n`);
 await writeFile(new URL('../public/finite-domain-proof-jobs-v2.json', import.meta.url), `${JSON.stringify(proofJobIndex, null, 2)}\n`);
 await writeFile(new URL('../public/contribution-status-v2.json', import.meta.url), `${JSON.stringify(publicContributionStatus, null, 2)}\n`);
+await writeFile(new URL('../public/worker-ingestion-journal-v2.json', import.meta.url), `${JSON.stringify(ingestionJournal, null, 2)}\n`);
+await writeFile(new URL('../public/distributed-recovery-health-v2.json', import.meta.url), `${JSON.stringify(recoveryHealth, null, 2)}\n`);
 await writeFile(new URL('../public/atlas-v2-shards.json', import.meta.url), `${JSON.stringify(shardedRelease.index, null, 2)}\n`);
 for (const [path, shardPayload] of shardedRelease.files) {
   await writeFile(new URL(`../public/${path}`, import.meta.url), shardPayload);
@@ -194,6 +204,8 @@ await writeFile(new URL('../releases/2.0.0-canonical.json', import.meta.url), `$
   finiteDomainProofJobs: 'public/finite-domain-proof-jobs-v2.json',
   shardedRelease: 'public/atlas-v2-shards.json',
   reviewAuthority: 'review-authority/registry.json',
+  distributedRecoveryHealth: 'public/distributed-recovery-health-v2.json',
+  ingestionJournal: 'public/worker-ingestion-journal-v2.json',
   sha256: checksum,
   records: records.length,
   audit,

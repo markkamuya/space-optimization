@@ -11,6 +11,8 @@
     "license": { "const": "CC-BY-4.0" },
     "contributionStatus": { "const": "public/contribution-status-v2.json" },
     "reviewAuthority": { "const": "review-authority/registry.json" },
+    "distributedRecoveryHealth": { "const": "public/distributed-recovery-health-v2.json" },
+    "ingestionJournal": { "const": "public/worker-ingestion-journal-v2.json" },
     "coverage": {
       "type": "object",
       "required": ["records", "verified", "provenOptimal", "openDistributedTasks", "phaseTransitions"]

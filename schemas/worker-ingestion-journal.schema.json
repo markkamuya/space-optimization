@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trianglepackingatlas.org/schemas/worker-ingestion-journal.v1.json",
+  "title": "Replayable distributed result ingestion receipts",
+  "type": "object",
+  "required": ["format", "queueDigest", "receipts", "sha256"],
+  "properties": {
+    "format": { "const": "tpa-worker-ingestion-journal/v1" },
+    "queueDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "receipts": { "type": "array", "items": { "type": "object",
+      "required": ["type", "occurredAt", "queueDigest", "leaseLedgerSha256", "batchSha256", "evidence", "previousSha256", "sha256"],
+      "properties": {
+        "type": { "const": "worker_ingestion" },
+        "occurredAt": { "type": "number" },
+        "leaseLedgerSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "batchSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "evidence": { "type": "object", "required": ["format", "queueDigest", "accepted", "rejected", "winners", "sha256"] },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    } },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  }
+}

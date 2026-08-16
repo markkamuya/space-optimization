@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trianglepackingatlas.org/schemas/worker-lease-ledger.v2.json",
+  "title": "Crash-safe distributed worker lease ledger",
+  "type": "object",
+  "required": ["format", "queueDigest", "leases", "attempts", "events", "sha256"],
+  "properties": {
+    "format": { "const": "tpa-worker-lease-ledger/v2" },
+    "queueDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "leases": { "type": "object" },
+    "attempts": { "type": "object" },
+    "events": { "type": "array", "items": { "type": "object",
+      "required": ["type", "occurredAt", "previousSha256", "sha256"],
+      "properties": { "type": { "enum": ["v1_migration", "lease_claimed", "lease_checkpointed", "lease_expired"] },
+        "occurredAt": { "type": "number" }, "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" } } } },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  }
+}

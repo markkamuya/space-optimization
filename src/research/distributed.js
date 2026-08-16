@@ -351,6 +351,97 @@ export function verifyWorkerIngestionEvidence(evidence) {
   return sha256 === createHash('sha256').update(JSON.stringify(statement)).digest('hex') &&
     JSON.stringify(rankVerifiedWorkerResults(evidence.accepted)) === JSON.stringify(evidence.winners);
 }
+
+function sealIngestionJournal(statement) {
+  return { ...statement, sha256: leaseDigest(statement) };
+}
+
+export function createIngestionJournal(tasks) {
+  return sealIngestionJournal({ format: 'tpa-worker-ingestion-journal/v1',
+    queueDigest: workQueueDigest(tasks), receipts: [] });
+}
+
+export function verifyIngestionJournal(journal) {
+  const errors = [];
+  if (journal?.format !== 'tpa-worker-ingestion-journal/v1' ||
+    typeof journal.queueDigest !== 'string' || !Array.isArray(journal.receipts)) {
+    return { valid: false, errors: ['ingestion_journal_shape_invalid'] };
+  }
+  const seen = new Set();
+  let previous = null;
+  let lastTime = -Infinity;
+  for (const receipt of journal.receipts) {
+    const { sha256, ...statement } = receipt;
+    if (receipt.previousSha256 !== previous || leaseDigest(statement) !== sha256) {
+      errors.push('ingestion_receipt_chain_invalid');
+    }
+    if (!Number.isFinite(receipt.occurredAt) || receipt.occurredAt < lastTime) {
+      errors.push('ingestion_receipt_time_regression');
+    }
+    if (seen.has(receipt.batchSha256)) errors.push(`ingestion_batch_replayed:${receipt.batchSha256}`);
+    seen.add(receipt.batchSha256);
+    if (receipt.queueDigest !== journal.queueDigest || !verifyWorkerIngestionEvidence(receipt.evidence) ||
+      receipt.evidence.queueDigest !== journal.queueDigest) errors.push('ingestion_evidence_invalid');
+    if (typeof receipt.leaseLedgerSha256 !== 'string' || !/^[a-f0-9]{64}$/.test(receipt.leaseLedgerSha256)) {
+      errors.push('ingestion_lease_binding_invalid');
+    }
+    previous = sha256;
+    lastTime = receipt.occurredAt;
+  }
+  const { sha256, ...statement } = journal;
+  if (leaseDigest(statement) !== sha256) errors.push('ingestion_journal_digest_invalid');
+  return { valid: errors.length === 0, errors, receipts: journal.receipts.length,
+    accepted: journal.receipts.reduce((sum, receipt) => sum + receipt.evidence.accepted.length, 0),
+    rejected: journal.receipts.reduce((sum, receipt) => sum + receipt.evidence.rejected.length, 0) };
+}
+
+export function recordWorkerIngestion(tasks, leaseLedger, candidates, records, now, journal) {
+  const verification = verifyIngestionJournal(journal);
+  if (!verification.valid || journal.queueDigest !== workQueueDigest(tasks)) {
+    return { valid: false, errors: [...verification.errors, 'ingestion_queue_digest_mismatch'], journal };
+  }
+  const batchSha256 = leaseDigest(candidates);
+  const existing = journal.receipts.find(receipt => receipt.batchSha256 === batchSha256);
+  if (existing) return { valid: true, errors: [], journal, evidence: existing.evidence,
+    receipt: existing, idempotent: true };
+  const evidence = ingestWorkerResults(tasks, leaseLedger, candidates, records, now);
+  const previousSha256 = journal.receipts.at(-1)?.sha256 ?? null;
+  const leaseLedgerSha256 = typeof leaseLedger?.sha256 === 'string'
+    ? leaseLedger.sha256 : leaseDigest(leaseLedger);
+  const statement = { type: 'worker_ingestion', occurredAt: now, queueDigest: journal.queueDigest,
+    leaseLedgerSha256, batchSha256, evidence, previousSha256 };
+  const next = structuredClone(journal);
+  delete next.sha256;
+  const receipt = { ...statement, sha256: leaseDigest(statement) };
+  next.receipts.push(receipt);
+  return { valid: true, errors: [], journal: sealIngestionJournal(next), evidence, receipt,
+    idempotent: false };
+}
+
+export function recoverLatestWorkerIngestion(journal) {
+  const verification = verifyIngestionJournal(journal);
+  if (!verification.valid) return { valid: false, errors: verification.errors, evidence: null };
+  return { valid: true, errors: [], evidence: journal.receipts.at(-1)?.evidence ?? null,
+    receiptSha256: journal.receipts.at(-1)?.sha256 ?? null };
+}
+
+export function distributedRecoveryHealth(leaseLedger, ingestionJournal) {
+  const leases = replayLeaseLedger(leaseLedger);
+  const ingestion = verifyIngestionJournal(ingestionJournal);
+  return {
+    format: 'tpa-distributed-recovery-health/v1',
+    ready: leases.valid && ingestion.valid,
+    queueDigest: leaseLedger.queueDigest,
+    activeLeases: leases.valid ? Object.keys(leases.leases).length : null,
+    leaseEvents: leases.events ?? null,
+    ingestionReceipts: ingestion.receipts ?? null,
+    acceptedResults: ingestion.accepted ?? null,
+    rejectedResults: ingestion.rejected ?? null,
+    crashRecovery: true,
+    independentReceiptVerification: true,
+    errors: [...(leases.errors ?? []), ...(ingestion.errors ?? [])]
+  };
+}
 import { packingProblemIdentity } from '../atlas/submission.js';
 import { verifyPacking } from '../atlas/verifier.js';
 import { createHash } from 'node:crypto';

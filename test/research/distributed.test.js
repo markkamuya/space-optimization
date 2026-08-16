@@ -1,11 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { mkdtemp, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { RESEARCH_RECORDS } from '../../src/research/dataset.js';
 import { canonicalRecord } from '../../src/research/registry.js';
 import {
   buildWorkQueue, checkpointWorkerLease, claimWorkerTask, createLeaseLedger,
+  createIngestionJournal,
   expireWorkerLeases, ingestWorkerResults, migrateLeaseLedger, rankVerifiedWorkerResults,
   recoverLeaseLedger, replayLeaseLedger,
+  recordWorkerIngestion, recoverLatestWorkerIngestion, verifyIngestionJournal,
   validateWorkerResult, verifyWorkerIngestionEvidence, workQueueDigest
 } from '../../src/research/distributed.js';
 
@@ -15,6 +21,55 @@ test('distributed queue is prioritized and contains reproducibility contracts', 
   assert.equal(queue[0].status, 'open');
   assert.equal(queue[0].submissionContract.coordinatesRequired, true);
   assert.ok(queue[0].baselineUtilization <= queue[0].upperBound);
+});
+
+test('ingestion receipts make retries idempotent and recover the last durable evidence', () => {
+  const records = RESEARCH_RECORDS.map(canonicalRecord);
+  const tasks = buildWorkQueue(records);
+  const ledger = createLeaseLedger(tasks);
+  const candidates = [{ taskId: 'unknown-task', workerId: 'worker-a' }];
+  const journal = createIngestionJournal(tasks);
+  const first = recordWorkerIngestion(tasks, ledger, candidates, records, 1000, journal);
+  assert.equal(first.valid, true);
+  assert.equal(first.idempotent, false);
+  assert.equal(first.evidence.rejected.length, 1);
+  assert.equal(verifyIngestionJournal(first.journal).valid, true);
+  const retry = recordWorkerIngestion(tasks, ledger, candidates, records, 1001, first.journal);
+  assert.equal(retry.idempotent, true);
+  assert.deepEqual(retry.journal, first.journal);
+  assert.deepEqual(recoverLatestWorkerIngestion(first.journal).evidence, first.evidence);
+  const tampered = structuredClone(first.journal);
+  tampered.receipts[0].evidence.rejected[0].errors.push('forged');
+  assert.equal(verifyIngestionJournal(tampered).valid, false);
+});
+
+test('independent verifier accepts receipts and rejects receipt tampering', async () => {
+  const records = RESEARCH_RECORDS.map(canonicalRecord);
+  const tasks = buildWorkQueue(records);
+  const journal = createIngestionJournal(tasks);
+  const recorded = recordWorkerIngestion(tasks, createLeaseLedger(tasks),
+    [{ taskId: 'unknown-task', workerId: 'worker-a' }], records, 1000, journal);
+  const directory = await mkdtemp(join(tmpdir(), 'tpa-ingestion-journal-'));
+  const path = join(directory, 'journal.json');
+  await writeFile(path, JSON.stringify(recorded.journal));
+  const accepted = spawnSync('python3', ['independent_verifier/verify_ingestion_journal.py', path],
+    { cwd: new URL('../..', import.meta.url), encoding: 'utf8' });
+  assert.equal(accepted.status, 0, accepted.stderr || accepted.stdout);
+  const tampered = structuredClone(recorded.journal);
+  tampered.receipts[0].evidence.rejected[0].workerId = 'forged';
+  await writeFile(path, JSON.stringify(tampered));
+  const rejected = spawnSync('python3', ['independent_verifier/verify_ingestion_journal.py', path],
+    { cwd: new URL('../..', import.meta.url), encoding: 'utf8' });
+  assert.equal(rejected.status, 1, rejected.stderr || rejected.stdout);
+});
+
+test('public recovery schemas expose event and receipt integrity contracts', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const leaseSchema = JSON.parse(await readFile(new URL('../../schemas/worker-lease-ledger.schema.json', import.meta.url), 'utf8'));
+  const receiptSchema = JSON.parse(await readFile(new URL('../../schemas/worker-ingestion-journal.schema.json', import.meta.url), 'utf8'));
+  assert.match(JSON.stringify(leaseSchema), /lease_checkpointed/);
+  assert.match(JSON.stringify(receiptSchema), /leaseLedgerSha256/);
+  assert.match(JSON.stringify(receiptSchema), /batchSha256/);
 });
 
 test('durable lease events replay identically after a materialized-state crash', () => {

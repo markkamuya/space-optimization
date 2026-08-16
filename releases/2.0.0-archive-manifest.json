@@ -8,8 +8,8 @@
   "files": [
     {
       "path": "public/atlas-v2.json",
-      "bytes": 12274717,
-      "sha256": "e67c4201613e7ab74b6396cdcc943f9151074d42034c2afa7900268cd67f181b"
+      "bytes": 12274851,
+      "sha256": "a733c09e22b92f8179b4801fd98ce3ef6488455b677a3542892826d2d1253b2b"
     },
     {
       "path": "public/atlas-v2.csv",
@@ -18,8 +18,8 @@
     },
     {
       "path": "public/atlas-v2-shards.json",
-      "bytes": 12907,
-      "sha256": "7433127fb9f3f06b58a503808eef49fd15ef7f1e3f1db6ef53a2a2d31e3dd47b"
+      "bytes": 13053,
+      "sha256": "02b2aee788350165ca41aa62038ac88ae920dfedd0f0b1847ce9a88db16d710c"
     },
     {
       "path": "public/atlas-v2-shards/000.json",
@@ -43,8 +43,8 @@
     },
     {
       "path": "public/audit-v2.json",
-      "bytes": 1463,
-      "sha256": "2fd72b88e0475602d2c760c898a93bedccd7159b08a5a42a32c50cd88aafbdb1"
+      "bytes": 1491,
+      "sha256": "16d46c44baf477ce5e376042a1bb011257f7b8adae1ec9d0c211a1a7e93a178e"
     },
     {
       "path": "public/work-queue-v2.json",
@@ -72,6 +72,16 @@
       "sha256": "828c3b1493c73385b6d35eb71dd0c7411afd10e504bfcd7c1b9cce02644591ea"
     },
     {
+      "path": "public/worker-ingestion-journal-v2.json",
+      "bytes": 233,
+      "sha256": "94d5a12f499aefbcf5151c6a097a942a278e51600d80a4508688a49c7f3037a8"
+    },
+    {
+      "path": "public/distributed-recovery-health-v2.json",
+      "bytes": 353,
+      "sha256": "1ad8a22e88795c4b96cdf65eb960e09b91706b55e28a34ef5de3204e61ccdb2e"
+    },
+    {
       "path": "contributions/ledger.json",
       "bytes": 303,
       "sha256": "209ca3fe22cb5af261f5e60fd2e0decb98782c8393dd923f237cd795fb91a17e"
@@ -87,6 +97,11 @@
       "sha256": "eb93a203388f0f4959f0fd29badd06fef4204173e7481fb02a144ee9f7e62c4a"
     },
     {
+      "path": "independent_verifier/verify_ingestion_journal.py",
+      "bytes": 3303,
+      "sha256": "137fadba82917e6ebd588e1c87de1f949b5a93c6b50ccba9da0ac17b1501d5b3"
+    },
+    {
       "path": "proofs/finite-domain-right-control.spec.json",
       "bytes": 471,
       "sha256": "975131265014674b09f758f9cffad2b4009e1cd27f28e8f01b82c99f5ac4f19e"
@@ -98,8 +113,8 @@
     },
     {
       "path": "schemas/canonical-release.schema.json",
-      "bytes": 1759,
-      "sha256": "94a9089e5c3dc727997e660181d0d94af65a792ce513ba14083ee6663d85b72a"
+      "bytes": 1931,
+      "sha256": "9eac7ad1d2d65b6072174f50c5fddbe121cb36ee0f904f1349ca5406fcdd3b49"
     },
     {
       "path": "schemas/sharded-release.schema.json",
@@ -125,6 +140,16 @@
       "path": "schemas/contribution-ledger.schema.json",
       "bytes": 1950,
       "sha256": "9e6007b153727f1df259df415d9f912a72a258595b82b7a0e61e3d67d7ef4380"
+    },
+    {
+      "path": "schemas/worker-lease-ledger.schema.json",
+      "bytes": 952,
+      "sha256": "f6d50261c087d7ed6a6749c970ad87415a15466eb1ae4f581d5056c8e18de82c"
+    },
+    {
+      "path": "schemas/worker-ingestion-journal.schema.json",
+      "bytes": 1192,
+      "sha256": "bc4520348632f4cf2665bbb8ae5ae4f916b3dc59cb72f10e1e2064f51e6363c9"
     },
     {
       "path": "docs/METHODOLOGY_V2.md",
