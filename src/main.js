@@ -16,6 +16,8 @@ let canonicalRelease = null;
 let researchLimit = 24;
 let dialogTrigger = null;
 let dialogReturnHash = '#research';
+let researchLoadAttempt = 0;
+let researchLoadController = null;
 const navToggle = $('#nav-toggle');
 const primaryNav = $('#primary-nav');
 
@@ -357,12 +359,28 @@ function renderLeaderboard() {
 }
 
 async function loadResearchRelease() {
+  const attempt = ++researchLoadAttempt;
+  researchLoadController?.abort();
+  researchLoadController = new AbortController();
+  const status = $('#research-load-status');
+  canonicalRelease = null;
+  researchRelease = null;
+  $('#research-results').setAttribute('aria-busy', 'true');
+  $('#research-results').innerHTML = '<p class="research-loading">Preparing verified records…</p>';
+  $('#research-result-count').textContent = 'Loading canonical release…';
+  $('#research-more').hidden = true;
+  status.className = 'research-load-status loading';
+  status.innerHTML = '<b>Loading verified research data…</b><span>Checking release integrity before results are shown.</span>';
   try {
     const loaded = await loadIntegrityCheckedRelease({
+      signal: researchLoadController.signal,
       onProgress: progress => {
+        if (attempt !== researchLoadAttempt) return;
         $('#resolution-label').textContent = `verified ${progress.loadedRecords} records from ${progress.loadedShards}/${progress.totalShards} shards…`;
+        status.innerHTML = `<b>Verifying research data…</b><span>${progress.loadedRecords} records checked from ${progress.loadedShards} of ${progress.totalShards} release shards.</span>`;
       }
     });
+    if (attempt !== researchLoadAttempt) return;
     const release = loaded.release;
     const validation = validatePublicRelease(release);
     if (!validation.valid) throw new Error(`Invalid public release: ${validation.errors[0]}`);
@@ -385,12 +403,19 @@ async function loadResearchRelease() {
     renderLeaderboard();
     applyResearchState(parseResearchHash(location.hash));
     renderResearchExplorer();
-  } catch {
+    status.className = `research-load-status ready ${loaded.source}`;
+    status.innerHTML = loaded.source === 'verified_shards'
+      ? `<b>Verified release ready</b><span>${canonicalRelease.coverage.records} records passed integrity checks from the canonical release shards.</span>`
+      : `<b>Verified fallback release ready</b><span>${canonicalRelease.coverage.records} records passed the canonical checksum after a shard was unavailable. No partial shard data is shown.</span>`;
+  } catch (error) {
+    if (attempt !== researchLoadAttempt || error.name === 'AbortError') return;
     $('#resolution-label').textContent = 'verified dataset unavailable';
     $('#research-result-count').textContent = 'The verified dataset could not be loaded safely. Try refreshing the page.';
     $('#research-results').setAttribute('aria-busy', 'false');
-    $('#research-results').innerHTML = '<p class="load-error">The full dataset failed its availability or integrity checks. The interactive map remains available, but research records are hidden rather than showing partial data.</p>';
+    $('#research-results').innerHTML = '<div class="load-error" role="alert"><h3>Verified results are temporarily unavailable.</h3><p>The release failed availability or integrity checks. Research records remain hidden so partial or unverified data is never presented as trustworthy.</p><button type="button" data-retry-release>Try loading verified data again</button></div>';
     $('#research-more').hidden = true;
+    status.className = 'research-load-status failed';
+    status.innerHTML = '<b>Release verification failed</b><span>No research records were displayed. You can retry without reloading the page.</span>';
   }
 }
 
@@ -584,6 +609,9 @@ for (const selector of ['#research-search', '#research-family', '#research-evide
   });
 }
 $('#research-clear').addEventListener('click', () => clearResearchFilters());
+$('#research-results').addEventListener('click', event => {
+  if (event.target.closest('[data-retry-release]')) loadResearchRelease();
+});
 window.addEventListener('popstate', () => {
   if (!location.hash.startsWith('#research')) return;
   applyResearchState(parseResearchHash(location.hash));

@@ -56,3 +56,18 @@ test('browser loader fails closed when both shard and fallback integrity are inv
   });
   await assert.rejects(() => loadIntegrityCheckedRelease({ fetchImpl, cryptoImpl: webcrypto }), /monolith_integrity_mismatch/);
 });
+
+test('aborted shard attempts never fall through to a second release source', async () => {
+  const controller = new AbortController();
+  let requests = 0;
+  const fetchImpl = async (_path, options) => {
+    requests += 1;
+    assert.equal(options.signal, controller.signal);
+    controller.abort();
+    throw new DOMException('Aborted', 'AbortError');
+  };
+  await assert.rejects(() => loadIntegrityCheckedRelease({
+    fetchImpl, cryptoImpl: webcrypto, signal: controller.signal
+  }), error => error.name === 'AbortError');
+  assert.equal(requests, 1);
+});
