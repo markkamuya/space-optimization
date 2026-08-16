@@ -25,13 +25,88 @@ export function workQueueDigest(tasks) {
   return createHash('sha256').update(JSON.stringify(tasks)).digest('hex');
 }
 
+const leaseDigest = value => createHash('sha256').update(JSON.stringify(value)).digest('hex');
+
+function sealLeaseLedger(statement) {
+  return { ...statement, sha256: leaseDigest(statement) };
+}
+
+function appendLeaseEvent(ledger, event) {
+  const previousSha256 = ledger.events.at(-1)?.sha256 ?? null;
+  const statement = { ...event, previousSha256 };
+  const next = structuredClone(ledger);
+  delete next.sha256;
+  next.events.push({ ...statement, sha256: leaseDigest(statement) });
+  return sealLeaseLedger(next);
+}
+
+export function migrateLeaseLedger(tasks, ledger, occurredAt = 0) {
+  if (ledger?.format === 'tpa-worker-lease-ledger/v2') return structuredClone(ledger);
+  if (ledger?.format !== 'tpa-worker-lease-ledger/v1' || ledger.queueDigest !== workQueueDigest(tasks)) {
+    throw new Error('lease_ledger_migration_invalid');
+  }
+  const migrated = sealLeaseLedger({ format: 'tpa-worker-lease-ledger/v2',
+    queueDigest: ledger.queueDigest, leases: structuredClone(ledger.leases ?? {}),
+    attempts: structuredClone(ledger.attempts ?? {}), events: [] });
+  return appendLeaseEvent(migrated, { type: 'v1_migration', occurredAt,
+    leases: structuredClone(ledger.leases ?? {}), attempts: structuredClone(ledger.attempts ?? {}) });
+}
+
+export function replayLeaseLedger(ledger) {
+  const errors = [];
+  if (ledger?.format !== 'tpa-worker-lease-ledger/v2' || typeof ledger.queueDigest !== 'string' ||
+    !Array.isArray(ledger.events)) return { valid: false, errors: ['lease_ledger_shape_invalid'] };
+  const leases = {};
+  const attempts = {};
+  let previous = null;
+  let lastTime = -Infinity;
+  for (const event of ledger.events) {
+    const { sha256, ...statement } = event;
+    if (event.previousSha256 !== previous || leaseDigest(statement) !== sha256) errors.push('lease_event_chain_invalid');
+    if (!Number.isFinite(event.occurredAt) || event.occurredAt < lastTime) errors.push('lease_event_time_regression');
+    lastTime = event.occurredAt;
+    if (event.type === 'v1_migration') {
+      Object.assign(leases, structuredClone(event.leases ?? {}));
+      Object.assign(attempts, structuredClone(event.attempts ?? {}));
+    } else if (event.type === 'lease_claimed') {
+      if (leases[event.lease.taskId]) errors.push(`lease_double_assignment:${event.lease.taskId}`);
+      leases[event.lease.taskId] = structuredClone(event.lease);
+      attempts[event.lease.taskId] = event.lease.attempt;
+    } else if (event.type === 'lease_checkpointed') {
+      if (leases[event.taskId]?.token !== event.token) errors.push(`checkpoint_lease_mismatch:${event.taskId}`);
+      else leases[event.taskId] = { ...leases[event.taskId], expiresAt: event.expiresAt,
+        checkpoint: structuredClone(event.checkpoint) };
+    } else if (event.type === 'lease_expired') {
+      if (leases[event.taskId]?.token !== event.token) errors.push(`expiration_lease_mismatch:${event.taskId}`);
+      else delete leases[event.taskId];
+    } else errors.push(`lease_event_type_invalid:${event.type}`);
+    previous = sha256;
+  }
+  const { sha256, ...ledgerStatement } = ledger;
+  if (leaseDigest(ledgerStatement) !== sha256) errors.push('lease_ledger_digest_invalid');
+  if (JSON.stringify(leases) !== JSON.stringify(ledger.leases) ||
+    JSON.stringify(attempts) !== JSON.stringify(ledger.attempts)) errors.push('lease_materialized_state_drift');
+  return { valid: errors.length === 0, errors, leases, attempts, events: ledger.events.length };
+}
+
+export function recoverLeaseLedger(ledger) {
+  const replay = replayLeaseLedger(ledger);
+  const structuralErrors = replay.errors?.filter(error =>
+    !['lease_ledger_digest_invalid', 'lease_materialized_state_drift'].includes(error)) ?? [];
+  if (structuralErrors.length) return { valid: false, errors: structuralErrors, ledger };
+  const recovered = { format: 'tpa-worker-lease-ledger/v2', queueDigest: ledger.queueDigest,
+    leases: replay.leases, attempts: replay.attempts, events: structuredClone(ledger.events) };
+  return { valid: true, errors: [], ledger: sealLeaseLedger(recovered), recoveredEvents: replay.events };
+}
+
 export function createLeaseLedger(tasks) {
-  return {
-    format: 'tpa-worker-lease-ledger/v1',
+  return sealLeaseLedger({
+    format: 'tpa-worker-lease-ledger/v2',
     queueDigest: workQueueDigest(tasks),
     leases: {},
-    attempts: {}
-  };
+    attempts: {},
+    events: []
+  });
 }
 
 function validWorker(worker) {
@@ -41,9 +116,14 @@ function validWorker(worker) {
 }
 
 export function expireWorkerLeases(ledger, now) {
-  const next = structuredClone(ledger);
-  for (const [taskId, lease] of Object.entries(next.leases ?? {})) {
-    if (lease.expiresAt <= now) delete next.leases[taskId];
+  let next = structuredClone(ledger);
+  for (const [taskId, lease] of Object.entries(ledger.leases ?? {})) {
+    if (lease.expiresAt <= now) {
+      next = appendLeaseEvent(next, { type: 'lease_expired', occurredAt: now, taskId, token: lease.token });
+      delete next.sha256;
+      delete next.leases[taskId];
+      next = sealLeaseLedger(next);
+    }
   }
   return next;
 }
@@ -55,7 +135,14 @@ export function claimWorkerTask(tasks, ledger, worker, now, leaseSeconds = 900) 
   if (!validWorker(worker) || !Number.isFinite(now) || !Number.isFinite(leaseSeconds) || leaseSeconds <= 0) {
     return { valid: false, errors: ['invalid_claim'], ledger, lease: null };
   }
-  const next = expireWorkerLeases(ledger, now);
+  const replay = replayLeaseLedger(ledger);
+  if (!replay.valid) return { valid: false, errors: replay.errors, ledger, lease: null };
+  let next = expireWorkerLeases(ledger, now);
+  if (typeof worker.requestId === 'string') {
+    const existing = Object.values(next.leases).find(lease => lease.requestId === worker.requestId &&
+      lease.workerId === worker.workerId);
+    if (existing) return { valid: true, errors: [], ledger: next, lease: existing, idempotent: true };
+  }
   const task = tasks.find(candidate => candidate.status === 'open' && !next.leases[candidate.taskId] &&
     candidate.budget.orientationEvaluations <= worker.maxOrientationEvaluations &&
     candidate.budget.wallTimeSeconds <= worker.maxWallTimeSeconds);
@@ -67,6 +154,7 @@ export function claimWorkerTask(tasks, ledger, worker, now, leaseSeconds = 900) 
     recordId: task.recordId,
     experimentId: task.experimentId,
     workerId: worker.workerId,
+    requestId: typeof worker.requestId === 'string' ? worker.requestId : null,
     attempt,
     issuedAt: now,
     expiresAt: now + leaseSeconds,
@@ -75,11 +163,17 @@ export function claimWorkerTask(tasks, ledger, worker, now, leaseSeconds = 900) 
       next.queueDigest, task.taskId, worker.workerId, attempt, now, now + leaseSeconds
     ].join(':')).digest('hex')
   };
+  next = appendLeaseEvent(next, { type: 'lease_claimed', occurredAt: now, lease });
+  delete next.sha256;
   next.leases[task.taskId] = lease;
+  next.attempts[task.taskId] = attempt;
+  next = sealLeaseLedger(next);
   return { valid: true, errors: [], ledger: next, lease };
 }
 
 export function checkpointWorkerLease(ledger, checkpoint, now, extendSeconds = 900) {
+  const replay = replayLeaseLedger(ledger);
+  if (!replay.valid) return { valid: false, errors: replay.errors, ledger };
   const lease = ledger?.leases?.[checkpoint?.taskId];
   const errors = [];
   if (!lease || lease.token !== checkpoint?.token || lease.workerId !== checkpoint?.workerId) {
@@ -90,6 +184,9 @@ export function checkpointWorkerLease(ledger, checkpoint, now, extendSeconds = 9
     errors.push('invalid_checkpoint');
   }
   if (errors.length) return { valid: false, errors, ledger };
+  if (lease.checkpoint?.requestId && lease.checkpoint.requestId === checkpoint.requestId) {
+    return { valid: true, errors: [], ledger, idempotent: true };
+  }
   const next = structuredClone(ledger);
   next.leases[checkpoint.taskId] = {
     ...lease,
@@ -97,10 +194,16 @@ export function checkpointWorkerLease(ledger, checkpoint, now, extendSeconds = 9
     checkpoint: {
       orientationEvaluations: checkpoint.orientationEvaluations,
       bestUtilization: checkpoint.bestUtilization,
+      requestId: typeof checkpoint.requestId === 'string' ? checkpoint.requestId : null,
       updatedAt: now
     }
   };
-  return { valid: true, errors: [], ledger: next };
+  const updated = appendLeaseEvent(ledger, { type: 'lease_checkpointed', occurredAt: now,
+    taskId: checkpoint.taskId, token: lease.token, expiresAt: now + extendSeconds,
+    checkpoint: next.leases[checkpoint.taskId].checkpoint });
+  delete updated.sha256;
+  updated.leases[checkpoint.taskId] = next.leases[checkpoint.taskId];
+  return { valid: true, errors: [], ledger: sealLeaseLedger(updated) };
 }
 
 export function validateWorkerResult(task, candidate, assignedRecord) {

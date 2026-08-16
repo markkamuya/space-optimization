@@ -4,7 +4,8 @@ import { RESEARCH_RECORDS } from '../../src/research/dataset.js';
 import { canonicalRecord } from '../../src/research/registry.js';
 import {
   buildWorkQueue, checkpointWorkerLease, claimWorkerTask, createLeaseLedger,
-  expireWorkerLeases, ingestWorkerResults, rankVerifiedWorkerResults,
+  expireWorkerLeases, ingestWorkerResults, migrateLeaseLedger, rankVerifiedWorkerResults,
+  recoverLeaseLedger, replayLeaseLedger,
   validateWorkerResult, verifyWorkerIngestionEvidence, workQueueDigest
 } from '../../src/research/distributed.js';
 
@@ -14,6 +15,49 @@ test('distributed queue is prioritized and contains reproducibility contracts', 
   assert.equal(queue[0].status, 'open');
   assert.equal(queue[0].submissionContract.coordinatesRequired, true);
   assert.ok(queue[0].baselineUtilization <= queue[0].upperBound);
+});
+
+test('durable lease events replay identically after a materialized-state crash', () => {
+  const tasks = buildWorkQueue(RESEARCH_RECORDS.map(canonicalRecord));
+  const worker = { workerId: 'worker-a', requestId: 'claim-1',
+    maxOrientationEvaluations: 5000, maxWallTimeSeconds: 900 };
+  const claimed = claimWorkerTask(tasks, createLeaseLedger(tasks), worker, 1000, 100);
+  assert.equal(replayLeaseLedger(claimed.ledger).valid, true);
+  const crashed = structuredClone(claimed.ledger);
+  crashed.leases = {};
+  const recovered = recoverLeaseLedger(crashed);
+  assert.equal(recovered.valid, true);
+  assert.deepEqual(recovered.ledger, claimed.ledger);
+  assert.equal(replayLeaseLedger(recovered.ledger).valid, true);
+});
+
+test('claim and checkpoint request ids are idempotent across retries', () => {
+  const tasks = buildWorkQueue(RESEARCH_RECORDS.map(canonicalRecord));
+  const worker = { workerId: 'worker-a', requestId: 'claim-1',
+    maxOrientationEvaluations: 5000, maxWallTimeSeconds: 900 };
+  const first = claimWorkerTask(tasks, createLeaseLedger(tasks), worker, 1000, 100);
+  const retry = claimWorkerTask(tasks, first.ledger, worker, 1000, 100);
+  assert.equal(retry.idempotent, true);
+  assert.deepEqual(retry.lease, first.lease);
+  assert.deepEqual(retry.ledger, first.ledger);
+  const checkpoint = { taskId: first.lease.taskId, token: first.lease.token,
+    workerId: worker.workerId, requestId: 'checkpoint-1', orientationEvaluations: 10,
+    bestUtilization: 0.5 };
+  const saved = checkpointWorkerLease(first.ledger, checkpoint, 1050, 100);
+  const retried = checkpointWorkerLease(saved.ledger, checkpoint, 1050, 100);
+  assert.equal(retried.idempotent, true);
+  assert.deepEqual(retried.ledger, saved.ledger);
+});
+
+test('v1 lease ledgers migrate deterministically without losing active leases', () => {
+  const tasks = buildWorkQueue(RESEARCH_RECORDS.map(canonicalRecord));
+  const legacy = { format: 'tpa-worker-lease-ledger/v1', queueDigest: workQueueDigest(tasks),
+    leases: { sample: { taskId: 'sample', token: 'token', expiresAt: 100 } }, attempts: { sample: 1 } };
+  const first = migrateLeaseLedger(tasks, legacy, 50);
+  const second = migrateLeaseLedger(tasks, legacy, 50);
+  assert.deepEqual(first, second);
+  assert.deepEqual(first.leases, legacy.leases);
+  assert.equal(replayLeaseLedger(first).valid, true);
 });
 
 test('workers claim distinct capability-matched tasks from a digest-bound ledger', () => {
