@@ -25,5 +25,5 @@ test('homepage provides descriptive navigation and mobile menu semantics', async
   assert.match(script, /Completed and replayable/);
   assert.match(script, /integrity-checked shards/);
   assert.match(script, /checksum-checked fallback/);
-  assert.match(script, /research records are hidden rather than showing partial data/);
+  assert.match(script, /partial or unverified data is never presented as trustworthy/);
 });
