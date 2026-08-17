@@ -9,6 +9,7 @@ import { formatMapHash, parseMapHash } from './ui/mapState.js';
 import { phaseMapDimensions, phaseMapRecords } from './ui/phaseOverview.js';
 import { releaseExperience } from './ui/releaseExperience.js';
 import { compareCanonicalRecords, comparisonOptionLabel } from './ui/comparisonModel.js';
+import { comparisonMatchMessage, filterComparisonCandidates } from './ui/comparisonFinder.js';
 import { formatComparisonHash, parseComparisonHash, resolveComparisonState } from './ui/comparisonState.js';
 import { formatResearchHash, parseResearchHash } from './ui/researchState.js';
 
@@ -523,11 +524,50 @@ function currentComparisonState() {
   return { left: $('#compare-a').value, right: $('#compare-b').value };
 }
 
+function renderComparisonCandidates(side) {
+  if (!canonicalRelease) return;
+  const select = $(`#compare-${side}`);
+  const search = $(`#compare-search-${side}`);
+  const selectedId = select.dataset.selectedId || select.value || comparisonDefaults()[side === 'a' ? 'left' : 'right'];
+  const selected = canonicalRelease.records.find(record => record.id === selectedId);
+  const matches = filterComparisonCandidates(canonicalRelease.records, search.value);
+  select.replaceChildren();
+  if (selected && !matches.some(record => record.id === selected.id)) {
+    const currentGroup = document.createElement('optgroup');
+    currentGroup.label = 'Current result (retained)';
+    currentGroup.append(new Option(comparisonOptionLabel(selected), selected.id));
+    select.append(currentGroup);
+  }
+  const grouped = new Map();
+  for (const record of matches) {
+    if (!grouped.has(record.family)) grouped.set(record.family, []);
+    grouped.get(record.family).push(record);
+  }
+  for (const family of ['right', 'equilateral', 'isosceles', 'scalene']) {
+    const records = grouped.get(family) ?? [];
+    if (!records.length) continue;
+    const group = document.createElement('optgroup');
+    group.label = `${family} triangles`;
+    for (const record of records) group.append(new Option(comparisonOptionLabel(record), record.id));
+    select.append(group);
+  }
+  select.dataset.selectedId = selectedId;
+  select.value = selectedId;
+  select.disabled = false;
+  $(`#compare-status-${side}`).textContent = comparisonMatchMessage({
+    matches: matches.length,
+    total: canonicalRelease.records.length,
+    retained: Boolean(selected)
+  });
+}
+
 function applyComparisonState(state) {
   if (!canonicalRelease) return;
   const resolved = resolveComparisonState(state, canonicalRelease.records.map(record => record.id), comparisonDefaults());
-  $('#compare-a').value = resolved.left;
-  $('#compare-b').value = resolved.right;
+  $('#compare-a').dataset.selectedId = resolved.left;
+  $('#compare-b').dataset.selectedId = resolved.right;
+  renderComparisonCandidates('a');
+  renderComparisonCandidates('b');
   compare();
 }
 
@@ -538,32 +578,27 @@ function updateComparison({ historyMode = 'push' } = {}) {
 
 function setupComparison() {
   if (!canonicalRelease) return;
-  const grouped = new Map();
-  for (const record of canonicalRelease.records) {
-    if (!grouped.has(record.family)) grouped.set(record.family, []);
-    grouped.get(record.family).push(record);
-  }
-  for (const selector of ['#compare-a', '#compare-b']) {
-    const select = $(selector);
-    select.replaceChildren();
-    for (const family of ['right', 'equilateral', 'isosceles', 'scalene']) {
-      const group = document.createElement('optgroup');
-      group.label = `${family} triangles`;
-      for (const record of grouped.get(family) ?? []) group.append(new Option(comparisonOptionLabel(record), record.id));
-      select.append(group);
-    }
-    select.disabled = false;
-    select.onchange = () => updateComparison();
+  for (const side of ['a', 'b']) {
+    const select = $(`#compare-${side}`);
+    const search = $(`#compare-search-${side}`);
+    search.disabled = false;
+    search.oninput = () => renderComparisonCandidates(side);
+    select.onchange = () => {
+      select.dataset.selectedId = select.value;
+      updateComparison();
+    };
   }
   for (const selector of ['#comparison-swap', '#comparison-reset', '#comparison-share']) $(selector).disabled = false;
   applyComparisonState(parseComparisonHash(location.hash));
 }
 
 function setComparisonUnavailable(message) {
-  for (const selector of ['#compare-a', '#compare-b']) {
-    const select = $(selector);
+  for (const side of ['a', 'b']) {
+    const select = $(`#compare-${side}`);
+    $(`#compare-search-${side}`).disabled = true;
     select.disabled = true;
     select.replaceChildren(new Option(message));
+    $(`#compare-status-${side}`).textContent = message;
   }
   for (const selector of ['#comparison-swap', '#comparison-reset', '#comparison-share']) $(selector).disabled = true;
   $('#comparison').setAttribute('aria-busy', 'false');

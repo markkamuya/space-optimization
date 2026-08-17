@@ -145,9 +145,17 @@
           <p>Choose two packings to compare how much of the rectangle they fill, how much remains empty, and which pattern they use.</p>
         </div>
         <div class="compare-controls">
-          <label>Verified result A<select id="compare-a" disabled><option>Loading verified records…</option></select></label>
+          <fieldset class="comparison-picker"><legend>Result A</legend>
+            <label>Find a verified result<input id="compare-search-a" type="search" placeholder="Try: right 90 1.5" disabled></label>
+            <label>Choose result<select id="compare-a" disabled><option>Loading verified records…</option></select></label>
+            <p id="compare-status-a" role="status" aria-live="polite">Waiting for verified records.</p>
+          </fieldset>
           <span>versus</span>
-          <label>Verified result B<select id="compare-b" disabled><option>Loading verified records…</option></select></label>
+          <fieldset class="comparison-picker"><legend>Result B</legend>
+            <label>Find a verified result<input id="compare-search-b" type="search" placeholder="Try: equilateral vertical" disabled></label>
+            <label>Choose result<select id="compare-b" disabled><option>Loading verified records…</option></select></label>
+            <p id="compare-status-b" role="status" aria-live="polite">Waiting for verified records.</p>
+          </fieldset>
         </div>
         <div class="comparison-actions" aria-label="Comparison actions">
           <button id="comparison-swap" type="button" disabled>Swap A and B</button>

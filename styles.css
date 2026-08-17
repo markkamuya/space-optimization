@@ -130,8 +130,11 @@ dt { color:var(--muted); } dd { margin:0; font-weight:700; text-align:right; }
 .record-meta dd { text-align:left; margin-top:4px; font-size:14px; }
 .compare-section { background:var(--panel); }
 .compare-controls { margin:0 6vw 18px; display:flex; gap:16px; align-items:end; }
-.compare-controls label { flex:1; font:9px "DM Mono"; text-transform:uppercase; color:var(--muted); }
-.compare-controls select { display:block; width:100%; margin-top:7px; border:1px solid var(--ink); background:white; padding:12px; }
+.comparison-picker { flex:1; min-width:0; margin:0; padding:16px; border:1px solid var(--ink); }
+.comparison-picker legend,.compare-controls label { font:9px "DM Mono"; text-transform:uppercase; color:var(--muted); }
+.comparison-picker label { display:block; margin-top:10px; }
+.compare-controls select,.compare-controls input { display:block; width:100%; min-height:44px; margin-top:7px; border:1px solid var(--ink); background:white; padding:12px; }
+.comparison-picker p { min-height:18px; margin:9px 0 0; font-size:10px; color:var(--muted); }
 .compare-controls select:disabled { color:var(--muted); background:#eeece5; cursor:not-allowed; }
 .compare-controls>span { padding:12px; font:9px "DM Mono"; }
 .comparison-actions { margin:0 6vw 16px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
