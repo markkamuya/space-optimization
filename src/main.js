@@ -8,6 +8,7 @@ import { describePhaseSelection, phaseGridDestination } from './ui/phaseGrid.js'
 import { formatMapHash, parseMapHash } from './ui/mapState.js';
 import { phaseMapDimensions, phaseMapRecords } from './ui/phaseOverview.js';
 import { releaseExperience } from './ui/releaseExperience.js';
+import { compareCanonicalRecords, comparisonOptionLabel } from './ui/comparisonModel.js';
 import { formatResearchHash, parseResearchHash } from './ui/researchState.js';
 
 const $ = selector => document.querySelector(selector);
@@ -419,23 +420,58 @@ function renderChallenges() {
 }
 
 function compare() {
-  const left = ATLAS_RECORDS.find(record => record.id === $('#compare-a').value);
-  const right = ATLAS_RECORDS.find(record => record.id === $('#compare-b').value);
-  $('#comparison').innerHTML = [left, right].map(record => `
-    <article><span>${escapeHtml(statusLabel(record))}</span><h3>${escapeHtml(record.title)}</h3>
+  if (!canonicalRelease) return;
+  const left = canonicalRelease.records.find(record => record.id === $('#compare-a').value);
+  const right = canonicalRelease.records.find(record => record.id === $('#compare-b').value);
+  if (!left || !right) return;
+  const result = compareCanonicalRecords(left, right);
+  $('#comparison').setAttribute('aria-busy', 'false');
+  $('#comparison').innerHTML = [left, right].map((record, index) => `
+    <article><span>${escapeHtml(record.evidence.state.replaceAll('_', ' '))}</span><small>Result ${index === 0 ? 'A' : 'B'} · ${escapeHtml(record.experimentId)}</small><h3>${escapeHtml(record.pattern)}</h3>
       <div class="comparison-bar"><i style="width:${percent(record.verification.utilization)}"></i></div>
-      <dl><div><dt>Verified fill</dt><dd>${percent(record.verification.utilization)}</dd></div><div><dt>Boundary waste</dt><dd>${percent(1 - record.verification.utilization)}</dd></div><div><dt>Pattern</dt><dd>${escapeHtml(record.pattern)}</dd></div></dl>
+      <dl><div><dt>Verified fill</dt><dd>${percent(record.verification.utilization)}</dd></div><div><dt>Verified pieces</dt><dd>${record.verification.pieceCount}</dd></div><div><dt>Room for improvement</dt><dd>${percent(record.bounds.optimalityGap)}</dd></div><div><dt>Numerical stability</dt><dd>${escapeHtml(stabilityLabel(record.verification.stability))}</dd></div></dl>
+      <a href="${formatResearchHash({ query: '', family: 'all', evidence: 'all', record: record.id })}">Inspect result ${index === 0 ? 'A' : 'B'} evidence</a>
     </article>`).join('');
+  const fillDifference = Math.abs(result.utilizationDelta);
+  const gapDifference = Math.abs(result.gapDelta);
+  const fillLead = result.higherFill === 'tie' ? 'Both results have the same verified fill.' : `Result ${result.higherFill === 'left' ? 'A' : 'B'} fills ${percent(fillDifference)} more of its rectangle.`;
+  const gapLead = result.smallerGap === 'tie' ? 'Both results have the same optimality gap.' : `Result ${result.smallerGap === 'left' ? 'A' : 'B'} has ${percent(gapDifference)} less room for improvement.`;
+  $('#comparison-summary').textContent = `${fillLead} ${gapLead} Different triangle and rectangle sizes can make piece counts non-comparable.`;
 }
 
 function setupComparison() {
+  if (!canonicalRelease) return;
+  const grouped = new Map();
+  for (const record of canonicalRelease.records) {
+    if (!grouped.has(record.family)) grouped.set(record.family, []);
+    grouped.get(record.family).push(record);
+  }
   for (const selector of ['#compare-a', '#compare-b']) {
     const select = $(selector);
-    ATLAS_RECORDS.forEach(record => select.add(new Option(record.title, record.id)));
-    select.addEventListener('change', compare);
+    select.replaceChildren();
+    for (const family of ['right', 'equilateral', 'isosceles', 'scalene']) {
+      const group = document.createElement('optgroup');
+      group.label = `${family} triangles`;
+      for (const record of grouped.get(family) ?? []) group.append(new Option(comparisonOptionLabel(record), record.id));
+      select.append(group);
+    }
+    select.disabled = false;
+    select.onchange = compare;
   }
-  $('#compare-b').selectedIndex = Math.min(ATLAS_RECORDS.length - 1, 4);
+  $('#compare-a').value = canonicalRelease.records.some(record => record.id === 'iso-a90-r1p5') ? 'iso-a90-r1p5' : canonicalRelease.records[0].id;
+  $('#compare-b').value = canonicalRelease.records.some(record => record.id === 'iso-a110-r3') ? 'iso-a110-r3' : canonicalRelease.records[1].id;
   compare();
+}
+
+function setComparisonUnavailable(message) {
+  for (const selector of ['#compare-a', '#compare-b']) {
+    const select = $(selector);
+    select.disabled = true;
+    select.replaceChildren(new Option(message));
+  }
+  $('#comparison').setAttribute('aria-busy', 'false');
+  $('#comparison').innerHTML = `<p class="comparison-loading">${escapeHtml(message)}</p>`;
+  $('#comparison-summary').textContent = message;
 }
 
 function renderLeaderboard() {
@@ -510,6 +546,7 @@ async function loadResearchRelease() {
     makePhaseMap();
     updatePhase();
     renderLeaderboard();
+    setupComparison();
     applyResearchState(parseResearchHash(location.hash));
     renderResearchExplorer();
     status.className = `research-load-status ready ${loaded.source}`;
@@ -535,6 +572,7 @@ async function loadResearchRelease() {
     $('#research-more').hidden = true;
     status.className = 'research-load-status failed';
     status.innerHTML = '<b>Release verification failed</b><span>No research records were displayed. You can retry without reloading the page.</span>';
+    setComparisonUnavailable('Verified comparison records are temporarily unavailable.');
     makePhaseMap();
     updatePhase();
     renderReleaseExperience('failed');
@@ -555,6 +593,7 @@ function showOfflineExperience() {
     $('#research-more').hidden = true;
     status.className = 'research-load-status offline';
     status.innerHTML = '<b>You appear to be offline</b><span>The map is a modeled preview until verified data can be checked.</span>';
+    setComparisonUnavailable('Verified comparison records are unavailable while offline.');
   }
   renderReleaseExperience(releasePhase);
 }
@@ -841,7 +880,6 @@ else updatePhase();
 renderFilters();
 renderRecords();
 renderChallenges();
-setupComparison();
 loadResearchRelease();
 loadV1Context();
 

@@ -138,11 +138,12 @@
           <p>Choose two packings to compare how much of the rectangle they fill, how much remains empty, and which pattern they use.</p>
         </div>
         <div class="compare-controls">
-          <label>Pattern A<select id="compare-a"></select></label>
+          <label>Verified result A<select id="compare-a" disabled><option>Loading verified records…</option></select></label>
           <span>versus</span>
-          <label>Pattern B<select id="compare-b"></select></label>
+          <label>Verified result B<select id="compare-b" disabled><option>Loading verified records…</option></select></label>
         </div>
-        <div id="comparison" class="comparison"></div>
+        <p id="comparison-summary" class="comparison-summary" role="status" aria-live="polite">Comparison will be available after release integrity checks finish.</p>
+        <div id="comparison" class="comparison" aria-busy="true"><p class="comparison-loading">Preparing verified comparison records…</p></div>
       </section>
 
       <section id="research" class="research-explorer">
