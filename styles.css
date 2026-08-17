@@ -36,6 +36,7 @@ a { color:inherit; }
 .map-data-status span { color:var(--muted); font-size:10px; line-height:1.5; }
 .map-data-status button { min-height:44px; padding:9px 13px; border:1px solid var(--ink); background:var(--acid); cursor:pointer; font:600 10px "DM Mono"; white-space:nowrap; }
 .map-data-status.verified_shards,.map-data-status.verified_fallback { border-top-color:#2d7d68; }
+.map-data-status.refreshing,.map-data-status.offline_retained,.map-data-status.failed_retained { background:#edf7f2; }
 .map-data-status.failed_empty,.map-data-status.offline_empty { background:#fff0e8; }
 .map-workspace { display:grid; grid-template-columns:300px 1fr minmax(300px,.8fr); border-top:1px solid var(--ink); }
 .map-controls { background:var(--panel); padding:28px; border-right:1px solid var(--ink); }

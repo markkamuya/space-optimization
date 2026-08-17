@@ -24,6 +24,7 @@ let dialogReturnHash = '#research';
 let researchLoadAttempt = 0;
 let researchLoadController = null;
 let releaseSource = null;
+let releasePhase = 'loading';
 const navToggle = $('#nav-toggle');
 const primaryNav = $('#primary-nav');
 
@@ -184,7 +185,9 @@ function renderReleaseExperience(phase) {
     const retry = document.createElement('button');
     retry.type = 'button';
     retry.dataset.retryRelease = '';
-    retry.textContent = 'Retry verified data';
+    retry.textContent = experience.mode.startsWith('verified_')
+      ? 'Check for release updates'
+      : 'Retry verified data';
     mapStatus.append(retry);
   }
   $('#phase-trust-label').textContent = experience.canUseVerified ? 'BEST VERIFIED SAMPLE' : 'MODELED PREVIEW · NOT VERIFIED DATA';
@@ -446,22 +449,35 @@ function renderLeaderboard() {
 }
 
 async function loadResearchRelease() {
+  if (!navigator.onLine) {
+    showOfflineExperience();
+    return;
+  }
   const attempt = ++researchLoadAttempt;
   researchLoadController?.abort();
   researchLoadController = new AbortController();
   const status = $('#research-load-status');
-  canonicalRelease = null;
-  researchRelease = null;
-  releaseSource = null;
+  const retainingVerifiedRelease = Boolean(canonicalRelease && researchRelease);
+  releasePhase = 'loading';
   renderReleaseExperience('loading');
-  makePhaseMap();
-  updatePhase();
+  if (!retainingVerifiedRelease) {
+    canonicalRelease = null;
+    researchRelease = null;
+    releaseSource = null;
+    makePhaseMap();
+    updatePhase();
+  }
   $('#research-results').setAttribute('aria-busy', 'true');
-  $('#research-results').innerHTML = '<p class="research-loading">Preparing verified records…</p>';
-  $('#research-result-count').textContent = 'Loading canonical release…';
-  $('#research-more').hidden = true;
-  status.className = 'research-load-status loading';
-  status.innerHTML = '<b>Loading verified research data…</b><span>Checking release integrity before results are shown.</span>';
+  if (retainingVerifiedRelease) {
+    status.className = 'research-load-status refreshing';
+    status.innerHTML = '<b>Rechecking verified research data…</b><span>The last verified results remain available during this integrity check.</span>';
+  } else {
+    $('#research-results').innerHTML = '<p class="research-loading">Preparing verified records…</p>';
+    $('#research-result-count').textContent = 'Loading canonical release…';
+    $('#research-more').hidden = true;
+    status.className = 'research-load-status loading';
+    status.innerHTML = '<b>Loading verified research data…</b><span>Checking release integrity before results are shown.</span>';
+  }
   try {
     const loaded = await loadIntegrityCheckedRelease({
       signal: researchLoadController.signal,
@@ -477,6 +493,7 @@ async function loadResearchRelease() {
     if (!validation.valid) throw new Error(`Invalid public release: ${validation.errors[0]}`);
     canonicalRelease = release;
     releaseSource = loaded.source;
+    releasePhase = 'ready';
     researchRelease = {
       records: canonicalRelease.records,
       verifiedCount: canonicalRelease.coverage.verified,
@@ -502,6 +519,15 @@ async function loadResearchRelease() {
     renderReleaseExperience('ready');
   } catch (error) {
     if (attempt !== researchLoadAttempt || error.name === 'AbortError') return;
+    releasePhase = 'failed';
+    if (retainingVerifiedRelease) {
+      $('#research-results').setAttribute('aria-busy', 'false');
+      renderResearchExplorer();
+      status.className = 'research-load-status failed-retained';
+      status.innerHTML = '<b>Refresh failed · last verified results retained</b><span>The failed attempt did not replace the previously integrity-checked release.</span>';
+      renderReleaseExperience('failed');
+      return;
+    }
     $('#resolution-label').textContent = 'verified dataset unavailable';
     $('#research-result-count').textContent = 'The verified dataset could not be loaded safely. Try refreshing the page.';
     $('#research-results').setAttribute('aria-busy', 'false');
@@ -513,6 +539,24 @@ async function loadResearchRelease() {
     updatePhase();
     renderReleaseExperience('failed');
   }
+}
+
+function showOfflineExperience() {
+  researchLoadController?.abort();
+  releasePhase = canonicalRelease ? 'ready' : 'failed';
+  const status = $('#research-load-status');
+  $('#research-results').setAttribute('aria-busy', 'false');
+  if (canonicalRelease) {
+    status.className = 'research-load-status offline-retained';
+    status.innerHTML = '<b>Offline · last verified results retained</b><span>Reconnect to check whether a newer verified release is available.</span>';
+  } else {
+    $('#research-result-count').textContent = 'Verified evidence is unavailable while offline.';
+    $('#research-results').innerHTML = '<div class="load-error" role="alert"><h3>You appear to be offline.</h3><p>No verified research records are shown. Reconnect and the Atlas will retry automatically.</p></div>';
+    $('#research-more').hidden = true;
+    status.className = 'research-load-status offline';
+    status.innerHTML = '<b>You appear to be offline</b><span>The map is a modeled preview until verified data can be checked.</span>';
+  }
+  renderReleaseExperience(releasePhase);
 }
 
 function researchRecordLabel(record) {
@@ -737,6 +781,8 @@ $('#research-results').addEventListener('click', event => {
 $('#map-data-status').addEventListener('click', event => {
   if (event.target.closest('[data-retry-release]')) loadResearchRelease();
 });
+window.addEventListener('offline', showOfflineExperience);
+window.addEventListener('online', () => loadResearchRelease());
 window.addEventListener('popstate', () => {
   if (location.hash.startsWith('#map')) applyMapState(parseMapHash(location.hash));
   if (location.hash.startsWith('#research')) {

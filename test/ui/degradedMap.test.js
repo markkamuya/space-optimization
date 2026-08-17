@@ -16,6 +16,7 @@ test('map exposes the same fail-closed release state and retry as research resul
   assert.match(script, /BEST VERIFIED SAMPLE/);
   assert.match(script, /evidence\.removeAttribute\('href'\)/);
   assert.match(script, /evidence\.setAttribute\('aria-disabled', 'true'\)/);
+  assert.match(script, /Check for release updates/);
   assert.match(script, /#map-data-status/);
   assert.match(styles, /\.map-data-status button \{ min-height:44px/);
   assert.match(styles, /\.map-next-actions \[aria-disabled="true"\]/);
