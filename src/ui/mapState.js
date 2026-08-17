@@ -1,4 +1,4 @@
-const DEFAULT_STATE = Object.freeze({ angle: 60, ratio: 1.5, record: null });
+const DEFAULT_STATE = Object.freeze({ angle: 60, ratio: 1.5, record: null, view: 'overview' });
 
 function boundedNumber(value, { minimum, maximum, step }) {
   if (value == null || value === '') return null;
@@ -16,7 +16,8 @@ export function parseMapHash(hash) {
   return {
     angle: boundedNumber(params.get('angle'), { minimum: 35, maximum: 110, step: 1 }) ?? DEFAULT_STATE.angle,
     ratio: boundedNumber(params.get('ratio'), { minimum: 0.75, maximum: 3, step: 0.05 }) ?? DEFAULT_STATE.ratio,
-    record: params.get('record') || null
+    record: params.get('record') || null,
+    view: params.get('view') === 'all' ? 'all' : 'overview'
   };
 }
 
@@ -27,6 +28,7 @@ export function formatMapHash(state) {
   if (angle !== DEFAULT_STATE.angle) params.set('angle', String(angle));
   if (ratio !== DEFAULT_STATE.ratio) params.set('ratio', String(ratio));
   if (state.record) params.set('record', String(state.record));
+  if (state.view === 'all') params.set('view', 'all');
   const suffix = params.toString();
   return `#map${suffix ? `?${suffix}` : ''}`;
 }

@@ -6,6 +6,7 @@ import { validatePublicRelease } from './ui/releaseValidation.js';
 import { loadIntegrityCheckedRelease } from './ui/shardedReleaseLoader.js';
 import { describePhaseSelection, phaseGridDestination } from './ui/phaseGrid.js';
 import { formatMapHash, parseMapHash } from './ui/mapState.js';
+import { phaseMapDimensions, phaseMapRecords } from './ui/phaseOverview.js';
 import { formatResearchHash, parseResearchHash } from './ui/researchState.js';
 
 const $ = selector => document.querySelector(selector);
@@ -13,6 +14,7 @@ const percent = value => `${(value * 100).toFixed(1)}%`;
 let familyFilter = 'all';
 let selectedPhase = phaseAt(60, 1.5);
 let selectedPhaseRecord = null;
+let phaseMapView = 'overview';
 let researchRelease = null;
 let canonicalRelease = null;
 let researchLimit = 24;
@@ -117,7 +119,8 @@ function currentMapState() {
   return {
     angle: Number($('#angle').value),
     ratio: Number($('#ratio').value),
-    record: selectedPhaseRecord?.id ?? null
+    record: selectedPhaseRecord?.id ?? null,
+    view: phaseMapView
   };
 }
 
@@ -127,6 +130,8 @@ function applyMapState(state) {
     : null;
   $('#angle').value = linkedRecord?.parameters.apexAngle ?? state.angle;
   $('#ratio').value = linkedRecord?.parameters.rectangleRatio ?? state.ratio;
+  phaseMapView = state.view;
+  if (researchRelease) makePhaseMap();
   updatePhase();
 }
 
@@ -205,17 +210,14 @@ function makePhaseMap() {
   const grid = $('#phase-grid');
   grid.replaceChildren();
   if (researchRelease) {
-    const records = researchRelease.records.filter(record => record.family !== 'scalene');
-    const columns = researchRelease.sampling.rectangleRatios.length;
+    const allRecords = researchRelease.records.filter(record => record.family !== 'scalene');
+    const records = phaseMapRecords(researchRelease.records, phaseMapView);
+    const { rows, columns } = phaseMapDimensions(records);
     grid.dataset.columns = columns;
     grid.setAttribute('aria-colcount', columns);
-    grid.setAttribute('aria-rowcount', Math.ceil(records.length / columns));
+    grid.setAttribute('aria-rowcount', rows);
     grid.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
-    records
-      .sort((left, right) =>
-        right.parameters.apexAngle - left.parameters.apexAngle ||
-        left.parameters.rectangleRatio - right.parameters.rectangleRatio)
-      .forEach(record => {
+    records.forEach(record => {
         grid.append(createPhaseCell({
           angle: record.parameters.apexAngle,
           ratio: record.parameters.rectangleRatio,
@@ -224,6 +226,12 @@ function makePhaseMap() {
           confidence: 1 - record.bounds.optimalityGap
         }));
       });
+    document.querySelectorAll('[data-phase-view]').forEach(button => {
+      button.setAttribute('aria-pressed', String(button.dataset.phaseView === phaseMapView));
+    });
+    $('#phase-view-status').textContent = phaseMapView === 'all'
+      ? `Showing all ${allRecords.length} verified map samples.`
+      : `Showing ${records.length} representative samples of ${allRecords.length}. Sliders and evidence use all ${allRecords.length} verified samples.`;
     $('#resolution-label').textContent = researchRelease.sampling.resolution;
     syncPhaseGridSelection(Number($('#angle').value), Number($('#ratio').value));
     return;
@@ -648,6 +656,14 @@ document.querySelectorAll('[data-map-preset]').forEach(button => {
     $('#ratio').value = button.dataset.ratio;
     updatePhase({ historyMode: 'push' });
     $('#phase-summary').focus({ preventScroll: true });
+  });
+});
+document.querySelectorAll('[data-phase-view]').forEach(button => {
+  button.addEventListener('click', () => {
+    phaseMapView = button.dataset.phaseView;
+    makePhaseMap();
+    updatePhase({ historyMode: 'push' });
+    $('#phase-grid').querySelector('[tabindex="0"]')?.focus({ preventScroll: true });
   });
 });
 $('#map-share').addEventListener('click', async () => {

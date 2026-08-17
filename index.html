@@ -87,6 +87,13 @@
             </nav>
           </aside>
           <div class="phase-panel">
+            <div class="phase-view-controls">
+              <div role="group" aria-label="Packing map detail">
+                <button type="button" data-phase-view="overview" aria-pressed="true">Representative overview</button>
+                <button type="button" data-phase-view="all" aria-pressed="false">All verified samples</button>
+              </div>
+              <p id="phase-view-status" role="status">Showing a representative overview. Sliders and evidence use the complete verified map.</p>
+            </div>
             <div class="axis-label axis-y">TRIANGLE APEX →</div>
             <p id="phase-grid-help" class="sr-only">Use the arrow keys to move through sampled triangle angles and rectangle ratios. Press Enter or Space to choose a result.</p>
             <div id="phase-grid" class="phase-grid" role="grid" aria-label="Verified packing pattern samples" aria-describedby="phase-grid-help"></div>
