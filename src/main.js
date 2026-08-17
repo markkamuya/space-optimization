@@ -9,7 +9,7 @@ import { formatMapHash, parseMapHash } from './ui/mapState.js';
 import { phaseMapDimensions, phaseMapRecords } from './ui/phaseOverview.js';
 import { releaseExperience } from './ui/releaseExperience.js';
 import { compareCanonicalRecords, comparisonOptionLabel } from './ui/comparisonModel.js';
-import { comparisonMatchMessage, filterComparisonCandidates } from './ui/comparisonFinder.js';
+import { buildComparisonGuides, comparisonMatchMessage, filterComparisonCandidates } from './ui/comparisonFinder.js';
 import { formatComparisonHash, parseComparisonHash, resolveComparisonState } from './ui/comparisonState.js';
 import { formatResearchHash, parseResearchHash } from './ui/researchState.js';
 
@@ -561,6 +561,15 @@ function renderComparisonCandidates(side) {
   });
 }
 
+function renderComparisonGuides() {
+  if (!canonicalRelease) return;
+  const guides = buildComparisonGuides(canonicalRelease.records, $('#compare-a').dataset.selectedId);
+  $('#comparison-guide-actions').innerHTML = guides.map(guide => `
+    <button type="button" data-comparison-guide data-left="${escapeHtml(guide.left)}" data-right="${escapeHtml(guide.right)}">
+      <b>${escapeHtml(guide.title)}</b><span>${escapeHtml(guide.description)}</span>
+    </button>`).join('');
+}
+
 function applyComparisonState(state) {
   if (!canonicalRelease) return;
   const resolved = resolveComparisonState(state, canonicalRelease.records.map(record => record.id), comparisonDefaults());
@@ -569,10 +578,12 @@ function applyComparisonState(state) {
   renderComparisonCandidates('a');
   renderComparisonCandidates('b');
   compare();
+  renderComparisonGuides();
 }
 
 function updateComparison({ historyMode = 'push' } = {}) {
   compare();
+  renderComparisonGuides();
   history[`${historyMode}State`](null, '', formatComparisonHash(currentComparisonState()));
 }
 
@@ -604,6 +615,7 @@ function setComparisonUnavailable(message) {
   $('#comparison').setAttribute('aria-busy', 'false');
   $('#comparison').innerHTML = `<p class="comparison-loading">${escapeHtml(message)}</p>`;
   $('#comparison-summary').textContent = message;
+  $('#comparison-guide-actions').innerHTML = `<p>${escapeHtml(message)}</p>`;
 }
 
 function renderLeaderboard() {
@@ -985,6 +997,15 @@ $('#comparison-share').addEventListener('click', async () => {
   } catch {
     status.textContent = 'Copy was unavailable. Use the address bar to copy this comparison.';
   }
+});
+$('#comparison-guide-actions').addEventListener('click', event => {
+  const button = event.target.closest('[data-comparison-guide]');
+  if (!button || !canonicalRelease) return;
+  $('#compare-search-a').value = '';
+  $('#compare-search-b').value = '';
+  applyComparisonState({ left: button.dataset.left, right: button.dataset.right });
+  updateComparison();
+  $('#comparison-summary').focus({ preventScroll: true });
 });
 $('#research-more').addEventListener('click', () => {
   researchLimit += 24;

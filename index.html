@@ -157,13 +157,17 @@
             <p id="compare-status-b" role="status" aria-live="polite">Waiting for verified records.</p>
           </fieldset>
         </div>
+        <div class="comparison-guides">
+          <div><p class="kicker">GUIDED COMPARISONS</p><h3>Start with a research question.</h3></div>
+          <div id="comparison-guide-actions" role="group" aria-label="Guided comparison questions"><p>Preparing verified suggestions…</p></div>
+        </div>
         <div class="comparison-actions" aria-label="Comparison actions">
           <button id="comparison-swap" type="button" disabled>Swap A and B</button>
           <button id="comparison-reset" type="button" disabled>Reset comparison</button>
           <button id="comparison-share" type="button" disabled>Copy comparison link</button>
           <span id="comparison-share-status" role="status" aria-live="polite"></span>
         </div>
-        <p id="comparison-summary" class="comparison-summary" role="status" aria-live="polite">Comparison will be available after release integrity checks finish.</p>
+        <p id="comparison-summary" class="comparison-summary" role="status" aria-live="polite" tabindex="-1">Comparison will be available after release integrity checks finish.</p>
         <div id="comparison" class="comparison" aria-busy="true"><p class="comparison-loading">Preparing verified comparison records…</p></div>
       </section>
 
