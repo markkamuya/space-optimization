@@ -24,16 +24,78 @@ let researchLimit = 24;
 let dialogTrigger = null;
 let dialogReturnHash = '#research';
 let researchLoadAttempt = 0;
+let pendingInitialTaskAnchor = true;
 let researchLoadController = null;
 let releaseSource = null;
 let releasePhase = 'loading';
 const navToggle = $('#nav-toggle');
 const primaryNav = $('#primary-nav');
+const pageMain = $('#main-content');
+const pageFooter = $('footer');
+const brandLink = $('.brand');
+
+function setNavigationIsolation(isolated) {
+  pageMain.toggleAttribute('inert', isolated);
+  pageFooter.toggleAttribute('inert', isolated);
+  brandLink.toggleAttribute('inert', isolated);
+}
 
 function closePrimaryNavigation({ restoreFocus = false } = {}) {
   navToggle.setAttribute('aria-expanded', 'false');
+  navToggle.removeAttribute('aria-label');
   primaryNav.classList.remove('open');
+  setNavigationIsolation(false);
   if (restoreFocus && getComputedStyle(navToggle).display !== 'none') navToggle.focus();
+}
+
+function trapPrimaryNavigationFocus(event) {
+  if (event.key !== 'Tab' || navToggle.getAttribute('aria-expanded') !== 'true') return;
+  const links = [...primaryNav.querySelectorAll('a')];
+  const first = links[0];
+  const last = links.at(-1);
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    navToggle.focus();
+  } else if (!event.shiftKey && document.activeElement === navToggle) {
+    event.preventDefault();
+    first.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    navToggle.focus();
+  } else if (event.shiftKey && document.activeElement === navToggle) {
+    event.preventDefault();
+    last.focus();
+  }
+}
+
+function setCurrentNavigationTask(sectionId) {
+  for (const link of primaryNav.querySelectorAll('a')) {
+    if (link.hash === `#${sectionId}`) link.setAttribute('aria-current', 'location');
+    else link.removeAttribute('aria-current');
+  }
+}
+
+function setupCurrentTaskTracking() {
+  const sections = [...primaryNav.querySelectorAll('a')]
+    .map(link => document.querySelector(link.hash))
+    .filter(Boolean);
+  const observer = new IntersectionObserver(entries => {
+    const visible = entries.filter(entry => entry.isIntersecting)
+      .sort((left, right) => Math.abs(left.boundingClientRect.top) - Math.abs(right.boundingClientRect.top));
+    if (visible[0]) setCurrentNavigationTask(visible[0].target.id);
+  }, { rootMargin: '-70px 0px -55% 0px', threshold: [0, 0.05] });
+  sections.forEach(section => observer.observe(section));
+  const linkedSection = sections.find(section => location.hash.startsWith(`#${section.id}`));
+  if (linkedSection) setCurrentNavigationTask(linkedSection.id);
+}
+
+function restoreInitialTaskAnchor() {
+  if (!pendingInitialTaskAnchor) return;
+  pendingInitialTaskAnchor = false;
+  const sectionId = location.hash.slice(1).split('?')[0];
+  const section = document.getElementById(sectionId);
+  if (!section) return;
+  requestAnimationFrame(() => section.scrollIntoView({ block: 'start' }));
 }
 
 $('#record-count').textContent = String(ATLAS_RECORDS.length).padStart(2, '0');
@@ -589,6 +651,7 @@ async function loadResearchRelease() {
       ? `<b>Verified release ready</b><span>${canonicalRelease.coverage.records} records passed integrity checks from the canonical release shards.</span>`
       : `<b>Verified fallback release ready</b><span>${canonicalRelease.coverage.records} records passed the canonical checksum after a shard was unavailable. No partial shard data is shown.</span>`;
     renderReleaseExperience('ready');
+    restoreInitialTaskAnchor();
   } catch (error) {
     if (attempt !== researchLoadAttempt || error.name === 'AbortError') return;
     releasePhase = 'failed';
@@ -611,6 +674,7 @@ async function loadResearchRelease() {
     makePhaseMap();
     updatePhase();
     renderReleaseExperience('failed');
+    restoreInitialTaskAnchor();
   }
 }
 
@@ -631,6 +695,7 @@ function showOfflineExperience() {
     setComparisonUnavailable('Verified comparison records are unavailable while offline.');
   }
   renderReleaseExperience(releasePhase);
+  restoreInitialTaskAnchor();
 }
 
 function researchRecordLabel(record) {
@@ -909,7 +974,9 @@ navToggle.addEventListener('click', () => {
   if (open) closePrimaryNavigation();
   else {
     navToggle.setAttribute('aria-expanded', 'true');
+    navToggle.setAttribute('aria-label', 'Close main menu');
     primaryNav.classList.add('open');
+    setNavigationIsolation(true);
     primaryNav.querySelector('a')?.focus();
   }
 });
@@ -918,6 +985,7 @@ primaryNav.addEventListener('click', event => {
   closePrimaryNavigation();
 });
 document.addEventListener('keydown', event => {
+  trapPrimaryNavigationFocus(event);
   if (event.key === 'Escape' && navToggle.getAttribute('aria-expanded') === 'true') {
     closePrimaryNavigation({ restoreFocus: true });
   }
@@ -930,6 +998,7 @@ matchMedia('(min-width: 721px)').addEventListener('change', event => {
   if (event.matches) closePrimaryNavigation();
 });
 window.addEventListener('resize', updatePhase);
+setupCurrentTaskTracking();
 
 makePhaseMap();
 if (location.hash.startsWith('#map')) applyMapState(parseMapHash(location.hash));
