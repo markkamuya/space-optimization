@@ -32,6 +32,11 @@ a { color:inherit; }
 .map-section { background:#e8e7dd; border-bottom:1px solid var(--ink); }
 .map-workspace { display:grid; grid-template-columns:300px 1fr minmax(300px,.8fr); border-top:1px solid var(--ink); }
 .map-controls { background:var(--panel); padding:28px; border-right:1px solid var(--ink); }
+.map-presets { border:0; padding:0 0 24px; margin:0 0 24px; border-bottom:1px solid var(--line); }
+.map-presets legend { padding:0 0 10px; font:700 10px "DM Mono"; letter-spacing:.08em; text-transform:uppercase; }
+.map-presets div { display:grid; gap:7px; }
+.map-presets button,.map-next-actions a,.map-next-actions button { min-height:42px; padding:10px 12px; border:1px solid var(--ink); background:transparent; color:var(--ink); font:600 10px "DM Mono"; text-align:left; text-decoration:none; cursor:pointer; }
+.map-presets button:hover,.map-next-actions a:hover,.map-next-actions button:hover { background:var(--acid); }
 .map-controls label { display:grid; gap:12px; padding:0 0 24px; margin-bottom:24px; border-bottom:1px solid var(--line); }
 .map-controls label>span { display:flex; justify-content:space-between; font-size:11px; }
 .map-controls output { font:500 11px "DM Mono"; }
@@ -43,6 +48,8 @@ input[type=range] { width:100%; accent-color:var(--orange); }
 .shape-readout p { font-size:11px; line-height:1.55; color:var(--muted); }
 dl { margin:0; }
 .map-controls dl>div { display:flex; justify-content:space-between; border-top:1px solid var(--line); padding:11px 0; font-size:10px; }
+.map-next-actions { display:grid; gap:7px; margin-top:22px; }
+.map-next-actions p { min-height:18px; margin:2px 0 0; color:var(--muted); font-size:10px; line-height:1.5; }
 dt { color:var(--muted); } dd { margin:0; font-weight:700; text-align:right; }
 .phase-panel { padding:28px; min-width:0; }
 .phase-grid { display:grid; grid-template-columns:repeat(6,1fr); height:365px; border-left:1px solid rgba(20,32,28,.25); border-bottom:1px solid rgba(20,32,28,.25); }

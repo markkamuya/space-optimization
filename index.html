@@ -52,6 +52,14 @@
         </div>
         <div class="map-workspace">
           <aside class="map-controls">
+            <fieldset class="map-presets">
+              <legend>Start with an example</legend>
+              <div>
+                <button type="button" data-map-preset data-angle="90" data-ratio="1.5">Exact right-triangle grid</button>
+                <button type="button" data-map-preset data-angle="75" data-ratio="2.4">Dense acute packing</button>
+                <button type="button" data-map-preset data-angle="110" data-ratio="3">Open obtuse case</button>
+              </div>
+            </fieldset>
             <label>
               <span><b>Top angle of triangle</b><output id="angle-output">60°</output></span>
               <input id="angle" type="range" min="35" max="110" value="60" step="1">
@@ -71,6 +79,12 @@
               <div><dt>Room for improvement</dt><dd id="phase-gap">—</dd></div>
               <div><dt>Distance from sampled case</dt><dd id="phase-distance">—</dd></div>
             </dl>
+            <nav class="map-next-actions" aria-label="Next steps for selected packing">
+              <a id="map-evidence-link" href="#research">Inspect this result’s evidence</a>
+              <a id="map-similar-link" href="#research">Find similar verified results</a>
+              <button id="map-share" type="button">Copy a link to this view</button>
+              <p id="map-share-status" role="status" aria-live="polite"></p>
+            </nav>
           </aside>
           <div class="phase-panel">
             <div class="axis-label axis-y">TRIANGLE APEX →</div>
@@ -83,7 +97,7 @@
             <canvas id="live-canvas" width="720" height="520" aria-label="Live packing pattern" aria-describedby="phase-summary">A visual preview of the selected packing. The same result is described below.</canvas>
             <div class="waste-bar"><span id="used-bar"></span><i id="waste-bar"></i></div>
             <div class="waste-legend"><span>filled by triangles</span><span>empty space</span></div>
-            <p id="phase-summary" class="phase-summary" role="status" aria-live="polite" aria-atomic="true">Loading the selected packing evidence…</p>
+            <p id="phase-summary" class="phase-summary" role="status" aria-live="polite" aria-atomic="true" tabindex="-1">Loading the selected packing evidence…</p>
           </article>
         </div>
       </section>

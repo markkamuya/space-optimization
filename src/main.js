@@ -5,12 +5,14 @@ import { escapeHtml, safeExternalUrl } from './ui/safeText.js';
 import { validatePublicRelease } from './ui/releaseValidation.js';
 import { loadIntegrityCheckedRelease } from './ui/shardedReleaseLoader.js';
 import { describePhaseSelection, phaseGridDestination } from './ui/phaseGrid.js';
+import { formatMapHash, parseMapHash } from './ui/mapState.js';
 import { formatResearchHash, parseResearchHash } from './ui/researchState.js';
 
 const $ = selector => document.querySelector(selector);
 const percent = value => `${(value * 100).toFixed(1)}%`;
 let familyFilter = 'all';
 let selectedPhase = phaseAt(60, 1.5);
+let selectedPhaseRecord = null;
 let researchRelease = null;
 let canonicalRelease = null;
 let researchLimit = 24;
@@ -108,7 +110,45 @@ function nearestComputed(angle, ratio) {
 function choosePhaseCell(cell) {
   $('#angle').value = cell.dataset.angle;
   $('#ratio').value = cell.dataset.ratio;
+  updatePhase({ historyMode: 'push' });
+}
+
+function currentMapState() {
+  return {
+    angle: Number($('#angle').value),
+    ratio: Number($('#ratio').value),
+    record: selectedPhaseRecord?.id ?? null
+  };
+}
+
+function applyMapState(state) {
+  const linkedRecord = state.record
+    ? canonicalRelease?.records.find(record => record.id === state.record && record.family !== 'scalene')
+    : null;
+  $('#angle').value = linkedRecord?.parameters.apexAngle ?? state.angle;
+  $('#ratio').value = linkedRecord?.parameters.rectangleRatio ?? state.ratio;
   updatePhase();
+}
+
+function updateMapActions() {
+  const evidence = $('#map-evidence-link');
+  const similar = $('#map-similar-link');
+  if (!selectedPhaseRecord) {
+    evidence.href = '#research';
+    similar.href = '#research';
+    evidence.textContent = 'Browse verified evidence';
+    return;
+  }
+  evidence.textContent = 'Inspect this result’s evidence';
+  evidence.href = formatResearchHash({
+    query: '', family: 'all', evidence: 'all', record: selectedPhaseRecord.id
+  });
+  similar.href = formatResearchHash({
+    query: selectedPhaseRecord.pattern,
+    family: selectedPhaseRecord.family,
+    evidence: 'all',
+    record: null
+  });
 }
 
 function handlePhaseGridKeydown(event) {
@@ -203,10 +243,11 @@ function makePhaseMap() {
   syncPhaseGridSelection(Number($('#angle').value), Number($('#ratio').value));
 }
 
-function updatePhase() {
+function updatePhase({ historyMode = null } = {}) {
   const angle = Number($('#angle').value);
   const ratio = Number($('#ratio').value);
   const nearest = nearestComputed(angle, ratio);
+  selectedPhaseRecord = nearest?.record ?? null;
   selectedPhase = nearest
     ? {
         name: nearest.record.pattern,
@@ -238,6 +279,8 @@ function updatePhase() {
   $('#used-bar').style.background = selectedPhase.color;
   $('#waste-bar').style.width = percent(1 - selectedPhase.utilization);
   drawPattern($('#live-canvas'), angle, ratio, selectedPhase);
+  updateMapActions();
+  if (historyMode) history[`${historyMode}State`](null, '', formatMapHash(currentMapState()));
 }
 
 function statusLabel(record) {
@@ -596,9 +639,27 @@ async function loadV1Context() {
   }
 }
 
-$('#angle').addEventListener('input', updatePhase);
-$('#ratio').addEventListener('input', updatePhase);
+$('#angle').addEventListener('input', () => updatePhase({ historyMode: 'replace' }));
+$('#ratio').addEventListener('input', () => updatePhase({ historyMode: 'replace' }));
 $('#phase-grid').addEventListener('keydown', handlePhaseGridKeydown);
+document.querySelectorAll('[data-map-preset]').forEach(button => {
+  button.addEventListener('click', () => {
+    $('#angle').value = button.dataset.angle;
+    $('#ratio').value = button.dataset.ratio;
+    updatePhase({ historyMode: 'push' });
+    $('#phase-summary').focus({ preventScroll: true });
+  });
+});
+$('#map-share').addEventListener('click', async () => {
+  const status = $('#map-share-status');
+  const url = new URL(formatMapHash(currentMapState()), location.href).href;
+  try {
+    await navigator.clipboard.writeText(url);
+    status.textContent = 'Link copied. It will reopen this exact verified sample.';
+  } catch {
+    status.textContent = 'Copy was unavailable. Use the address bar to copy this view.';
+  }
+});
 for (const selector of ['#research-search', '#research-family', '#research-evidence']) {
   $(selector).addEventListener(selector === '#research-search' ? 'input' : 'change', () => {
     researchLimit = 24;
@@ -613,9 +674,11 @@ $('#research-results').addEventListener('click', event => {
   if (event.target.closest('[data-retry-release]')) loadResearchRelease();
 });
 window.addEventListener('popstate', () => {
-  if (!location.hash.startsWith('#research')) return;
-  applyResearchState(parseResearchHash(location.hash));
-  renderResearchExplorer();
+  if (location.hash.startsWith('#map')) applyMapState(parseMapHash(location.hash));
+  if (location.hash.startsWith('#research')) {
+    applyResearchState(parseResearchHash(location.hash));
+    renderResearchExplorer();
+  }
 });
 $('#research-more').addEventListener('click', () => {
   researchLimit += 24;
@@ -663,7 +726,8 @@ matchMedia('(min-width: 721px)').addEventListener('change', event => {
 window.addEventListener('resize', updatePhase);
 
 makePhaseMap();
-updatePhase();
+if (location.hash.startsWith('#map')) applyMapState(parseMapHash(location.hash));
+else updatePhase();
 renderFilters();
 renderRecords();
 renderChallenges();
