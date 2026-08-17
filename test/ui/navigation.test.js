@@ -10,8 +10,12 @@ test('homepage provides descriptive navigation and mobile menu semantics', async
   ]);
   assert.match(html, /Skip to main content/);
   assert.match(html, /aria-controls="primary-nav"/);
-  for (const label of ['Try the map', 'Browse packings', 'Search all results', 'Open challenges']) {
+  for (const label of ['Explore', 'Compare', 'Verify evidence', 'Improve records', 'Contribute']) {
     assert.match(html, new RegExp(label));
+  }
+  assert.match(html, /aria-label="Start a research task"/);
+  for (const task of ['Explore packings', 'Compare evidence', 'Verify a claim', 'Improve a result']) {
+    assert.match(html, new RegExp(task));
   }
   assert.match(script, /aria-expanded/);
   assert.match(script, /aria-pressed/);
