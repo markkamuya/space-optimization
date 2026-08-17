@@ -7,6 +7,7 @@ import { loadIntegrityCheckedRelease } from './ui/shardedReleaseLoader.js';
 import { describePhaseSelection, phaseGridDestination } from './ui/phaseGrid.js';
 import { formatMapHash, parseMapHash } from './ui/mapState.js';
 import { phaseMapDimensions, phaseMapRecords } from './ui/phaseOverview.js';
+import { releaseExperience } from './ui/releaseExperience.js';
 import { formatResearchHash, parseResearchHash } from './ui/researchState.js';
 
 const $ = selector => document.querySelector(selector);
@@ -22,6 +23,7 @@ let dialogTrigger = null;
 let dialogReturnHash = '#research';
 let researchLoadAttempt = 0;
 let researchLoadController = null;
+let releaseSource = null;
 const navToggle = $('#nav-toggle');
 const primaryNav = $('#primary-nav');
 
@@ -138,13 +140,19 @@ function applyMapState(state) {
 function updateMapActions() {
   const evidence = $('#map-evidence-link');
   const similar = $('#map-similar-link');
-  if (!selectedPhaseRecord) {
-    evidence.href = '#research';
-    similar.href = '#research';
-    evidence.textContent = 'Browse verified evidence';
+  if (!canonicalRelease || !selectedPhaseRecord) {
+    evidence.removeAttribute('href');
+    similar.removeAttribute('href');
+    evidence.setAttribute('aria-disabled', 'true');
+    similar.setAttribute('aria-disabled', 'true');
+    evidence.textContent = 'Verified evidence unavailable';
+    similar.textContent = 'Similar verified results unavailable';
     return;
   }
+  evidence.removeAttribute('aria-disabled');
+  similar.removeAttribute('aria-disabled');
   evidence.textContent = 'Inspect this result’s evidence';
+  similar.textContent = 'Find similar verified results';
   evidence.href = formatResearchHash({
     query: '', family: 'all', evidence: 'all', record: selectedPhaseRecord.id
   });
@@ -154,6 +162,34 @@ function updateMapActions() {
     evidence: 'all',
     record: null
   });
+}
+
+function renderReleaseExperience(phase) {
+  const experience = releaseExperience({
+    phase,
+    hasVerifiedRelease: Boolean(canonicalRelease),
+    source: releaseSource,
+    online: navigator.onLine
+  });
+  const mapStatus = $('#map-data-status');
+  mapStatus.className = `map-data-status ${experience.mode}`;
+  const message = document.createElement('div');
+  const headline = document.createElement('b');
+  const detail = document.createElement('span');
+  headline.textContent = experience.headline;
+  detail.textContent = experience.detail;
+  message.append(headline, detail);
+  mapStatus.replaceChildren(message);
+  if (experience.canRetry) {
+    const retry = document.createElement('button');
+    retry.type = 'button';
+    retry.dataset.retryRelease = '';
+    retry.textContent = 'Retry verified data';
+    mapStatus.append(retry);
+  }
+  $('#phase-trust-label').textContent = experience.canUseVerified ? 'BEST VERIFIED SAMPLE' : 'MODELED PREVIEW · NOT VERIFIED DATA';
+  updateMapActions();
+  return experience;
 }
 
 function handlePhaseGridKeydown(event) {
@@ -416,6 +452,10 @@ async function loadResearchRelease() {
   const status = $('#research-load-status');
   canonicalRelease = null;
   researchRelease = null;
+  releaseSource = null;
+  renderReleaseExperience('loading');
+  makePhaseMap();
+  updatePhase();
   $('#research-results').setAttribute('aria-busy', 'true');
   $('#research-results').innerHTML = '<p class="research-loading">Preparing verified records…</p>';
   $('#research-result-count').textContent = 'Loading canonical release…';
@@ -436,6 +476,7 @@ async function loadResearchRelease() {
     const validation = validatePublicRelease(release);
     if (!validation.valid) throw new Error(`Invalid public release: ${validation.errors[0]}`);
     canonicalRelease = release;
+    releaseSource = loaded.source;
     researchRelease = {
       records: canonicalRelease.records,
       verifiedCount: canonicalRelease.coverage.verified,
@@ -458,6 +499,7 @@ async function loadResearchRelease() {
     status.innerHTML = loaded.source === 'verified_shards'
       ? `<b>Verified release ready</b><span>${canonicalRelease.coverage.records} records passed integrity checks from the canonical release shards.</span>`
       : `<b>Verified fallback release ready</b><span>${canonicalRelease.coverage.records} records passed the canonical checksum after a shard was unavailable. No partial shard data is shown.</span>`;
+    renderReleaseExperience('ready');
   } catch (error) {
     if (attempt !== researchLoadAttempt || error.name === 'AbortError') return;
     $('#resolution-label').textContent = 'verified dataset unavailable';
@@ -467,6 +509,9 @@ async function loadResearchRelease() {
     $('#research-more').hidden = true;
     status.className = 'research-load-status failed';
     status.innerHTML = '<b>Release verification failed</b><span>No research records were displayed. You can retry without reloading the page.</span>';
+    makePhaseMap();
+    updatePhase();
+    renderReleaseExperience('failed');
   }
 }
 
@@ -687,6 +732,9 @@ for (const selector of ['#research-search', '#research-family', '#research-evide
 }
 $('#research-clear').addEventListener('click', () => clearResearchFilters());
 $('#research-results').addEventListener('click', event => {
+  if (event.target.closest('[data-retry-release]')) loadResearchRelease();
+});
+$('#map-data-status').addEventListener('click', event => {
   if (event.target.closest('[data-retry-release]')) loadResearchRelease();
 });
 window.addEventListener('popstate', () => {

@@ -50,6 +50,9 @@
           <div><p class="kicker">INTERACTIVE PACKING MAP</p><h2>Change the shape. See what works best.</h2></div>
           <p>Adjust the triangle angle and rectangle ratio. The map shows the best verified pattern in our sampled data. It does not claim that every result is optimal.</p>
         </div>
+        <div id="map-data-status" class="map-data-status loading" role="status" aria-live="polite" aria-atomic="true">
+          <div><b>Checking verified research data…</b><span>The map remains a modeled preview until release integrity checks finish.</span></div>
+        </div>
         <div class="map-workspace">
           <aside class="map-controls">
             <fieldset class="map-presets">
@@ -70,7 +73,7 @@
             </label>
             <div class="shape-readout">
               <span id="phase-dot"></span>
-              <div><small>BEST PATTERN FOUND</small><strong id="phase-name">—</strong><p id="phase-note"></p></div>
+              <div><small id="phase-trust-label">MODELED PREVIEW</small><strong id="phase-name">—</strong><p id="phase-note"></p></div>
             </div>
             <dl>
               <div><dt>Evidence</dt><dd id="phase-status">—</dd></div>
