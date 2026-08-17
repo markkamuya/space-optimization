@@ -85,6 +85,7 @@
             <nav class="map-next-actions" aria-label="Next steps for selected packing">
               <a id="map-evidence-link" href="#research">Inspect this result’s evidence</a>
               <a id="map-similar-link" href="#research">Find similar verified results</a>
+              <a id="map-compare-link" href="#compare">Compare with another verified result</a>
               <button id="map-share" type="button">Copy a link to this view</button>
               <p id="map-share-status" role="status" aria-live="polite"></p>
             </nav>
@@ -141,6 +142,12 @@
           <label>Verified result A<select id="compare-a" disabled><option>Loading verified records…</option></select></label>
           <span>versus</span>
           <label>Verified result B<select id="compare-b" disabled><option>Loading verified records…</option></select></label>
+        </div>
+        <div class="comparison-actions" aria-label="Comparison actions">
+          <button id="comparison-swap" type="button" disabled>Swap A and B</button>
+          <button id="comparison-reset" type="button" disabled>Reset comparison</button>
+          <button id="comparison-share" type="button" disabled>Copy comparison link</button>
+          <span id="comparison-share-status" role="status" aria-live="polite"></span>
         </div>
         <p id="comparison-summary" class="comparison-summary" role="status" aria-live="polite">Comparison will be available after release integrity checks finish.</p>
         <div id="comparison" class="comparison" aria-busy="true"><p class="comparison-loading">Preparing verified comparison records…</p></div>

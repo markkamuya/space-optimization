@@ -9,6 +9,7 @@ import { formatMapHash, parseMapHash } from './ui/mapState.js';
 import { phaseMapDimensions, phaseMapRecords } from './ui/phaseOverview.js';
 import { releaseExperience } from './ui/releaseExperience.js';
 import { compareCanonicalRecords, comparisonOptionLabel } from './ui/comparisonModel.js';
+import { formatComparisonHash, parseComparisonHash, resolveComparisonState } from './ui/comparisonState.js';
 import { formatResearchHash, parseResearchHash } from './ui/researchState.js';
 
 const $ = selector => document.querySelector(selector);
@@ -142,19 +143,25 @@ function applyMapState(state) {
 function updateMapActions() {
   const evidence = $('#map-evidence-link');
   const similar = $('#map-similar-link');
+  const compareLink = $('#map-compare-link');
   if (!canonicalRelease || !selectedPhaseRecord) {
     evidence.removeAttribute('href');
     similar.removeAttribute('href');
+    compareLink.removeAttribute('href');
     evidence.setAttribute('aria-disabled', 'true');
     similar.setAttribute('aria-disabled', 'true');
+    compareLink.setAttribute('aria-disabled', 'true');
     evidence.textContent = 'Verified evidence unavailable';
     similar.textContent = 'Similar verified results unavailable';
+    compareLink.textContent = 'Verified comparison unavailable';
     return;
   }
   evidence.removeAttribute('aria-disabled');
   similar.removeAttribute('aria-disabled');
+  compareLink.removeAttribute('aria-disabled');
   evidence.textContent = 'Inspect this result’s evidence';
   similar.textContent = 'Find similar verified results';
+  compareLink.textContent = 'Compare with another verified result';
   evidence.href = formatResearchHash({
     query: '', family: 'all', evidence: 'all', record: selectedPhaseRecord.id
   });
@@ -163,6 +170,10 @@ function updateMapActions() {
     family: selectedPhaseRecord.family,
     evidence: 'all',
     record: null
+  });
+  compareLink.href = formatComparisonHash({
+    left: selectedPhaseRecord.id,
+    right: comparisonDefaults().right
   });
 }
 
@@ -439,6 +450,30 @@ function compare() {
   $('#comparison-summary').textContent = `${fillLead} ${gapLead} Different triangle and rectangle sizes can make piece counts non-comparable.`;
 }
 
+function comparisonDefaults() {
+  return {
+    left: canonicalRelease.records.some(record => record.id === 'iso-a90-r1p5') ? 'iso-a90-r1p5' : canonicalRelease.records[0].id,
+    right: canonicalRelease.records.some(record => record.id === 'iso-a110-r3') ? 'iso-a110-r3' : canonicalRelease.records[1].id
+  };
+}
+
+function currentComparisonState() {
+  return { left: $('#compare-a').value, right: $('#compare-b').value };
+}
+
+function applyComparisonState(state) {
+  if (!canonicalRelease) return;
+  const resolved = resolveComparisonState(state, canonicalRelease.records.map(record => record.id), comparisonDefaults());
+  $('#compare-a').value = resolved.left;
+  $('#compare-b').value = resolved.right;
+  compare();
+}
+
+function updateComparison({ historyMode = 'push' } = {}) {
+  compare();
+  history[`${historyMode}State`](null, '', formatComparisonHash(currentComparisonState()));
+}
+
 function setupComparison() {
   if (!canonicalRelease) return;
   const grouped = new Map();
@@ -456,11 +491,10 @@ function setupComparison() {
       select.append(group);
     }
     select.disabled = false;
-    select.onchange = compare;
+    select.onchange = () => updateComparison();
   }
-  $('#compare-a').value = canonicalRelease.records.some(record => record.id === 'iso-a90-r1p5') ? 'iso-a90-r1p5' : canonicalRelease.records[0].id;
-  $('#compare-b').value = canonicalRelease.records.some(record => record.id === 'iso-a110-r3') ? 'iso-a110-r3' : canonicalRelease.records[1].id;
-  compare();
+  for (const selector of ['#comparison-swap', '#comparison-reset', '#comparison-share']) $(selector).disabled = false;
+  applyComparisonState(parseComparisonHash(location.hash));
 }
 
 function setComparisonUnavailable(message) {
@@ -469,6 +503,7 @@ function setComparisonUnavailable(message) {
     select.disabled = true;
     select.replaceChildren(new Option(message));
   }
+  for (const selector of ['#comparison-swap', '#comparison-reset', '#comparison-share']) $(selector).disabled = true;
   $('#comparison').setAttribute('aria-busy', 'false');
   $('#comparison').innerHTML = `<p class="comparison-loading">${escapeHtml(message)}</p>`;
   $('#comparison-summary').textContent = message;
@@ -824,9 +859,31 @@ window.addEventListener('offline', showOfflineExperience);
 window.addEventListener('online', () => loadResearchRelease());
 window.addEventListener('popstate', () => {
   if (location.hash.startsWith('#map')) applyMapState(parseMapHash(location.hash));
+  if (location.hash.startsWith('#compare')) applyComparisonState(parseComparisonHash(location.hash));
   if (location.hash.startsWith('#research')) {
     applyResearchState(parseResearchHash(location.hash));
     renderResearchExplorer();
+  }
+});
+$('#comparison-swap').addEventListener('click', () => {
+  const state = currentComparisonState();
+  applyComparisonState({ left: state.right, right: state.left });
+  updateComparison();
+  $('#compare-a').focus();
+});
+$('#comparison-reset').addEventListener('click', () => {
+  applyComparisonState(comparisonDefaults());
+  updateComparison();
+  $('#compare-a').focus();
+});
+$('#comparison-share').addEventListener('click', async () => {
+  const status = $('#comparison-share-status');
+  const url = new URL(formatComparisonHash(currentComparisonState()), location.href).href;
+  try {
+    await navigator.clipboard.writeText(url);
+    status.textContent = 'Comparison link copied.';
+  } catch {
+    status.textContent = 'Copy was unavailable. Use the address bar to copy this comparison.';
   }
 });
 $('#research-more').addEventListener('click', () => {
