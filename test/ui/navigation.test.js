@@ -14,12 +14,15 @@ test('homepage provides descriptive navigation and mobile menu semantics', async
     assert.match(html, new RegExp(label));
   }
   assert.match(html, /aria-label="Start a research task"/);
+  assert.match(html, /<dialog id="record-dialog" aria-labelledby="record-dialog-title" aria-describedby="record-dialog-summary">/);
+  assert.match(html, /aria-label="Close result details" autofocus/);
   for (const task of ['Explore packings', 'Compare evidence', 'Verify a claim', 'Improve a result']) {
     assert.match(html, new RegExp(task));
   }
   assert.match(script, /aria-expanded/);
   assert.match(script, /aria-pressed/);
-  assert.match(script, /dialogTrigger\.focus/);
+  assert.match(script, /dialog\.querySelector\('\.dialog-close'\)\.focus\(\{ preventScroll: true \}\)/);
+  assert.match(script, /dialogTrigger\?\.isConnected \? dialogTrigger : \$\('#research-search'\)/);
   assert.match(script, /history\.replaceState\(null, '', dialogReturnHash\)/);
   assert.match(styles, /\.topbar nav\.open/);
   assert.match(html, /FINITE-DOMAIN PROOFS/);

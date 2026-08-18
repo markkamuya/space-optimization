@@ -449,7 +449,7 @@ function openRecord(record, trigger = document.activeElement) {
   dialogTrigger = trigger;
   const detail = $('#record-detail');
   detail.innerHTML = `
-    <div class="detail-header"><div><p class="kicker">${escapeHtml(record.family)} / ${escapeHtml(statusLabel(record))}</p><h2>${escapeHtml(record.title)}</h2><p>${escapeHtml(record.pattern)}. Fingerprint <code>${escapeHtml(record.verification.fingerprint)}</code></p></div>
+    <div class="detail-header"><div><p class="kicker">${escapeHtml(record.family)} / ${escapeHtml(statusLabel(record))}</p><h2 id="record-dialog-title">${escapeHtml(record.title)}</h2><p id="record-dialog-summary">${escapeHtml(record.pattern)}. Fingerprint <code>${escapeHtml(record.verification.fingerprint)}</code></p></div>
       <div class="detail-stat"><b>${percent(record.verification.utilization)}</b><span>verified fill</span></div></div>
     <canvas width="1000" height="560" aria-label="${escapeHtml(record.title)} detailed packing"></canvas>
     <div class="detail-grid">
@@ -460,6 +460,7 @@ function openRecord(record, trigger = document.activeElement) {
     </div>`;
   const dialog = $('#record-dialog');
   dialog.showModal();
+  dialog.querySelector('.dialog-close').focus({ preventScroll: true });
   requestAnimationFrame(() => renderPacking(
     detail.querySelector('canvas'),
     normalizeProblem(record.problem),
@@ -798,7 +799,7 @@ function openResearchRecord(record) {
   dialogReturnHash = formatResearchHash(currentResearchState());
   const detail = $('#record-detail');
   detail.innerHTML = `
-    <div class="detail-header"><div><p class="kicker">${escapeHtml(record.family)} / ${escapeHtml(record.evidence.state.replaceAll('_', ' '))}</p><h2>${escapeHtml(record.experimentId)}</h2><p>${escapeHtml(record.evidence.claim)}</p></div>
+    <div class="detail-header"><div><p class="kicker">${escapeHtml(record.family)} / ${escapeHtml(record.evidence.state.replaceAll('_', ' '))}</p><h2 id="record-dialog-title">${escapeHtml(record.experimentId)}</h2><p id="record-dialog-summary">${escapeHtml(record.evidence.claim)}</p></div>
       <div class="detail-stat"><b>${percent(record.verification.utilization)}</b><span>verified lower bound</span></div></div>
     <canvas width="1000" height="560" aria-label="${escapeHtml(record.id)} packing coordinates"></canvas>
     <div class="detail-grid">
@@ -806,7 +807,9 @@ function openResearchRecord(record) {
       <section><h3>Best result and proven limit</h3><dl><div><dt>Verified fill</dt><dd>${percent(record.bounds.lowerBound)}</dd></div><div><dt>Proven maximum</dt><dd>${percent(record.bounds.upperBound)}</dd></div><div><dt>Room for improvement</dt><dd>${percent(record.bounds.optimalityGap)}</dd></div></dl><p>Priority for checking empty boundary space: ${escapeHtml(record.descriptors.boundaryGapAnalysis.priority)}.</p></section>
       <section><h3>Reproduce this result</h3><p><code>${escapeHtml(record.reproducibility.command)}</code></p><p>Seed <code>${escapeHtml(record.reproducibility.seed)}</code><br>Fingerprint <code>${escapeHtml(record.verification.fingerprint)}</code></p><a href="/atlas-v2.json" download>Download coordinates ↓</a></section>
     </div>`;
-  $('#record-dialog').showModal();
+  const dialog = $('#record-dialog');
+  dialog.showModal();
+  dialog.querySelector('.dialog-close').focus({ preventScroll: true });
   requestAnimationFrame(() => renderPacking(
     detail.querySelector('canvas'),
     normalizeProblem(record.problem),
@@ -1022,7 +1025,8 @@ $('#record-dialog').addEventListener('click', event => {
 });
 $('#record-dialog').addEventListener('close', () => {
   if (location.hash.startsWith('#research?record=')) history.replaceState(null, '', dialogReturnHash);
-  if (dialogTrigger?.isConnected) dialogTrigger.focus();
+  const returnTarget = dialogTrigger?.isConnected ? dialogTrigger : $('#research-search');
+  returnTarget?.focus({ preventScroll: true });
   dialogTrigger = null;
 });
 navToggle.addEventListener('click', () => {
