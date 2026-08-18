@@ -8,7 +8,7 @@
     "build": "vite build && node scripts/prepare-sites.js",
     "build:vercel": "vite build",
     "preview": "vite preview",
-    "test": "node --test",
+    "test": "node --test --test-concurrency=4",
     "benchmark": "node benchmarks/run.js",
     "atlas:verify": "node cli/verify.js",
     "atlas:benchmark": "node benchmarks/atlas.js",
