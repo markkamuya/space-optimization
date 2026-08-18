@@ -794,9 +794,24 @@ function clearResearchFilters({ updateHistory = true } = {}) {
   $('#research-search').focus();
 }
 
-function openResearchRecord(record) {
-  dialogTrigger = document.activeElement;
-  dialogReturnHash = formatResearchHash(currentResearchState());
+function researchDialogNavigation(record) {
+  const records = filteredResearchRecords();
+  const index = records.findIndex(item => item.id === record.id);
+  if (index < 0) return '<nav class="detail-navigation" aria-label="Browse filtered results"><p>This linked result is outside the current filters.</p></nav>';
+  const previous = records[index - 1];
+  const next = records[index + 1];
+  return `<nav class="detail-navigation" aria-label="Browse filtered results">
+    <button type="button" data-dialog-record="${escapeHtml(previous?.id ?? '')}" ${previous ? '' : 'disabled'}>← Previous result</button>
+    <p role="status">Result ${index + 1} of ${records.length} in the current filters</p>
+    <button type="button" data-dialog-record="${escapeHtml(next?.id ?? '')}" ${next ? '' : 'disabled'}>Next result →</button>
+  </nav>`;
+}
+
+function openResearchRecord(record, { preserveContext = false } = {}) {
+  if (!preserveContext) {
+    dialogTrigger = document.activeElement;
+    dialogReturnHash = formatResearchHash(currentResearchState());
+  }
   const detail = $('#record-detail');
   detail.innerHTML = `
     <div class="detail-header"><div><p class="kicker">${escapeHtml(record.family)} / ${escapeHtml(record.evidence.state.replaceAll('_', ' '))}</p><h2 id="record-dialog-title">${escapeHtml(record.experimentId)}</h2><p id="record-dialog-summary">${escapeHtml(record.evidence.claim)}</p></div>
@@ -806,9 +821,9 @@ function openResearchRecord(record) {
       <section><h3>Verification certificate</h3><p><code>${escapeHtml(record.verification.certificate)}</code></p><dl><div><dt>Pieces</dt><dd>${record.verification.pieceCount}</dd></div><div><dt>Overlap</dt><dd>0</dd></div><div><dt>Numerical stability</dt><dd>${escapeHtml(stabilityLabel(record.verification.stability))}</dd></div><div><dt>Verifier</dt><dd>${escapeHtml(record.verification.verifier)}</dd></div></dl></section>
       <section><h3>Best result and proven limit</h3><dl><div><dt>Verified fill</dt><dd>${percent(record.bounds.lowerBound)}</dd></div><div><dt>Proven maximum</dt><dd>${percent(record.bounds.upperBound)}</dd></div><div><dt>Room for improvement</dt><dd>${percent(record.bounds.optimalityGap)}</dd></div></dl><p>Priority for checking empty boundary space: ${escapeHtml(record.descriptors.boundaryGapAnalysis.priority)}.</p></section>
       <section><h3>Reproduce this result</h3><p><code>${escapeHtml(record.reproducibility.command)}</code></p><p>Seed <code>${escapeHtml(record.reproducibility.seed)}</code><br>Fingerprint <code>${escapeHtml(record.verification.fingerprint)}</code></p><a href="/atlas-v2.json" download>Download coordinates ↓</a></section>
-    </div>`;
+    </div>${researchDialogNavigation(record)}`;
   const dialog = $('#record-dialog');
-  dialog.showModal();
+  if (!dialog.open) dialog.showModal();
   dialog.querySelector('.dialog-close').focus({ preventScroll: true });
   requestAnimationFrame(() => renderPacking(
     detail.querySelector('canvas'),
@@ -1021,6 +1036,12 @@ function closeRecordDialog() {
 
 $('#record-dialog .dialog-close').addEventListener('click', closeRecordDialog);
 $('#record-dialog').addEventListener('click', event => {
+  const navigation = event.target.closest('[data-dialog-record]');
+  if (navigation?.dataset.dialogRecord && canonicalRelease) {
+    const record = canonicalRelease.records.find(item => item.id === navigation.dataset.dialogRecord);
+    if (record) openResearchRecord(record, { preserveContext: true });
+    return;
+  }
   if (event.target === $('#record-dialog')) closeRecordDialog();
 });
 $('#record-dialog').addEventListener('close', () => {
