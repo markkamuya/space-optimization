@@ -176,6 +176,7 @@ dt { color:var(--muted); } dd { margin:0; font-weight:700; text-align:right; }
 .research-load-status { margin:0 6vw 16px; padding:14px 18px; border:1px solid var(--ink); background:var(--panel); display:grid; grid-template-columns:auto auto 1fr; align-items:center; gap:8px 20px; font-size:11px; }
 .research-load-status span { color:var(--muted); text-align:right; }
 .research-load-status .release-provenance { grid-column:2/-1; text-align:right; }
+.research-load-status button { min-height:44px; padding:9px 13px; border:1px solid var(--ink); background:var(--acid); cursor:pointer; font:600 10px "DM Mono"; }
 .research-load-status.loading { border-left:6px solid var(--orange); }
 .research-load-status.verified_shards,.research-load-status.verified_fallback { border-left:6px solid #126c4f; }
 .research-load-status.failed_empty,.research-load-status.offline_empty { border-left:6px solid #a04722; }

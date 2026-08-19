@@ -30,6 +30,7 @@ let researchLoadController = null;
 let releaseSource = null;
 let releasePhase = 'loading';
 let releaseVerifiedAt = null;
+let releaseRecovery = null;
 const navToggle = $('#nav-toggle');
 const primaryNav = $('#primary-nav');
 const pageMain = $('#main-content');
@@ -286,8 +287,30 @@ function renderResearchReleaseStatus(experience, detail = experience.detail) {
   status.dataset.releaseState = experience.mode;
   status.dataset.releaseTrust = experience.trust;
   status.innerHTML = `<strong class="release-state-label">${experience.label}</strong><b>${experience.headline}</b><span>${detail}</span><small class="release-provenance">${experience.provenance}</small>`;
+  if (experience.canRetry) {
+    const retry = document.createElement('button');
+    retry.type = 'button';
+    retry.dataset.retryRelease = '';
+    retry.textContent = experience.mode.startsWith('verified_') ? 'Check for release updates' : 'Retry verified data';
+    status.append(retry);
+  }
   $('#comparison').dataset.releaseTrust = experience.trust;
   return status;
+}
+
+function finishReleaseRecovery(succeeded) {
+  if (!releaseRecovery) return '';
+  const { manual, target, reason } = releaseRecovery;
+  releaseRecovery = null;
+  if (manual) requestAnimationFrame(() => $(target)?.focus({ preventScroll: true }));
+  if (!succeeded) return reason === 'reconnected' ? 'Connection restored, but verification failed. ' : 'Retry unsuccessful. ';
+  return reason === 'reconnected' ? 'Connection restored. Recovery complete. ' : 'Recovery complete. ';
+}
+
+function startReleaseRecovery({ manual = false, target = '#research-load-status', reason = 'retry' } = {}) {
+  releaseRecovery = { manual, target, reason };
+  loadResearchRelease();
+  if (manual) requestAnimationFrame(() => $(target)?.focus({ preventScroll: true }));
 }
 
 function handlePhaseGridKeydown(event) {
@@ -714,9 +737,10 @@ async function loadResearchRelease() {
     applyResearchState(parseResearchHash(location.hash));
     renderResearchExplorer();
     const readyExperience = renderReleaseExperience('ready');
-    renderResearchReleaseStatus(readyExperience, loaded.source === 'verified_shards'
+    const recoveryMessage = finishReleaseRecovery(true);
+    renderResearchReleaseStatus(readyExperience, recoveryMessage + (loaded.source === 'verified_shards'
       ? `${canonicalRelease.coverage.records} records passed integrity checks from the canonical release shards.`
-      : `${canonicalRelease.coverage.records} records passed the canonical checksum after a shard was unavailable. No partial shard data is shown.`);
+      : `${canonicalRelease.coverage.records} records passed the canonical checksum after a shard was unavailable. No partial shard data is shown.`));
     restoreInitialTaskAnchor();
   } catch (error) {
     if (attempt !== researchLoadAttempt || error.name === 'AbortError') return;
@@ -724,7 +748,9 @@ async function loadResearchRelease() {
     if (retainingVerifiedRelease) {
       $('#research-results').setAttribute('aria-busy', 'false');
       renderResearchExplorer();
-      renderResearchReleaseStatus(renderReleaseExperience('failed'));
+      const failureMessage = finishReleaseRecovery(false);
+      const failedExperience = renderReleaseExperience('failed');
+      renderResearchReleaseStatus(failedExperience, failureMessage + failedExperience.detail);
       return;
     }
     $('#resolution-label').textContent = 'verified dataset unavailable';
@@ -732,7 +758,8 @@ async function loadResearchRelease() {
     $('#research-results').setAttribute('aria-busy', 'false');
     $('#research-results').innerHTML = '<div class="load-error" role="alert"><h3>Verified results are temporarily unavailable.</h3><p>The release failed availability or integrity checks. Research records remain hidden so partial or unverified data is never presented as trustworthy.</p><button type="button" data-retry-release>Try loading verified data again</button></div>';
     $('#research-more').hidden = true;
-    renderResearchReleaseStatus(renderReleaseExperience('failed'), 'No research records were displayed. You can retry without reloading the page.');
+    const failureMessage = finishReleaseRecovery(false);
+    renderResearchReleaseStatus(renderReleaseExperience('failed'), `${failureMessage}No research records were displayed. You can retry without reloading the page.`);
     setComparisonUnavailable('Verified comparison records are temporarily unavailable.');
     makePhaseMap();
     updatePhase();
@@ -999,13 +1026,16 @@ for (const selector of ['#research-search', '#research-family', '#research-evide
 }
 $('#research-clear').addEventListener('click', () => clearResearchFilters());
 $('#research-results').addEventListener('click', event => {
-  if (event.target.closest('[data-retry-release]')) loadResearchRelease();
+  if (event.target.closest('[data-retry-release]')) startReleaseRecovery({ manual: true });
+});
+$('#research-load-status').addEventListener('click', event => {
+  if (event.target.closest('[data-retry-release]')) startReleaseRecovery({ manual: true });
 });
 $('#map-data-status').addEventListener('click', event => {
-  if (event.target.closest('[data-retry-release]')) loadResearchRelease();
+  if (event.target.closest('[data-retry-release]')) startReleaseRecovery({ manual: true, target: '#map-data-status' });
 });
 window.addEventListener('offline', showOfflineExperience);
-window.addEventListener('online', () => loadResearchRelease());
+window.addEventListener('online', () => startReleaseRecovery({ reason: 'reconnected' }));
 window.addEventListener('popstate', () => {
   if (location.hash.startsWith('#map')) applyMapState(parseMapHash(location.hash));
   if (location.hash.startsWith('#compare')) applyComparisonState(parseComparisonHash(location.hash));

@@ -11,6 +11,11 @@ test('research UI exposes integrity progress, safe retry, and source provenance'
   assert.match(script, /new AbortController/);
   assert.match(script, /attempt !== researchLoadAttempt/);
   assert.match(script, /data-retry-release/);
+  assert.match(script, /startReleaseRecovery/);
+  assert.match(script, /finishReleaseRecovery/);
+  assert.match(script, /Recovery complete/);
+  assert.match(script, /focus\(\{ preventScroll: true \}\)/);
+  assert.match(html, /id="research-load-status"[^>]+tabindex="-1"/);
   assert.match(script, /No partial shard data is shown/);
   assert.match(script, /partial or unverified data is never presented as trustworthy/);
 });

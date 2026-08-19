@@ -14,7 +14,8 @@ test('refresh and connectivity recovery retain only integrity-verified results',
   assert.match(script, /releaseVerifiedAt/);
   assert.match(script, /dataset\.releaseTrust/);
   assert.match(script, /window\.addEventListener\('offline', showOfflineExperience\)/);
-  assert.match(script, /window\.addEventListener\('online', \(\) => loadResearchRelease\(\)\)/);
+  assert.match(script, /window\.addEventListener\('online', \(\) => startReleaseRecovery\(\{ reason: 'reconnected' \}\)\)/);
+  assert.match(script, /Connection restored\. Recovery complete/);
   assert.match(script, /attempt !== researchLoadAttempt/);
   assert.match(script, /error\.name === 'AbortError'/);
 });
