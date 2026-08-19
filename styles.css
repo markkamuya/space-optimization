@@ -270,6 +270,7 @@ dialog { width:min(1050px,92vw); max-height:92vh; border:1px solid var(--ink); p
 dialog::backdrop { background:rgba(5,11,9,.72); backdrop-filter:blur(5px); }
 .dialog-close { position:absolute; z-index:2; right:14px; top:14px; width:36px; height:36px; border:1px solid var(--ink); background:var(--panel); font-size:20px; cursor:pointer; }
 .detail-header { display:flex; justify-content:space-between; gap:30px; padding:35px; }
+.detail-header>*,.detail-grid>* { min-width:0; }
 .detail-header h2 { font-size:38px; margin:8px 0; }
 .detail-header p { color:var(--muted); font-size:11px; }
 .detail-stat { text-align:right; padding-right:35px; }
@@ -281,6 +282,7 @@ dialog::backdrop { background:rgba(5,11,9,.72); backdrop-filter:blur(5px); }
 .detail-grid section:last-child { border:0; }
 .detail-grid h3 { font-size:14px; }
 .detail-grid p,.detail-grid a { font-size:10px; line-height:1.6; }
+.detail-header h2,.detail-grid code,.detail-grid a { overflow-wrap:anywhere; word-break:break-word; }
 .detail-grid dl>div { display:flex; justify-content:space-between; padding:8px 0; border-top:1px solid var(--line); font-size:9px; }
 .detail-navigation { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:16px; padding:18px 28px; border-top:1px solid var(--ink); }
 .detail-navigation button { min-height:44px; padding:10px 14px; border:1px solid var(--ink); background:var(--panel); color:var(--ink); cursor:pointer; }
