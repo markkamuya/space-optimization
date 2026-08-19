@@ -10,7 +10,11 @@ body { margin:0; min-width:320px; }
 button,input,select { font:inherit; color:inherit; }
 button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible { outline:3px solid var(--orange); outline-offset:3px; }
 a { color:inherit; }
-.topbar { min-height:68px; padding:0 3vw; display:grid; grid-template-columns:minmax(180px,1fr) auto minmax(120px,1fr); align-items:center; border-bottom:1px solid var(--line); background:rgba(243,240,231,.94); position:sticky; top:0; z-index:20; backdrop-filter:blur(12px); }
+.topbar { min-height:68px; padding:0 3vw; display:grid; grid-template-columns:minmax(180px,1fr) auto minmax(120px,1fr); align-items:center; border-bottom:1px solid var(--line); background:rgba(243,240,231,.94); position:sticky; top:0; z-index:20; -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px); }
+.browser-compatibility { display:grid; gap:4px; padding:14px 6vw; border-bottom:2px solid #a04722; background:#fff0e8; }
+.browser-compatibility[hidden] { display:none; }
+.browser-compatibility strong { font-size:12px; }
+.browser-compatibility span { font-size:11px; line-height:1.5; }
 .brand { text-decoration:none; display:flex; align-items:center; gap:9px; font-weight:800; letter-spacing:.18em; }
 .brand-mark { width:19px; height:19px; background:var(--orange); clip-path:polygon(50% 0,100% 100%,0 100%); }
 .topbar nav { display:flex; gap:clamp(12px,2vw,26px); }
@@ -80,7 +84,7 @@ dt { color:var(--muted); } dd { margin:0; font-weight:700; text-align:right; }
 .phase-view-controls button[aria-pressed="true"] { background:var(--ink); color:var(--paper); }
 .phase-view-controls p { max-width:360px; margin:0; color:var(--muted); font-size:10px; line-height:1.5; text-align:right; }
 .phase-grid { display:grid; grid-template-columns:repeat(6,1fr); height:365px; border-left:1px solid rgba(20,32,28,.25); border-bottom:1px solid rgba(20,32,28,.25); }
-.phase-cell { position:relative; border:0; border-right:1px solid rgba(20,32,28,.15); border-top:1px solid rgba(20,32,28,.15); background:color-mix(in srgb,var(--phase-color) 73%,#f5f1e7); cursor:crosshair; }
+.phase-cell { position:relative; border:0; border-right:1px solid rgba(20,32,28,.15); border-top:1px solid rgba(20,32,28,.15); background:var(--phase-color); background:color-mix(in srgb,var(--phase-color) 73%,#f5f1e7); cursor:crosshair; }
 .phase-cell:after { content:""; position:absolute; inset:34%; background:var(--phase-color); clip-path:polygon(50% 0,100% 100%,0 100%); opacity:.8; transition:transform .15s; }
 .phase-cell.computed { opacity:var(--confidence); }
 .phase-cell.computed:after { inset:25%; }
@@ -166,7 +170,7 @@ dt { color:var(--muted); } dd { margin:0; font-weight:700; text-align:right; }
 @media(max-width:720px) { .comparison-summary,.comparison-actions { margin-inline:24px; } .comparison-actions { display:grid; grid-template-columns:1fr; } .comparison-actions button { width:100%; } }
 @media(max-width:720px) { .comparison-guides { margin-inline:24px; grid-template-columns:1fr; } #comparison-guide-actions { grid-template-columns:1fr; } }
 .research-explorer { padding-bottom:100px; background:#e8e7dd; border-top:1px solid var(--ink); }
-.workspace-rail { position:sticky; z-index:15; top:68px; display:grid; grid-template-columns:minmax(150px,1fr) repeat(4,minmax(100px,160px)); align-items:stretch; border-block:1px solid var(--ink); background:rgba(255,253,247,.96); backdrop-filter:blur(12px); }
+.workspace-rail { position:sticky; z-index:15; top:68px; display:grid; grid-template-columns:minmax(150px,1fr) repeat(4,minmax(100px,160px)); align-items:stretch; border-block:1px solid var(--ink); background:rgba(255,253,247,.96); -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px); }
 .workspace-rail>span,.workspace-rail a { display:flex; min-height:52px; padding:10px 16px; align-items:center; gap:9px; border-right:1px solid var(--line); font:600 10px "DM Mono"; text-decoration:none; text-transform:uppercase; }
 .workspace-rail>span { color:var(--muted); }
 .workspace-rail a:last-child { border-right:0; }
@@ -280,7 +284,7 @@ dt { color:var(--muted); } dd { margin:0; font-weight:700; text-align:right; }
 .literature-grid p { font-size:11px; line-height:1.65; color:var(--muted); flex:1; }
 .literature-grid b { color:var(--orange); margin-bottom:15px; }
 dialog { width:min(1050px,92vw); max-height:92vh; border:1px solid var(--ink); padding:0; background:var(--panel); color:var(--ink); }
-dialog::backdrop { background:rgba(5,11,9,.72); backdrop-filter:blur(5px); }
+dialog::backdrop { background:rgba(5,11,9,.72); -webkit-backdrop-filter:blur(5px); backdrop-filter:blur(5px); }
 .dialog-close { position:absolute; z-index:2; right:14px; top:14px; width:36px; height:36px; border:1px solid var(--ink); background:var(--panel); font-size:20px; cursor:pointer; }
 .detail-header { display:flex; justify-content:space-between; gap:30px; padding:35px; }
 .detail-header>*,.detail-grid>* { min-width:0; }

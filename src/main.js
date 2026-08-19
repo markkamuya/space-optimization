@@ -13,6 +13,7 @@ import { buildComparisonGuides, comparisonMatchMessage, filterComparisonCandidat
 import { formatComparisonHash, parseComparisonHash, resolveComparisonState } from './ui/comparisonState.js';
 import { formatResearchHash, parseResearchHash } from './ui/researchState.js';
 import { buildResearchIndex, filterResearchIndex } from './ui/researchIndex.js';
+import { browserCompatibility, listenForMediaChange } from './ui/browserCompatibility.js';
 
 const $ = selector => document.querySelector(selector);
 const percent = value => `${(value * 100).toFixed(1)}%`;
@@ -39,6 +40,15 @@ const primaryNav = $('#primary-nav');
 const pageMain = $('#main-content');
 const pageFooter = $('footer');
 const brandLink = $('.brand');
+const compatibility = browserCompatibility(globalThis);
+
+function renderBrowserCompatibility() {
+  document.body.dataset.browserCompatibility = compatibility.supported ? 'supported' : 'degraded';
+  if (compatibility.supported) return;
+  const notice = $('#browser-compatibility');
+  notice.hidden = false;
+  notice.innerHTML = `<strong>Browser update required</strong><span>${compatibility.message}</span>`;
+}
 
 function setNavigationIsolation(isolated) {
   pageMain.toggleAttribute('inert', isolated);
@@ -85,6 +95,11 @@ function setupCurrentTaskTracking() {
   const sections = [...primaryNav.querySelectorAll('a')]
     .map(link => document.querySelector(link.hash))
     .filter(Boolean);
+  if (typeof IntersectionObserver !== 'function') {
+    const linkedSection = sections.find(section => location.hash.startsWith(`#${section.id}`));
+    if (linkedSection) setCurrentNavigationTask(linkedSection.id);
+    return;
+  }
   const observer = new IntersectionObserver(entries => {
     const visible = entries.filter(entry => entry.isIntersecting)
       .sort((left, right) => Math.abs(left.boundingClientRect.top) - Math.abs(right.boundingClientRect.top));
@@ -1149,11 +1164,12 @@ document.addEventListener('pointerdown', event => {
   if (navToggle.getAttribute('aria-expanded') !== 'true') return;
   if (!primaryNav.contains(event.target) && event.target !== navToggle) closePrimaryNavigation();
 });
-matchMedia('(min-width: 721px)').addEventListener('change', event => {
+listenForMediaChange(matchMedia('(min-width: 721px)'), event => {
   if (event.matches) closePrimaryNavigation();
 });
 window.addEventListener('resize', updatePhase);
 setupCurrentTaskTracking();
+renderBrowserCompatibility();
 
 makePhaseMap();
 if (location.hash.startsWith('#map')) applyMapState(parseMapHash(location.hash));
@@ -1161,7 +1177,14 @@ else updatePhase();
 renderFilters();
 renderRecords();
 renderChallenges();
-loadResearchRelease();
+if (compatibility.canVerifyRelease) loadResearchRelease();
+else {
+  releasePhase = 'failed';
+  renderResearchReleaseStatus(renderReleaseExperience('failed'), compatibility.message);
+  $('#research-results').setAttribute('aria-busy', 'false');
+  $('#research-results').innerHTML = '<div class="load-error" role="alert"><h3>Verified data cannot be checked in this browser.</h3><p>Update the browser to restore integrity-checked research results.</p></div>';
+  setComparisonUnavailable('Verified comparison records cannot be checked in this browser.');
+}
 loadV1Context();
 
 document.querySelectorAll('[data-family-card]').forEach(card => {

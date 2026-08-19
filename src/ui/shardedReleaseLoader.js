@@ -38,7 +38,7 @@ async function loadShards(fetchImpl, cryptoImpl, onProgress, signal) {
     loadedBytes += descriptor.bytes;
     if (shard.format !== 'triangle-packing-atlas-record-shard/v1' || shard.order !== position ||
       shard.records?.length !== descriptor.records || shard.records[0]?.id !== descriptor.firstRecordId ||
-      shard.records.at(-1)?.id !== descriptor.lastRecordId) throw new Error(`invalid_shard_content:${descriptor.path}`);
+      shard.records[shard.records.length - 1]?.id !== descriptor.lastRecordId) throw new Error(`invalid_shard_content:${descriptor.path}`);
     for (const record of shard.records) {
       if (ids.has(record.id)) throw new Error(`duplicate_shard_record:${record.id}`);
       ids.add(record.id);
