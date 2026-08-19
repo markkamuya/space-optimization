@@ -15,6 +15,7 @@ import { formatResearchHash, parseResearchHash } from './ui/researchState.js';
 import { buildResearchIndex, filterResearchIndex } from './ui/researchIndex.js';
 import { browserCompatibility, listenForMediaChange } from './ui/browserCompatibility.js';
 import { buildProvenanceJourney } from './ui/provenanceJourney.js';
+import { createEvidenceBundle, validateEvidenceBundle } from './ui/evidenceBundle.js';
 
 const $ = selector => document.querySelector(selector);
 const percent = value => `${(value * 100).toFixed(1)}%`;
@@ -897,6 +898,18 @@ function researchProvenanceChain(record) {
   </section>`;
 }
 
+function researchReproductionTools(record) {
+  return `<section class="reproduction-panel" aria-labelledby="reproduction-tools-title">
+    <div><p class="kicker">Reproduction tools</p><h3 id="reproduction-tools-title">Take this evidence with you</h3><p>Copy the deterministic command, download only this record and its verified release identity, then re-import that file here to check it has not changed.</p></div>
+    <div class="reproduction-actions" role="group" aria-label="Record evidence actions">
+      <button type="button" data-copy-evidence-command="${escapeHtml(record.id)}">Copy reproduction command</button>
+      <button type="button" data-download-evidence="${escapeHtml(record.id)}">Download evidence package</button>
+      <label>Validate an evidence package<input type="file" accept="application/json,.json" data-validate-evidence="${escapeHtml(record.id)}"></label>
+    </div>
+    <p class="reproduction-status" data-evidence-status role="status" aria-live="polite">Ready to export verified evidence for ${escapeHtml(record.id)}.</p>
+  </section>`;
+}
+
 function openResearchRecord(record, { preserveContext = false } = {}) {
   if (!preserveContext) {
     dialogTrigger = document.activeElement;
@@ -911,7 +924,7 @@ function openResearchRecord(record, { preserveContext = false } = {}) {
       <section><h3>Verification certificate</h3><p><code>${escapeHtml(record.verification.certificate)}</code></p><dl><div><dt>Pieces</dt><dd>${record.verification.pieceCount}</dd></div><div><dt>Overlap</dt><dd>0</dd></div><div><dt>Numerical stability</dt><dd>${escapeHtml(stabilityLabel(record.verification.stability))}</dd></div><div><dt>Verifier</dt><dd>${escapeHtml(record.verification.verifier)}</dd></div></dl></section>
       <section><h3>Best result and proven limit</h3><dl><div><dt>Verified fill</dt><dd>${percent(record.bounds.lowerBound)}</dd></div><div><dt>Proven maximum</dt><dd>${percent(record.bounds.upperBound)}</dd></div><div><dt>Room for improvement</dt><dd>${percent(record.bounds.optimalityGap)}</dd></div></dl><p>Priority for checking empty boundary space: ${escapeHtml(record.descriptors.boundaryGapAnalysis.priority)}.</p></section>
       <section><h3>Reproduce this result</h3><p><code>${escapeHtml(record.reproducibility.command)}</code></p><p>Seed <code>${escapeHtml(record.reproducibility.seed)}</code><br>Fingerprint <code>${escapeHtml(record.verification.fingerprint)}</code></p><a href="/atlas-v2.json" download>Download coordinates ↓</a></section>
-    </div>${researchProvenanceChain(record)}${researchDialogNavigation(record)}
+    </div>${researchProvenanceChain(record)}${researchReproductionTools(record)}${researchDialogNavigation(record)}
     <a class="detail-compare-action" href="${escapeHtml(researchComparisonHref(record))}">Compare this result with another verified record</a>`;
   const dialog = $('#record-dialog');
   if (!dialog.open) dialog.showModal();
@@ -1140,6 +1153,37 @@ function closeRecordDialog() {
 
 $('#record-dialog .dialog-close').addEventListener('click', closeRecordDialog);
 $('#record-dialog').addEventListener('click', event => {
+  const copyCommand = event.target.closest('[data-copy-evidence-command]');
+  if (copyCommand && canonicalRelease) {
+    const record = canonicalRelease.records.find(item => item.id === copyCommand.dataset.copyEvidenceCommand);
+    const status = $('#record-dialog [data-evidence-status]');
+    if (!record || !releaseIntegrity) {
+      status.textContent = 'Verified evidence is unavailable. Check the release again before copying.';
+      return;
+    }
+    navigator.clipboard.writeText(record.reproducibility.command)
+      .then(() => { status.textContent = 'Reproduction command copied.'; })
+      .catch(() => { status.textContent = 'Copy was unavailable. Select the command shown above and copy it manually.'; });
+    return;
+  }
+  const downloadEvidence = event.target.closest('[data-download-evidence]');
+  if (downloadEvidence && canonicalRelease) {
+    const record = canonicalRelease.records.find(item => item.id === downloadEvidence.dataset.downloadEvidence);
+    const status = $('#record-dialog [data-evidence-status]');
+    try {
+      const bundle = createEvidenceBundle(record, canonicalRelease, releaseIntegrity, releaseSource);
+      const url = URL.createObjectURL(new Blob([`${JSON.stringify(bundle, null, 2)}\n`], { type: 'application/json' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${record.id}-evidence.json`;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 0);
+      status.textContent = `Evidence package downloaded for ${record.id}.`;
+    } catch {
+      status.textContent = 'Verified evidence is unavailable. Check the release again before downloading.';
+    }
+    return;
+  }
   const navigation = event.target.closest('[data-dialog-record]');
   if (navigation?.dataset.dialogRecord && canonicalRelease) {
     const record = canonicalRelease.records.find(item => item.id === navigation.dataset.dialogRecord);
@@ -1147,6 +1191,23 @@ $('#record-dialog').addEventListener('click', event => {
     return;
   }
   if (event.target === $('#record-dialog')) closeRecordDialog();
+});
+$('#record-dialog').addEventListener('change', async event => {
+  const input = event.target.closest('[data-validate-evidence]');
+  if (!input) return;
+  const status = $('#record-dialog [data-evidence-status]');
+  const trustedRecord = canonicalRelease?.records.find(item => item.id === input.dataset.validateEvidence);
+  try {
+    const bundle = JSON.parse(await input.files[0].text());
+    const result = validateEvidenceBundle(bundle, trustedRecord, canonicalRelease, releaseIntegrity, releaseSource);
+    status.textContent = result.valid
+      ? `Evidence package validated for ${trustedRecord.id}. The identity, certificate, reproduction details, and release digest all match.`
+      : `Evidence package not accepted: ${result.issues.join(' ')}`;
+  } catch {
+    status.textContent = 'Evidence package not accepted: the selected file is not readable JSON.';
+  } finally {
+    input.value = '';
+  }
 });
 $('#record-dialog').addEventListener('close', () => {
   if (location.hash.startsWith('#research?record=')) history.replaceState(null, '', dialogReturnHash);
