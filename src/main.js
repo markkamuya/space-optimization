@@ -1046,7 +1046,10 @@ $('#record-dialog').addEventListener('click', event => {
 });
 $('#record-dialog').addEventListener('close', () => {
   if (location.hash.startsWith('#research?record=')) history.replaceState(null, '', dialogReturnHash);
-  const returnTarget = dialogTrigger?.isConnected ? dialogTrigger : $('#research-search');
+  const canReturnToTrigger = dialogTrigger?.isConnected
+    && dialogTrigger !== document.body
+    && dialogTrigger !== document.documentElement;
+  const returnTarget = canReturnToTrigger ? dialogTrigger : $('#research-search');
   returnTarget?.focus({ preventScroll: true });
   dialogTrigger = null;
 });

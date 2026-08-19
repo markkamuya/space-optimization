@@ -22,7 +22,9 @@ test('homepage provides descriptive navigation and mobile menu semantics', async
   assert.match(script, /aria-expanded/);
   assert.match(script, /aria-pressed/);
   assert.match(script, /dialog\.querySelector\('\.dialog-close'\)\.focus\(\{ preventScroll: true \}\)/);
-  assert.match(script, /dialogTrigger\?\.isConnected \? dialogTrigger : \$\('#research-search'\)/);
+  assert.match(script, /dialogTrigger !== document\.body/);
+  assert.match(script, /dialogTrigger !== document\.documentElement/);
+  assert.match(script, /canReturnToTrigger \? dialogTrigger : \$\('#research-search'\)/);
   assert.match(script, /history\.replaceState\(null, '', dialogReturnHash\)/);
   assert.match(styles, /\.topbar nav\.open/);
   assert.match(html, /FINITE-DOMAIN PROOFS/);
