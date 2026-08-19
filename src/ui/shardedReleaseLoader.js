@@ -24,6 +24,8 @@ async function loadShards(fetchImpl, cryptoImpl, onProgress, signal) {
   }
   const records = [];
   const ids = new Set();
+  const totalBytes = index.shards.reduce((total, descriptor) => total + descriptor.bytes, 0);
+  let loadedBytes = 0;
   for (const [position, descriptor] of index.shards.entries()) {
     if (descriptor.order !== position || !/^atlas-v2-shards\/\d{3}\.json$/.test(descriptor.path)) {
       throw new Error('invalid_shard_descriptor');
@@ -33,6 +35,7 @@ async function loadShards(fetchImpl, cryptoImpl, onProgress, signal) {
       throw new Error(`shard_integrity_mismatch:${descriptor.path}`);
     }
     const shard = JSON.parse(payload);
+    loadedBytes += descriptor.bytes;
     if (shard.format !== 'triangle-packing-atlas-record-shard/v1' || shard.order !== position ||
       shard.records?.length !== descriptor.records || shard.records[0]?.id !== descriptor.firstRecordId ||
       shard.records.at(-1)?.id !== descriptor.lastRecordId) throw new Error(`invalid_shard_content:${descriptor.path}`);
@@ -41,7 +44,14 @@ async function loadShards(fetchImpl, cryptoImpl, onProgress, signal) {
       ids.add(record.id);
       records.push(record);
     }
-    onProgress?.({ loadedShards: position + 1, totalShards: index.shards.length, loadedRecords: records.length });
+    onProgress?.({
+      loadedShards: position + 1,
+      totalShards: index.shards.length,
+      loadedRecords: records.length,
+      totalRecords: index.recordCount,
+      loadedBytes,
+      totalBytes
+    });
   }
   if (records.length !== index.recordCount) throw new Error('incomplete_shard_coverage');
   return { release: { ...index.release, records }, source: 'verified_shards', warning: null };

@@ -34,6 +34,8 @@ test('browser loader verifies and progressively assembles every shard', async ()
   assert.equal(result.source, 'verified_shards');
   assert.deepEqual(result.release, release);
   assert.deepEqual(progress.map(update => update.loadedRecords), [2, 4, 5]);
+  assert.deepEqual(progress.map(update => update.totalRecords), [5, 5, 5]);
+  assert.equal(progress.at(-1).loadedBytes, progress.at(-1).totalBytes);
 });
 
 test('browser loader rejects a bad shard and uses only a checksum-verified monolith fallback', async () => {

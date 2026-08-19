@@ -301,6 +301,18 @@ function renderResearchReleaseStatus(experience, detail = experience.detail) {
   return status;
 }
 
+function renderReleaseProgress(progress) {
+  const status = $('#research-load-status');
+  const label = document.createElement('label');
+  label.className = 'release-progress';
+  label.textContent = `${progress.loadedRecords} of ${progress.totalRecords} verified records checked`;
+  const meter = document.createElement('progress');
+  meter.max = progress.totalRecords;
+  meter.value = progress.loadedRecords;
+  label.append(meter);
+  status.append(label);
+}
+
 function finishReleaseRecovery(succeeded) {
   if (!releaseRecovery) return '';
   const { manual, target, reason } = releaseRecovery;
@@ -710,6 +722,7 @@ async function loadResearchRelease() {
         if (attempt !== researchLoadAttempt) return;
         $('#resolution-label').textContent = `verified ${progress.loadedRecords} records from ${progress.loadedShards}/${progress.totalShards} shards…`;
         renderResearchReleaseStatus(loadingExperience, `${progress.loadedRecords} records checked from ${progress.loadedShards} of ${progress.totalShards} release shards.`);
+        renderReleaseProgress(progress);
       }
     });
     if (attempt !== researchLoadAttempt) return;
