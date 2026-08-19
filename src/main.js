@@ -17,6 +17,7 @@ import { browserCompatibility, listenForMediaChange } from './ui/browserCompatib
 import { buildProvenanceJourney } from './ui/provenanceJourney.js';
 import { createEvidenceBundle, validateEvidenceBundle } from './ui/evidenceBundle.js';
 import { COMPARISON_WORKSPACE_LIMIT, restoreComparisonWorkspace, serializeComparisonWorkspace, updateComparisonWorkspace } from './ui/comparisonWorkspace.js';
+import { comparisonReportSummary, createComparisonReport } from './ui/comparisonReport.js';
 
 const $ = selector => document.querySelector(selector);
 const percent = value => `${(value * 100).toFixed(1)}%`;
@@ -736,7 +737,7 @@ function setupComparison() {
       updateComparison();
     };
   }
-  for (const selector of ['#comparison-swap', '#comparison-reset', '#comparison-share']) $(selector).disabled = false;
+  for (const selector of ['#comparison-swap', '#comparison-reset', '#comparison-share', '#comparison-copy-report', '#comparison-download']) $(selector).disabled = false;
   for (const selector of ['#comparison-save-a', '#comparison-save-b']) $(selector).disabled = false;
   restoreSavedComparisonWorkspace();
   applyComparisonState(parseComparisonHash(location.hash));
@@ -750,7 +751,7 @@ function setComparisonUnavailable(message) {
     select.replaceChildren(new Option(message));
     $(`#compare-status-${side}`).textContent = message;
   }
-  for (const selector of ['#comparison-swap', '#comparison-reset', '#comparison-share', '#comparison-save-a', '#comparison-save-b']) $(selector).disabled = true;
+  for (const selector of ['#comparison-swap', '#comparison-reset', '#comparison-share', '#comparison-copy-report', '#comparison-download', '#comparison-save-a', '#comparison-save-b']) $(selector).disabled = true;
   $('#comparison').setAttribute('aria-busy', 'false');
   $('#comparison').innerHTML = `<p class="comparison-loading">${escapeHtml(message)}</p>`;
   $('#comparison-summary').textContent = message;
@@ -1190,6 +1191,36 @@ $('#comparison-share').addEventListener('click', async () => {
     status.textContent = 'Comparison link copied.';
   } catch {
     status.textContent = 'Copy was unavailable. Use the address bar to copy this comparison.';
+  }
+});
+function currentVerifiedComparisonReport() {
+  const left = canonicalRelease?.records.find(record => record.id === $('#compare-a').value);
+  const right = canonicalRelease?.records.find(record => record.id === $('#compare-b').value);
+  return createComparisonReport(left, right, canonicalRelease, releaseIntegrity, releaseSource);
+}
+
+$('#comparison-copy-report').addEventListener('click', async () => {
+  const status = $('#comparison-share-status');
+  try {
+    await navigator.clipboard.writeText(comparisonReportSummary(currentVerifiedComparisonReport()));
+    status.textContent = 'Evidence-aware comparison summary copied.';
+  } catch {
+    status.textContent = 'The verified comparison summary could not be copied. Check the release and try again.';
+  }
+});
+$('#comparison-download').addEventListener('click', () => {
+  const status = $('#comparison-share-status');
+  try {
+    const report = currentVerifiedComparisonReport();
+    const url = URL.createObjectURL(new Blob([`${JSON.stringify(report, null, 2)}\n`], { type: 'application/json' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${report.records.a.id}-vs-${report.records.b.id}.json`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+    status.textContent = 'Integrity-linked comparison report downloaded.';
+  } catch {
+    status.textContent = 'The report was not downloaded because verified comparison evidence is unavailable.';
   }
 });
 $('#comparison-save-a').addEventListener('click', () => saveComparisonRecord('a'));
