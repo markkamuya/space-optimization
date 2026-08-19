@@ -44,6 +44,9 @@ const compatibility = browserCompatibility(globalThis);
 
 function renderBrowserCompatibility() {
   document.body.dataset.browserCompatibility = compatibility.supported ? 'supported' : 'degraded';
+  $('#browser-runtime-status').textContent = compatibility.supported
+    ? 'This browser passed the Atlas verification and interaction capability check.'
+    : compatibility.message;
   if (compatibility.supported) return;
   const notice = $('#browser-compatibility');
   notice.hidden = false;
@@ -68,7 +71,7 @@ function trapPrimaryNavigationFocus(event) {
   if (event.key !== 'Tab' || navToggle.getAttribute('aria-expanded') !== 'true') return;
   const links = [...primaryNav.querySelectorAll('a')];
   const first = links[0];
-  const last = links.at(-1);
+  const last = links[links.length - 1];
   if (event.shiftKey && document.activeElement === first) {
     event.preventDefault();
     navToggle.focus();
