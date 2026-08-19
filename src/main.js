@@ -70,7 +70,7 @@ function trapPrimaryNavigationFocus(event) {
 }
 
 function setCurrentNavigationTask(sectionId) {
-  for (const link of primaryNav.querySelectorAll('a')) {
+  for (const link of document.querySelectorAll('#primary-nav a, .workspace-rail a')) {
     if (link.hash === `#${sectionId}`) link.setAttribute('aria-current', 'location');
     else link.removeAttribute('aria-current');
   }
