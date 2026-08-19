@@ -16,6 +16,7 @@ import { buildResearchIndex, filterResearchIndex } from './ui/researchIndex.js';
 import { browserCompatibility, listenForMediaChange } from './ui/browserCompatibility.js';
 import { buildProvenanceJourney } from './ui/provenanceJourney.js';
 import { createEvidenceBundle, validateEvidenceBundle } from './ui/evidenceBundle.js';
+import { COMPARISON_WORKSPACE_LIMIT, restoreComparisonWorkspace, serializeComparisonWorkspace, updateComparisonWorkspace } from './ui/comparisonWorkspace.js';
 
 const $ = selector => document.querySelector(selector);
 const percent = value => `${(value * 100).toFixed(1)}%`;
@@ -38,6 +39,9 @@ let releaseIntegrity = null;
 let releasePhase = 'loading';
 let releaseVerifiedAt = null;
 let releaseRecovery = null;
+let comparisonWorkspaceIds = [];
+let comparisonWorkspaceStorage = 'available';
+const comparisonWorkspaceKey = 'triangle-packing-atlas:comparison-workspace:v1';
 const navToggle = $('#nav-toggle');
 const primaryNav = $('#primary-nav');
 const pageMain = $('#main-content');
@@ -593,6 +597,59 @@ function compare() {
   $('#comparison-summary').textContent = `${fillLead} ${gapLead} Different triangle and rectangle sizes can make piece counts non-comparable.`;
 }
 
+function persistComparisonWorkspace(message) {
+  try {
+    localStorage.setItem(comparisonWorkspaceKey, serializeComparisonWorkspace(
+      comparisonWorkspaceIds,
+      canonicalRelease.records.map(record => record.id),
+      canonicalRelease.version
+    ));
+    comparisonWorkspaceStorage = 'available';
+  } catch {
+    comparisonWorkspaceStorage = 'unavailable';
+  }
+  renderComparisonWorkspace(message);
+}
+
+function renderComparisonWorkspace(message = '') {
+  if (!canonicalRelease) return;
+  const list = $('#comparison-workspace-list');
+  list.innerHTML = comparisonWorkspaceIds.length ? comparisonWorkspaceIds.map((id, index) => {
+    const record = canonicalRelease.records.find(item => item.id === id);
+    return `<li data-workspace-record="${escapeHtml(id)}"><div><b>${escapeHtml(comparisonOptionLabel(record))}</b><span>${escapeHtml(record.evidence.state.replaceAll('_', ' '))}</span></div>
+      <div class="workspace-record-actions"><button type="button" data-workspace-use="a" aria-label="Use ${escapeHtml(id)} as result A">A</button><button type="button" data-workspace-use="b" aria-label="Use ${escapeHtml(id)} as result B">B</button><button type="button" data-workspace-action="up" aria-label="Move ${escapeHtml(id)} earlier" ${index === 0 ? 'disabled' : ''}>↑</button><button type="button" data-workspace-action="down" aria-label="Move ${escapeHtml(id)} later" ${index === comparisonWorkspaceIds.length - 1 ? 'disabled' : ''}>↓</button><button type="button" data-workspace-action="remove" aria-label="Remove ${escapeHtml(id)} from shortlist">×</button></div></li>`;
+  }).join('') : '<li class="workspace-empty">No saved records yet. Save result A or B to build a shortlist.</li>';
+  const storageNote = comparisonWorkspaceStorage === 'unavailable'
+    ? ' Browser storage is unavailable, so this shortlist lasts only until the page closes.'
+    : ' This shortlist is saved in this browser.';
+  $('#comparison-workspace-status').textContent = `${message || `${comparisonWorkspaceIds.length} of ${COMPARISON_WORKSPACE_LIMIT} records saved.`}${storageNote}`;
+}
+
+function restoreSavedComparisonWorkspace() {
+  let raw = null;
+  try { raw = localStorage.getItem(comparisonWorkspaceKey); } catch { comparisonWorkspaceStorage = 'unavailable'; }
+  const restored = restoreComparisonWorkspace(raw, canonicalRelease.records.map(record => record.id), canonicalRelease.version);
+  comparisonWorkspaceIds = restored.ids;
+  const recovery = restored.status === 'invalid'
+    ? 'The saved shortlist was unreadable and was reset safely.'
+    : restored.removed
+      ? `${restored.removed} saved record${restored.removed === 1 ? '' : 's'} no longer exist in this verified release and were removed.`
+      : restored.status === 'release_updated'
+        ? 'The shortlist was checked against the new release and every saved record remains available.'
+        : '';
+  if (restored.status === 'invalid' || restored.removed || restored.status === 'release_updated') persistComparisonWorkspace(recovery);
+  else renderComparisonWorkspace(recovery);
+}
+
+function saveComparisonRecord(side) {
+  const id = $(`#compare-${side}`).value;
+  const before = comparisonWorkspaceIds.length;
+  comparisonWorkspaceIds = updateComparisonWorkspace(comparisonWorkspaceIds, 'add', id);
+  persistComparisonWorkspace(comparisonWorkspaceIds.length === before
+    ? (comparisonWorkspaceIds.includes(id) ? 'That record is already in the shortlist.' : `The shortlist is full at ${COMPARISON_WORKSPACE_LIMIT} records.`)
+    : `${id} was added to the shortlist.`);
+}
+
 function comparisonDefaults() {
   return {
     left: canonicalRelease.records.some(record => record.id === 'iso-a90-r1p5') ? 'iso-a90-r1p5' : canonicalRelease.records[0].id,
@@ -680,6 +737,8 @@ function setupComparison() {
     };
   }
   for (const selector of ['#comparison-swap', '#comparison-reset', '#comparison-share']) $(selector).disabled = false;
+  for (const selector of ['#comparison-save-a', '#comparison-save-b']) $(selector).disabled = false;
+  restoreSavedComparisonWorkspace();
   applyComparisonState(parseComparisonHash(location.hash));
 }
 
@@ -691,7 +750,7 @@ function setComparisonUnavailable(message) {
     select.replaceChildren(new Option(message));
     $(`#compare-status-${side}`).textContent = message;
   }
-  for (const selector of ['#comparison-swap', '#comparison-reset', '#comparison-share']) $(selector).disabled = true;
+  for (const selector of ['#comparison-swap', '#comparison-reset', '#comparison-share', '#comparison-save-a', '#comparison-save-b']) $(selector).disabled = true;
   $('#comparison').setAttribute('aria-busy', 'false');
   $('#comparison').innerHTML = `<p class="comparison-loading">${escapeHtml(message)}</p>`;
   $('#comparison-summary').textContent = message;
@@ -1132,6 +1191,31 @@ $('#comparison-share').addEventListener('click', async () => {
   } catch {
     status.textContent = 'Copy was unavailable. Use the address bar to copy this comparison.';
   }
+});
+$('#comparison-save-a').addEventListener('click', () => saveComparisonRecord('a'));
+$('#comparison-save-b').addEventListener('click', () => saveComparisonRecord('b'));
+$('#comparison-workspace-list').addEventListener('click', event => {
+  const item = event.target.closest('[data-workspace-record]');
+  if (!item || !canonicalRelease) return;
+  const use = event.target.closest('[data-workspace-use]');
+  if (use) {
+    const side = use.dataset.workspaceUse;
+    const select = $(`#compare-${side}`);
+    select.dataset.selectedId = item.dataset.workspaceRecord;
+    renderComparisonCandidates(side);
+    updateComparison();
+    $('#comparison-summary').focus({ preventScroll: true });
+    return;
+  }
+  const action = event.target.closest('[data-workspace-action]');
+  if (!action) return;
+  comparisonWorkspaceIds = updateComparisonWorkspace(comparisonWorkspaceIds, action.dataset.workspaceAction, item.dataset.workspaceRecord);
+  persistComparisonWorkspace(action.dataset.workspaceAction === 'remove'
+    ? `${item.dataset.workspaceRecord} was removed from the shortlist.`
+    : `${item.dataset.workspaceRecord} was moved ${action.dataset.workspaceAction === 'up' ? 'earlier' : 'later'}.`);
+  [...$('#comparison-workspace-list').querySelectorAll('[data-workspace-record]')]
+    .find(entry => entry.dataset.workspaceRecord === item.dataset.workspaceRecord)
+    ?.querySelector(`[data-workspace-action="${action.dataset.workspaceAction}"]`)?.focus();
 });
 $('#comparison-guide-actions').addEventListener('click', event => {
   const button = event.target.closest('[data-comparison-guide]');

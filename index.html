@@ -198,6 +198,17 @@
           <div><p class="kicker">GUIDED COMPARISONS</p><h3>Start with a research question.</h3></div>
           <div id="comparison-guide-actions" role="group" aria-label="Guided comparison questions"><p>Preparing verified suggestions…</p></div>
         </div>
+        <section class="comparison-workspace" aria-labelledby="comparison-workspace-title">
+          <div><p class="kicker">SAVED WORKSPACE</p><h3 id="comparison-workspace-title">Keep a research shortlist.</h3><p>Save up to six verified records. The shortlist stays in this browser and is checked again whenever the Atlas release changes.</p></div>
+          <div>
+            <div class="comparison-workspace-actions">
+              <button id="comparison-save-a" type="button" disabled>Save result A</button>
+              <button id="comparison-save-b" type="button" disabled>Save result B</button>
+            </div>
+            <ol id="comparison-workspace-list" aria-live="polite"><li>Waiting for verified records.</li></ol>
+            <p id="comparison-workspace-status" role="status" aria-live="polite">The shortlist will be restored after release integrity checks finish.</p>
+          </div>
+        </section>
         <div class="comparison-actions" aria-label="Comparison actions">
           <button id="comparison-swap" type="button" disabled>Swap A and B</button>
           <button id="comparison-reset" type="button" disabled>Reset comparison</button>

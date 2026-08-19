@@ -150,6 +150,22 @@ dt { color:var(--muted); } dd { margin:0; font-weight:700; text-align:right; }
 #comparison-guide-actions b,#comparison-guide-actions span { display:block; }
 #comparison-guide-actions b { margin-bottom:5px; font:9px "DM Mono"; text-transform:uppercase; }
 #comparison-guide-actions span { font-size:10px; line-height:1.4; color:var(--muted); }
+.comparison-workspace { margin:0 6vw 16px; padding:18px; display:grid; grid-template-columns:minmax(210px,.45fr) 1fr; gap:18px; border:1px solid var(--ink); background:var(--paper); }
+.comparison-workspace h3 { margin:5px 0 8px; font-size:19px; }
+.comparison-workspace>div>p { color:var(--muted); font-size:10px; line-height:1.6; }
+.comparison-workspace-actions { display:flex; gap:8px; margin-bottom:10px; }
+.comparison-workspace button { min-height:44px; padding:8px 12px; border:1px solid var(--ink); background:var(--panel); color:var(--ink); font:9px "DM Mono"; cursor:pointer; }
+.comparison-workspace-actions button { flex:1; background:var(--acid); }
+.comparison-workspace ol { margin:0; padding:0; list-style:none; border:1px solid var(--line); }
+.comparison-workspace li { display:grid; grid-template-columns:1fr auto; gap:12px; align-items:center; min-width:0; padding:9px; border-bottom:1px solid var(--line); }
+.comparison-workspace li:last-child { border-bottom:0; }
+.comparison-workspace li b,.comparison-workspace li span { display:block; overflow-wrap:anywhere; }
+.comparison-workspace li b { font:9px "DM Mono"; }
+.comparison-workspace li span { margin-top:4px; color:var(--muted); font-size:9px; }
+.workspace-record-actions { display:flex; gap:5px; }
+.workspace-record-actions button { width:44px; padding:6px; }
+.comparison-workspace .workspace-empty { display:block; color:var(--muted); font-size:10px; line-height:1.5; }
+#comparison-workspace-status { min-height:18px; margin:9px 0 0; color:var(--muted); font-size:9px; }
 .compare-controls select:disabled { color:var(--muted); background:#eeece5; cursor:not-allowed; }
 .compare-controls>span { padding:12px; font:9px "DM Mono"; }
 .comparison-actions { margin:0 6vw 16px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
@@ -170,6 +186,7 @@ dt { color:var(--muted); } dd { margin:0; font-weight:700; text-align:right; }
 .comparison article>a { display:inline-flex; align-items:center; min-height:44px; margin-top:12px; font:9px "DM Mono"; text-transform:uppercase; text-decoration:underline; text-underline-offset:4px; }
 @media(max-width:720px) { .comparison-summary,.comparison-actions { margin-inline:24px; } .comparison-actions { display:grid; grid-template-columns:1fr; } .comparison-actions button { width:100%; } }
 @media(max-width:720px) { .comparison-guides { margin-inline:24px; grid-template-columns:1fr; } #comparison-guide-actions { grid-template-columns:1fr; } }
+@media(max-width:720px){.comparison-workspace{margin-inline:24px;grid-template-columns:1fr}.comparison-workspace li{grid-template-columns:1fr}.workspace-record-actions{display:grid;grid-template-columns:repeat(5,1fr)}.workspace-record-actions button{width:100%}}
 .research-explorer { padding-bottom:100px; background:#e8e7dd; border-top:1px solid var(--ink); }
 .workspace-rail { position:sticky; z-index:15; top:68px; display:grid; grid-template-columns:minmax(150px,1fr) repeat(4,minmax(100px,160px)); align-items:stretch; border-block:1px solid var(--ink); background:rgba(255,253,247,.96); -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px); }
 .workspace-rail>span,.workspace-rail a { display:flex; min-height:52px; padding:10px 16px; align-items:center; gap:9px; border-right:1px solid var(--line); font:600 10px "DM Mono"; text-decoration:none; text-transform:uppercase; }
