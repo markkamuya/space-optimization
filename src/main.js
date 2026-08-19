@@ -12,6 +12,7 @@ import { compareCanonicalRecords, comparisonOptionLabel } from './ui/comparisonM
 import { buildComparisonGuides, comparisonMatchMessage, filterComparisonCandidates } from './ui/comparisonFinder.js';
 import { formatComparisonHash, parseComparisonHash, resolveComparisonState } from './ui/comparisonState.js';
 import { formatResearchHash, parseResearchHash } from './ui/researchState.js';
+import { buildResearchIndex, filterResearchIndex } from './ui/researchIndex.js';
 
 const $ = selector => document.querySelector(selector);
 const percent = value => `${(value * 100).toFixed(1)}%`;
@@ -20,8 +21,10 @@ let selectedPhase = phaseAt(60, 1.5);
 let selectedPhaseRecord = null;
 let phaseMapView = 'overview';
 let researchRelease = null;
+let researchIndex = null;
 let canonicalRelease = null;
 let researchLimit = 24;
+let researchRenderFrame = null;
 let dialogTrigger = null;
 let dialogReturnHash = '#research';
 let researchLoadAttempt = 0;
@@ -729,6 +732,7 @@ async function loadResearchRelease() {
           : `${canonicalRelease.coverage.records} verified records · checksum-checked fallback`
       }
     };
+    researchIndex = buildResearchIndex(canonicalRelease.records);
     $('#record-count').textContent = String(researchRelease.verifiedCount);
     makePhaseMap();
     updatePhase();
@@ -802,12 +806,7 @@ function filteredResearchRecords() {
   const query = $('#research-search').value.trim().toLowerCase();
   const family = $('#research-family').value;
   const evidence = $('#research-evidence').value;
-  return canonicalRelease.records.filter(record => {
-    if (family !== 'all' && record.family !== family) return false;
-    if (evidence !== 'all' && record.evidence.state !== evidence) return false;
-    const haystack = `${record.id} ${record.experimentId} ${record.family} ${record.pattern} ${record.evidence.state}`.toLowerCase();
-    return !query || haystack.includes(query);
-  });
+  return filterResearchIndex(researchIndex, { query, family, evidence });
 }
 
 function currentResearchState({ record = null } = {}) {
@@ -916,6 +915,15 @@ function renderResearchExplorer() {
   }
 }
 
+function scheduleResearchExplorerRender() {
+  if (researchRenderFrame != null) cancelAnimationFrame(researchRenderFrame);
+  $('#research-results').setAttribute('aria-busy', 'true');
+  researchRenderFrame = requestAnimationFrame(() => {
+    researchRenderFrame = null;
+    renderResearchExplorer();
+  });
+}
+
 async function loadV1Context() {
   try {
     const [auditResponse, literatureResponse, challengeResponse, proofResponse, proofJobResponse, contributionResponse, recoveryResponse] = await Promise.all([
@@ -1021,7 +1029,8 @@ for (const selector of ['#research-search', '#research-family', '#research-evide
     const hash = formatResearchHash(currentResearchState());
     if (selector === '#research-search') history.replaceState(null, '', hash);
     else history.pushState(null, '', hash);
-    renderResearchExplorer();
+    if (selector === '#research-search') scheduleResearchExplorerRender();
+    else renderResearchExplorer();
   });
 }
 $('#research-clear').addEventListener('click', () => clearResearchFilters());

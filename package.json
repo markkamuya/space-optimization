@@ -14,6 +14,7 @@
     "atlas:benchmark": "node benchmarks/atlas.js",
     "atlas:submission-benchmark": "node benchmarks/submission.js",
     "atlas:ui-benchmark": "node benchmarks/uiPhaseGrid.js",
+    "atlas:research-ui-benchmark": "node benchmarks/researchExplorer.js",
     "atlas:comparison-benchmark": "node benchmarks/comparisonFinder.js",
     "atlas:release": "node scripts/build-atlas-release.js",
     "atlas:research": "node scripts/build-research-release.js",
