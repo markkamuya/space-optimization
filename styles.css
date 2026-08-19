@@ -311,6 +311,19 @@ dialog::backdrop { background:rgba(5,11,9,.72); -webkit-backdrop-filter:blur(5px
 .detail-header h2,.detail-grid code,.detail-grid a { overflow-wrap:anywhere; word-break:break-word; }
 .detail-compare-action { display:flex; min-height:44px; margin:0 28px 28px; padding:11px 14px; align-items:center; justify-content:center; border:1px solid var(--ink); background:var(--acid); font:600 10px "DM Mono"; text-align:center; text-decoration:none; }
 .detail-grid dl>div { display:flex; justify-content:space-between; padding:8px 0; border-top:1px solid var(--line); font-size:9px; }
+.provenance-panel { border-top:1px solid var(--ink); padding:28px; }
+.provenance-heading { display:grid; grid-template-columns:minmax(180px,.7fr) 1fr; gap:8px 28px; align-items:end; }
+.provenance-heading .kicker { grid-column:1/-1; margin:0; }
+.provenance-heading h3 { margin:0; font-size:18px; }
+.provenance-heading>p:last-child { margin:0; color:var(--muted); font-size:10px; line-height:1.6; }
+.provenance-chain { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:0; padding:0; margin:24px 0 0; list-style:none; border:1px solid var(--line); }
+.provenance-chain li { display:grid; grid-template-columns:auto minmax(0,1fr); gap:10px; min-width:0; padding:16px; border-right:1px solid var(--line); }
+.provenance-chain li>div { min-width:0; }
+.provenance-chain li:last-child { border-right:0; }
+.provenance-step { display:grid; place-items:center; width:24px; height:24px; border-radius:50%; background:var(--ink); color:var(--paper); font:9px "DM Mono"; }
+.provenance-chain h4 { margin:4px 0 8px; font-size:11px; }
+.provenance-chain p { margin:0 0 10px; color:var(--muted); font-size:9px; line-height:1.55; overflow-wrap:anywhere; }
+.provenance-chain code { display:block; font-size:8px; line-height:1.5; overflow-wrap:anywhere; word-break:break-word; }
 .detail-navigation { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:16px; padding:18px 28px; border-top:1px solid var(--ink); }
 .detail-navigation button { min-height:44px; padding:10px 14px; border:1px solid var(--ink); background:var(--panel); color:var(--ink); cursor:pointer; }
 .detail-navigation button:last-child { justify-self:end; }
@@ -327,5 +340,7 @@ footer { padding:22px 3vw; display:flex; justify-content:space-between; backgrou
 @media(prefers-reduced-motion:no-preference){.record-card{animation:enter .35s ease both}@keyframes enter{from{opacity:0;transform:translateY(10px)}}}
 @media(max-width:720px){.research-load-status{margin-inline:24px;grid-template-columns:1fr}.research-load-status span,.research-load-status .release-provenance{text-align:left;grid-column:auto}.release-progress{grid-template-columns:1fr}.map-data-status{align-items:flex-start;flex-direction:column}}
 @media(max-width:720px){.detail-navigation{grid-template-columns:1fr 1fr;padding:18px 24px}.detail-navigation p{grid-column:1/-1;grid-row:1}.detail-navigation button{width:100%}}
+@media(max-width:900px){.provenance-chain{grid-template-columns:1fr}.provenance-chain li{border-right:0;border-bottom:1px solid var(--line)}.provenance-chain li:last-child{border-bottom:0}}
+@media(max-width:720px){.provenance-panel{padding:24px}.provenance-heading{grid-template-columns:1fr}.provenance-heading .kicker{grid-column:auto}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.record-card,.primary-action,.phase-cell:after{animation:none;transition:none}.primary-action:hover{transform:none}}
 @media(forced-colors:active){.brand-mark,.triangle-icon,.shape-readout>span{forced-color-adjust:auto}.phase-cell{border:1px solid ButtonText}.phase-cell:after{background:ButtonText}}

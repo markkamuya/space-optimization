@@ -14,6 +14,7 @@ import { formatComparisonHash, parseComparisonHash, resolveComparisonState } fro
 import { formatResearchHash, parseResearchHash } from './ui/researchState.js';
 import { buildResearchIndex, filterResearchIndex } from './ui/researchIndex.js';
 import { browserCompatibility, listenForMediaChange } from './ui/browserCompatibility.js';
+import { buildProvenanceJourney } from './ui/provenanceJourney.js';
 
 const $ = selector => document.querySelector(selector);
 const percent = value => `${(value * 100).toFixed(1)}%`;
@@ -32,6 +33,7 @@ let researchLoadAttempt = 0;
 let pendingInitialTaskAnchor = true;
 let researchLoadController = null;
 let releaseSource = null;
+let releaseIntegrity = null;
 let releasePhase = 'loading';
 let releaseVerifiedAt = null;
 let releaseRecovery = null;
@@ -721,6 +723,7 @@ async function loadResearchRelease() {
     canonicalRelease = null;
     researchRelease = null;
     releaseSource = null;
+    releaseIntegrity = null;
     makePhaseMap();
     updatePhase();
   }
@@ -749,6 +752,7 @@ async function loadResearchRelease() {
     if (!validation.valid) throw new Error(`Invalid public release: ${validation.errors[0]}`);
     canonicalRelease = release;
     releaseSource = loaded.source;
+    releaseIntegrity = loaded.integrity;
     releasePhase = 'ready';
     releaseVerifiedAt = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(new Date());
     researchRelease = {
@@ -882,6 +886,17 @@ function researchComparisonHref(record) {
   return formatComparisonHash({ left: record.id, right: partner });
 }
 
+function researchProvenanceChain(record) {
+  const stages = buildProvenanceJourney(record, canonicalRelease, releaseIntegrity, releaseSource);
+  return `<section class="provenance-panel" aria-labelledby="provenance-title">
+    <div class="provenance-heading"><p class="kicker">Evidence chain</p><h3 id="provenance-title">How this claim can be trusted</h3><p>Follow each stage from the research identity to the exact integrity-checked public release.</p></div>
+    <ol class="provenance-chain">${stages.map((stage, index) => `<li>
+      <span class="provenance-step" aria-hidden="true">${index + 1}</span>
+      <div><h4>${escapeHtml(stage.label)}</h4><p>${escapeHtml(stage.description)}</p><code>${escapeHtml(stage.value)}</code></div>
+    </li>`).join('')}</ol>
+  </section>`;
+}
+
 function openResearchRecord(record, { preserveContext = false } = {}) {
   if (!preserveContext) {
     dialogTrigger = document.activeElement;
@@ -896,7 +911,7 @@ function openResearchRecord(record, { preserveContext = false } = {}) {
       <section><h3>Verification certificate</h3><p><code>${escapeHtml(record.verification.certificate)}</code></p><dl><div><dt>Pieces</dt><dd>${record.verification.pieceCount}</dd></div><div><dt>Overlap</dt><dd>0</dd></div><div><dt>Numerical stability</dt><dd>${escapeHtml(stabilityLabel(record.verification.stability))}</dd></div><div><dt>Verifier</dt><dd>${escapeHtml(record.verification.verifier)}</dd></div></dl></section>
       <section><h3>Best result and proven limit</h3><dl><div><dt>Verified fill</dt><dd>${percent(record.bounds.lowerBound)}</dd></div><div><dt>Proven maximum</dt><dd>${percent(record.bounds.upperBound)}</dd></div><div><dt>Room for improvement</dt><dd>${percent(record.bounds.optimalityGap)}</dd></div></dl><p>Priority for checking empty boundary space: ${escapeHtml(record.descriptors.boundaryGapAnalysis.priority)}.</p></section>
       <section><h3>Reproduce this result</h3><p><code>${escapeHtml(record.reproducibility.command)}</code></p><p>Seed <code>${escapeHtml(record.reproducibility.seed)}</code><br>Fingerprint <code>${escapeHtml(record.verification.fingerprint)}</code></p><a href="/atlas-v2.json" download>Download coordinates ↓</a></section>
-    </div>${researchDialogNavigation(record)}
+    </div>${researchProvenanceChain(record)}${researchDialogNavigation(record)}
     <a class="detail-compare-action" href="${escapeHtml(researchComparisonHref(record))}">Compare this result with another verified record</a>`;
   const dialog = $('#record-dialog');
   if (!dialog.open) dialog.showModal();

@@ -54,7 +54,18 @@ async function loadShards(fetchImpl, cryptoImpl, onProgress, signal) {
     });
   }
   if (records.length !== index.recordCount) throw new Error('incomplete_shard_coverage');
-  return { release: { ...index.release, records }, source: 'verified_shards', warning: null };
+  return {
+    release: { ...index.release, records },
+    source: 'verified_shards',
+    warning: null,
+    integrity: {
+      algorithm: 'SHA-256',
+      artifact: 'atlas-v2-shards.json',
+      digest: expectedIndexDigest,
+      scope: 'shard index statement and individually verified record shards',
+      shardCount: index.shards.length
+    }
+  };
 }
 
 async function loadVerifiedMonolith(fetchImpl, cryptoImpl, signal) {
@@ -66,7 +77,16 @@ async function loadVerifiedMonolith(fetchImpl, cryptoImpl, signal) {
   if (!/^[a-f0-9]{64}$/.test(expected) || await sha256(payload, cryptoImpl) !== expected) {
     throw new Error('monolith_integrity_mismatch');
   }
-  return JSON.parse(payload);
+  return {
+    release: JSON.parse(payload),
+    integrity: {
+      algorithm: 'SHA-256',
+      artifact: 'atlas-v2.json',
+      digest: expected,
+      scope: 'complete canonical release file',
+      shardCount: null
+    }
+  };
 }
 
 export async function loadIntegrityCheckedRelease(options = {}) {
@@ -76,7 +96,12 @@ export async function loadIntegrityCheckedRelease(options = {}) {
     return await loadShards(fetchImpl, cryptoImpl, options.onProgress, options.signal);
   } catch (shardError) {
     if (options.signal?.aborted || shardError.name === 'AbortError') throw shardError;
-    const release = await loadVerifiedMonolith(fetchImpl, cryptoImpl, options.signal);
-    return { release, source: 'verified_monolith_fallback', warning: shardError.message };
+    const fallback = await loadVerifiedMonolith(fetchImpl, cryptoImpl, options.signal);
+    return {
+      release: fallback.release,
+      source: 'verified_monolith_fallback',
+      warning: shardError.message,
+      integrity: fallback.integrity
+    };
   }
 }

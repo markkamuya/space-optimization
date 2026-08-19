@@ -32,6 +32,10 @@ test('browser loader verifies and progressively assembles every shard', async ()
     fetchImpl: responseMap(release), cryptoImpl: webcrypto, onProgress: update => progress.push(update)
   });
   assert.equal(result.source, 'verified_shards');
+  assert.equal(result.integrity.artifact, 'atlas-v2-shards.json');
+  assert.equal(result.integrity.algorithm, 'SHA-256');
+  assert.match(result.integrity.digest, /^[a-f0-9]{64}$/);
+  assert.equal(result.integrity.shardCount, 3);
   assert.deepEqual(result.release, release);
   assert.deepEqual(progress.map(update => update.loadedRecords), [2, 4, 5]);
   assert.deepEqual(progress.map(update => update.totalRecords), [5, 5, 5]);
@@ -46,6 +50,8 @@ test('browser loader rejects a bad shard and uses only a checksum-verified monol
   });
   const result = await loadIntegrityCheckedRelease({ fetchImpl, cryptoImpl: webcrypto });
   assert.equal(result.source, 'verified_monolith_fallback');
+  assert.equal(result.integrity.artifact, 'atlas-v2.json');
+  assert.equal(result.integrity.digest, createHash('sha256').update(`${JSON.stringify(release)}\n`).digest('hex'));
   assert.match(result.warning, /shard_integrity_mismatch/);
   assert.deepEqual(result.release, release);
 });
