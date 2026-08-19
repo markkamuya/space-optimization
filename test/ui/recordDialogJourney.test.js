@@ -15,6 +15,9 @@ test('record inspection preserves filters and exposes accessible sequential navi
   assert.match(script, /openResearchRecord\(record, \{ preserveContext: true \}\)/);
   assert.match(script, /if \(!dialog\.open\) dialog\.showModal\(\)/);
   assert.match(script, /This linked result is outside the current filters/);
+  assert.match(script, /researchComparisonHref\(record\)/);
+  assert.match(script, /Compare this result with another verified record/);
   assert.match(styles, /\.detail-navigation button \{ min-height:44px/);
+  assert.match(styles, /\.detail-compare-action \{ display:flex; min-height:44px/);
   assert.match(styles, /@media\(max-width:720px\)\{\.detail-navigation/);
 });

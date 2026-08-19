@@ -807,6 +807,12 @@ function researchDialogNavigation(record) {
   </nav>`;
 }
 
+function researchComparisonHref(record) {
+  const defaults = comparisonDefaults();
+  const partner = defaults.left === record.id ? defaults.right : defaults.left;
+  return formatComparisonHash({ left: record.id, right: partner });
+}
+
 function openResearchRecord(record, { preserveContext = false } = {}) {
   if (!preserveContext) {
     dialogTrigger = document.activeElement;
@@ -821,7 +827,8 @@ function openResearchRecord(record, { preserveContext = false } = {}) {
       <section><h3>Verification certificate</h3><p><code>${escapeHtml(record.verification.certificate)}</code></p><dl><div><dt>Pieces</dt><dd>${record.verification.pieceCount}</dd></div><div><dt>Overlap</dt><dd>0</dd></div><div><dt>Numerical stability</dt><dd>${escapeHtml(stabilityLabel(record.verification.stability))}</dd></div><div><dt>Verifier</dt><dd>${escapeHtml(record.verification.verifier)}</dd></div></dl></section>
       <section><h3>Best result and proven limit</h3><dl><div><dt>Verified fill</dt><dd>${percent(record.bounds.lowerBound)}</dd></div><div><dt>Proven maximum</dt><dd>${percent(record.bounds.upperBound)}</dd></div><div><dt>Room for improvement</dt><dd>${percent(record.bounds.optimalityGap)}</dd></div></dl><p>Priority for checking empty boundary space: ${escapeHtml(record.descriptors.boundaryGapAnalysis.priority)}.</p></section>
       <section><h3>Reproduce this result</h3><p><code>${escapeHtml(record.reproducibility.command)}</code></p><p>Seed <code>${escapeHtml(record.reproducibility.seed)}</code><br>Fingerprint <code>${escapeHtml(record.verification.fingerprint)}</code></p><a href="/atlas-v2.json" download>Download coordinates ↓</a></section>
-    </div>${researchDialogNavigation(record)}`;
+    </div>${researchDialogNavigation(record)}
+    <a class="detail-compare-action" href="${escapeHtml(researchComparisonHref(record))}">Compare this result with another verified record</a>`;
   const dialog = $('#record-dialog');
   if (!dialog.open) dialog.showModal();
   dialog.querySelector('.dialog-close').focus({ preventScroll: true });

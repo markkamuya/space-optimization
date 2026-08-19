@@ -22,7 +22,7 @@
       <a class="brand" href="#top" aria-label="Triangle Packing Atlas home"><span class="brand-mark"></span><span>Triangle Packing Atlas</span></a>
       <button id="nav-toggle" class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav">Menu</button>
       <nav id="primary-nav" aria-label="Main navigation">
-        <a href="#map">Explore</a><a href="#compare">Compare</a><a href="#research">Verify evidence</a><a href="#challenges">Improve records</a><a href="#contribute">Contribute</a>
+        <a href="#map">Explore</a><a href="#research">Verify evidence</a><a href="#compare">Compare</a><a href="#challenges">Improve records</a><a href="#contribute">Contribute</a>
       </nav>
       <a class="contribute-link" href="#contribute">How to contribute</a>
     </header>
@@ -43,10 +43,10 @@
           </div>
           <a class="primary-action" href="#map">Try the packing map <span>↓</span></a>
           <nav class="task-launchpad" aria-label="Start a research task">
-            <a href="#map"><b>Explore packings</b><span>Choose a triangle and see verified results.</span></a>
-            <a href="#compare"><b>Compare evidence</b><span>Put any two of 304 records side by side.</span></a>
-            <a href="#research"><b>Verify a claim</b><span>Inspect coordinates, bounds, and provenance.</span></a>
-            <a href="#challenges"><b>Improve a result</b><span>Start from an open, reproducible challenge.</span></a>
+            <a href="#map"><b>1 · Explore packings</b><span>Choose a triangle and see verified results.</span></a>
+            <a href="#research"><b>2 · Verify a claim</b><span>Inspect coordinates, bounds, and provenance.</span></a>
+            <a href="#compare"><b>3 · Compare evidence</b><span>Put any two verified records side by side.</span></a>
+            <a href="#challenges"><b>4 · Improve a result</b><span>Start from an open, reproducible challenge.</span></a>
           </nav>
         </div>
       </section>
@@ -139,6 +139,34 @@
         <div id="record-grid" class="record-grid" aria-live="polite"></div>
       </section>
 
+      <section id="research" class="research-explorer">
+        <div class="section-intro">
+          <div><p class="kicker">ALL VERIFIED RESULTS</p><h2>Search the full dataset.</h2></div>
+          <p>Filter by triangle family or evidence level. Open any result to see its coordinates, verification details, known bounds, and reproduction command.</p>
+        </div>
+        <aside id="research-load-status" class="research-load-status" role="status" aria-live="polite" aria-atomic="true">
+          <b>Loading verified research data…</b><span>Checking release integrity before results are shown.</span>
+        </aside>
+        <div class="research-summary" id="research-summary" aria-live="polite"></div>
+        <div class="research-toolbar">
+          <label>Search results<input id="research-search" type="search" placeholder="Try: equilateral, 60°, or vertical"></label>
+          <label>Family<select id="research-family"><option value="all">All families</option><option>right</option><option>equilateral</option><option>isosceles</option><option>scalene</option></select></label>
+          <label>Evidence<select id="research-evidence"><option value="all">All evidence</option><option value="proven_optimal">Proven optimal</option><option value="verified_best_known">Verified best known</option></select></label>
+          <button id="research-clear" class="secondary-action" type="button" hidden>Clear filters</button>
+          <div class="research-downloads"><a href="/atlas-v2.json" download>JSON ↓</a><a href="/atlas-v2.csv" download>CSV ↓</a><a href="/audit-v2.json" download>AUDIT ↓</a><a href="/work-queue-v2.json" download>WORK QUEUE ↓</a><a href="/finite-domain-proofs-v2.json" download>FINITE-DOMAIN PROOFS ↓</a><a href="/finite-domain-proof-jobs-v2.json" download>PROOF CHECKPOINTS ↓</a></div>
+        </div>
+        <aside id="finite-domain-proof-summary" class="proof-summary" aria-live="polite">
+          <h3>Machine-checkable finite-domain proofs</h3><p>Loading proof scope and verification details…</p>
+        </aside>
+        <div class="registry-head"><span>Triangle and rectangle</span><span>Packing pattern</span><span>What we know</span><span>Filled / possible gain</span></div>
+        <div id="research-results" class="registry-results" aria-live="polite" aria-busy="true"></div>
+        <div class="registry-footer"><span id="research-result-count">Loading canonical release…</span><button id="research-more" type="button">Show more records</button></div>
+        <div class="transition-panel">
+          <div><p class="kicker">WHERE PATTERNS CHANGE</p><h3>Changes seen between neighboring test cases.</h3></div>
+          <div id="transition-list"></div>
+        </div>
+      </section>
+
       <section id="compare" class="compare-section">
         <div class="section-intro">
           <div><p class="kicker">COMPARE TWO RESULTS</p><h2>See which packing uses more space.</h2></div>
@@ -169,34 +197,6 @@
         </div>
         <p id="comparison-summary" class="comparison-summary" role="status" aria-live="polite" tabindex="-1">Comparison will be available after release integrity checks finish.</p>
         <div id="comparison" class="comparison" aria-busy="true"><p class="comparison-loading">Preparing verified comparison records…</p></div>
-      </section>
-
-      <section id="research" class="research-explorer">
-        <div class="section-intro">
-          <div><p class="kicker">ALL VERIFIED RESULTS</p><h2>Search the full dataset.</h2></div>
-          <p>Filter by triangle family or evidence level. Open any result to see its coordinates, verification details, known bounds, and reproduction command.</p>
-        </div>
-        <aside id="research-load-status" class="research-load-status" role="status" aria-live="polite" aria-atomic="true">
-          <b>Loading verified research data…</b><span>Checking release integrity before results are shown.</span>
-        </aside>
-        <div class="research-summary" id="research-summary" aria-live="polite"></div>
-        <div class="research-toolbar">
-          <label>Search results<input id="research-search" type="search" placeholder="Try: equilateral, 60°, or vertical"></label>
-          <label>Family<select id="research-family"><option value="all">All families</option><option>right</option><option>equilateral</option><option>isosceles</option><option>scalene</option></select></label>
-          <label>Evidence<select id="research-evidence"><option value="all">All evidence</option><option value="proven_optimal">Proven optimal</option><option value="verified_best_known">Verified best known</option></select></label>
-          <button id="research-clear" class="secondary-action" type="button" hidden>Clear filters</button>
-          <div class="research-downloads"><a href="/atlas-v2.json" download>JSON ↓</a><a href="/atlas-v2.csv" download>CSV ↓</a><a href="/audit-v2.json" download>AUDIT ↓</a><a href="/work-queue-v2.json" download>WORK QUEUE ↓</a><a href="/finite-domain-proofs-v2.json" download>FINITE-DOMAIN PROOFS ↓</a><a href="/finite-domain-proof-jobs-v2.json" download>PROOF CHECKPOINTS ↓</a></div>
-        </div>
-        <aside id="finite-domain-proof-summary" class="proof-summary" aria-live="polite">
-          <h3>Machine-checkable finite-domain proofs</h3><p>Loading proof scope and verification details…</p>
-        </aside>
-        <div class="registry-head"><span>Triangle and rectangle</span><span>Packing pattern</span><span>What we know</span><span>Filled / possible gain</span></div>
-        <div id="research-results" class="registry-results" aria-live="polite" aria-busy="true"></div>
-        <div class="registry-footer"><span id="research-result-count">Loading canonical release…</span><button id="research-more" type="button">Show more records</button></div>
-        <div class="transition-panel">
-          <div><p class="kicker">WHERE PATTERNS CHANGE</p><h3>Changes seen between neighboring test cases.</h3></div>
-          <div id="transition-list"></div>
-        </div>
       </section>
 
       <section id="challenges" class="challenge-section">

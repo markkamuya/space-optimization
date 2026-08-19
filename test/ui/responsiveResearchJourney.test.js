@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import { readFile } from 'node:fs/promises';
+
+test('primary research journey follows explore, inspect, compare, improve order', async () => {
+  const html = await readFile(new URL('../../index.html', import.meta.url), 'utf8');
+  const map = html.indexOf('<section id="map"');
+  const research = html.indexOf('<section id="research"');
+  const compare = html.indexOf('<section id="compare"');
+  const challenges = html.indexOf('<section id="challenges"');
+
+  assert.ok(map > 0 && map < research && research < compare && compare < challenges);
+  for (const step of ['1 · Explore packings', '2 · Verify a claim', '3 · Compare evidence', '4 · Improve a result']) {
+    assert.match(html, new RegExp(step));
+  }
+  assert.match(html, /<a href="#map">Explore<\/a><a href="#research">Verify evidence<\/a><a href="#compare">Compare<\/a>/);
+});
