@@ -18,6 +18,7 @@ import { buildProvenanceJourney } from './ui/provenanceJourney.js';
 import { createEvidenceBundle, validateEvidenceBundle } from './ui/evidenceBundle.js';
 import { COMPARISON_WORKSPACE_LIMIT, restoreComparisonWorkspace, serializeComparisonWorkspace, updateComparisonWorkspace } from './ui/comparisonWorkspace.js';
 import { comparisonReportSummary, createComparisonReport } from './ui/comparisonReport.js';
+import { preflightContribution } from './ui/submissionPreflight.js';
 
 const $ = selector => document.querySelector(selector);
 const percent = value => `${(value * 100).toFixed(1)}%`;
@@ -834,6 +835,7 @@ async function loadResearchRelease() {
     updatePhase();
     renderLeaderboard();
     setupComparison();
+    setupContributionPreflight();
     applyResearchState(parseResearchHash(location.hash));
     renderResearchExplorer();
     const readyExperience = renderReleaseExperience('ready');
@@ -883,6 +885,23 @@ function showOfflineExperience() {
     setComparisonUnavailable('Verified comparison records are unavailable while offline.');
   }
   restoreInitialTaskAnchor();
+}
+
+function renderContributionPreflight(report) {
+  const results = $('#contribution-preflight-results');
+  results.innerHTML = `<div class="preflight-outcome ${report.readyForFullVerification ? 'ready' : 'needs-work'}"><b>${report.readyForFullVerification ? 'Ready for full local verification' : 'Needs work before full verification'}</b><p>${escapeHtml(report.boundary)}</p></div>
+    <ol>${report.checks.map(item => `<li class="${item.passed ? 'passed' : 'failed'}"><span aria-hidden="true">${item.passed ? '✓' : '!'}</span><div><b>${escapeHtml(item.label)}</b><p>${escapeHtml(item.detail)}</p></div></li>`).join('')}</ol>
+    ${report.schemaErrors.length ? `<details><summary>${report.schemaErrors.length} structural issue${report.schemaErrors.length === 1 ? '' : 's'}</summary><ul>${report.schemaErrors.slice(0, 20).map(error => `<li><code>${escapeHtml(error.path || 'record')}</code>: ${escapeHtml(error.message)}</li>`).join('')}</ul></details>` : ''}`;
+}
+
+function setupContributionPreflight() {
+  const select = $('#contribution-baseline');
+  const input = $('#contribution-file');
+  select.replaceChildren(...canonicalRelease.records.map(record => new Option(comparisonOptionLabel(record), record.id)));
+  select.value = currentComparisonState().right;
+  select.disabled = false;
+  input.disabled = false;
+  $('#contribution-preflight-status').textContent = 'Choose a proposed record JSON file up to 10 MB. Nothing is uploaded.';
 }
 
 function researchRecordLabel(record) {
@@ -1247,6 +1266,31 @@ $('#comparison-workspace-list').addEventListener('click', event => {
   [...$('#comparison-workspace-list').querySelectorAll('[data-workspace-record]')]
     .find(entry => entry.dataset.workspaceRecord === item.dataset.workspaceRecord)
     ?.querySelector(`[data-workspace-action="${action.dataset.workspaceAction}"]`)?.focus();
+});
+$('#contribution-file').addEventListener('change', async event => {
+  const input = event.currentTarget;
+  const status = $('#contribution-preflight-status');
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 10 * 1024 * 1024) {
+    status.textContent = 'That file is larger than 10 MB and was not opened. Reduce it to one proposed record.';
+    input.value = '';
+    return;
+  }
+  try {
+    const candidate = JSON.parse(await file.text());
+    const baseline = canonicalRelease?.records.find(record => record.id === $('#contribution-baseline').value);
+    const report = preflightContribution(candidate, baseline);
+    renderContributionPreflight(report);
+    status.textContent = report.readyForFullVerification
+      ? 'Browser preflight passed. Run the full local geometry and incumbent checks next.'
+      : 'Browser preflight found issues. Review each failed item before running full verification.';
+  } catch {
+    $('#contribution-preflight-results').replaceChildren();
+    status.textContent = 'The selected file is not readable JSON. No submission data was retained.';
+  } finally {
+    input.value = '';
+  }
 });
 $('#comparison-guide-actions').addEventListener('click', event => {
   const button = event.target.closest('[data-comparison-guide]');

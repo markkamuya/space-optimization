@@ -246,6 +246,15 @@
           <dl id="contribution-status"><div><dt>Review pipeline</dt><dd>Loading current status…</dd></div></dl>
           <a class="primary-action dark" href="https://github.com/markkamuya/space-optimization" target="_blank" rel="noreferrer">Contribute on GitHub <span>↗</span></a>
         </div>
+        <section class="contribution-preflight" aria-labelledby="contribution-preflight-title">
+          <div><p class="kicker">PRIVATE BROWSER PREFLIGHT</p><h3 id="contribution-preflight-title">Check readiness before you submit.</h3><p>Your file stays in this browser. Preflight checks structure and provenance; the full local verifier must still check geometry and improvement.</p></div>
+          <div class="contribution-preflight-controls">
+            <label>Verified result to improve<select id="contribution-baseline" disabled><option>Loading verified records…</option></select></label>
+            <label class="contribution-file">Choose proposed record JSON<input id="contribution-file" type="file" accept="application/json,.json" disabled></label>
+            <p id="contribution-preflight-status" role="status" aria-live="polite">Waiting for an integrity-checked release.</p>
+          </div>
+          <div id="contribution-preflight-results" class="contribution-preflight-results" aria-live="polite"></div>
+        </section>
       </section>
 
       <section class="research-section">
