@@ -20,6 +20,12 @@ test('cache misses fail explicitly instead of manufacturing verified data', () =
   assert.doesNotMatch(worker, /new Response\([^)]*atlas-v2/);
 });
 
+test('cached fallback notifies the visible UI even when browser connectivity is stale', () => {
+  assert.match(worker, /ATLAS_OFFLINE_FALLBACK/);
+  assert.match(worker, /self\.clients\.matchAll/);
+  assert.match(worker, /await notifyFallback\(event\.request\.url\)/);
+});
+
 test('registration fails closed outside a secure supported browser', async () => {
   const original = globalThis.isSecureContext;
   Object.defineProperty(globalThis, 'isSecureContext', { value: false, configurable: true });

@@ -22,6 +22,7 @@ import { preflightContribution } from './ui/submissionPreflight.js';
 import { contributionHandoff, createContributionStarter } from './ui/contributionStarter.js';
 import { freshnessDelay, releaseFreshness } from './ui/releaseFreshness.js';
 import { createResearchSession, restoreResearchSession } from './ui/researchSession.js';
+import { registerOfflineCache, requestOfflineCacheStatus } from './ui/offlineCache.js';
 
 const $ = selector => document.querySelector(selector);
 const percent = value => `${(value * 100).toFixed(1)}%`;
@@ -56,6 +57,39 @@ const pageMain = $('#main-content');
 const pageFooter = $('footer');
 const brandLink = $('.brand');
 const compatibility = browserCompatibility(globalThis);
+let offlineCacheSupported = false;
+let offlineFallbackActive = false;
+
+async function renderOfflineReadiness(message = '') {
+  const panel = $('#offline-readiness');
+  const status = $('#offline-readiness-status');
+  if (!offlineCacheSupported) {
+    panel.className = 'offline-readiness';
+    status.textContent = message || 'Offline reopening is unavailable in this browser. Online verified workflows are unaffected.';
+    return;
+  }
+  if ((!navigator.onLine || offlineFallbackActive) && canonicalRelease) {
+    panel.className = 'offline-readiness offline';
+    status.textContent = 'Offline: cached release bytes passed integrity checks in this session. Reconnect to check for a newer release.';
+    return;
+  }
+  const cache = await requestOfflineCacheStatus();
+  panel.className = `offline-readiness ${cache.available ? 'ready' : ''}`;
+  status.textContent = message || (cache.available
+    ? `${cache.entries} Atlas resources are cached. Offline reload will still recheck every required release artifact and fail closed if any are missing.`
+    : 'Offline support is installed but this page is not controlled yet. Reload online once to prepare a verified offline copy.');
+}
+
+async function setupOfflineMode() {
+  const result = await registerOfflineCache();
+  offlineCacheSupported = result.supported;
+  await renderOfflineReadiness(result.reason === 'registration_failed' ? 'Offline support could not be installed. Online verified workflows are unaffected.' : '');
+  navigator.serviceWorker?.addEventListener('message', event => {
+    if (event.data?.type !== 'ATLAS_OFFLINE_FALLBACK') return;
+    offlineFallbackActive = true;
+    renderOfflineReadiness('Network access is unavailable. Cached Atlas files are being rechecked before any research result is trusted.');
+  });
+}
 
 function renderBrowserCompatibility() {
   document.body.dataset.browserCompatibility = compatibility.supported ? 'supported' : 'degraded';
@@ -809,7 +843,7 @@ function renderLeaderboard() {
 }
 
 async function loadResearchRelease() {
-  if (!navigator.onLine) {
+  if (!navigator.onLine && !navigator.serviceWorker?.controller) {
     showOfflineExperience();
     return;
   }
@@ -887,6 +921,7 @@ async function loadResearchRelease() {
     renderResearchReleaseStatus(readyExperience, recoveryMessage + (loaded.source === 'verified_shards'
       ? `${canonicalRelease.coverage.records} records passed integrity checks from the canonical release shards.`
       : `${canonicalRelease.coverage.records} records passed the canonical checksum after a shard was unavailable. No partial shard data is shown.`));
+    await renderOfflineReadiness();
     restoreInitialTaskAnchor();
   } catch (error) {
     if (attempt !== researchLoadAttempt || error.name === 'AbortError') return;
@@ -1300,8 +1335,17 @@ $('#research-load-status').addEventListener('click', event => {
 $('#map-data-status').addEventListener('click', event => {
   if (event.target.closest('[data-retry-release]')) startReleaseRecovery({ manual: true, target: '#map-data-status' });
 });
+$('#offline-readiness-check').addEventListener('click', async () => {
+  await renderOfflineReadiness();
+  $('#offline-readiness-status').focus({ preventScroll: true });
+});
 window.addEventListener('offline', showOfflineExperience);
-window.addEventListener('online', () => startReleaseRecovery({ reason: 'reconnected' }));
+window.addEventListener('offline', () => renderOfflineReadiness());
+window.addEventListener('online', () => {
+  offlineFallbackActive = false;
+  renderOfflineReadiness('Back online. Checking whether a newer verified release is available…');
+  startReleaseRecovery({ reason: 'reconnected' });
+});
 document.addEventListener('visibilitychange', refreshLongSessionStatus);
 window.addEventListener('pagehide', () => {
   clearTimeout(releaseFreshnessTimer);
@@ -1567,7 +1611,7 @@ else updatePhase();
 renderFilters();
 renderRecords();
 renderChallenges();
-if (compatibility.canVerifyRelease) loadResearchRelease();
+if (compatibility.canVerifyRelease) setupOfflineMode().finally(() => loadResearchRelease());
 else {
   releasePhase = 'failed';
   renderResearchReleaseStatus(renderReleaseExperience('failed'), compatibility.message);

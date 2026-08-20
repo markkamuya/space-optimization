@@ -13,6 +13,11 @@ async function trim(cache) {
   await Promise.all(keys.slice(0, Math.max(0, keys.length - MAX_ENTRIES)).map(key => cache.delete(key)));
 }
 
+async function notifyFallback(url) {
+  const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+  for (const client of clients) client.postMessage({ type: 'ATLAS_OFFLINE_FALLBACK', url });
+}
+
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_VERSION).then(cache => cache.addAll(['/'])));
   self.skipWaiting();
@@ -39,10 +44,16 @@ self.addEventListener('fetch', event => {
       return response;
     } catch {
       const cached = await cache.match(event.request, { ignoreSearch: event.request.mode === 'navigate' });
-      if (cached) return cached;
+      if (cached) {
+        await notifyFallback(event.request.url);
+        return cached;
+      }
       if (event.request.mode === 'navigate') {
         const shell = await cache.match('/');
-        if (shell) return shell;
+        if (shell) {
+          await notifyFallback(event.request.url);
+          return shell;
+        }
       }
       return new Response(JSON.stringify({ error: 'offline_cache_miss' }), {
         status: 503,
