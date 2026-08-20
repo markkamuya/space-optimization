@@ -9,7 +9,7 @@ import { formatMapHash, parseMapHash } from './ui/mapState.js';
 import { phaseMapDimensions, phaseMapRecords } from './ui/phaseOverview.js';
 import { releaseExperience } from './ui/releaseExperience.js';
 import { compareCanonicalRecords, comparisonOptionLabel } from './ui/comparisonModel.js';
-import { buildComparisonGuides, comparisonMatchMessage, filterComparisonCandidates } from './ui/comparisonFinder.js';
+import { boundedComparisonCandidates, buildComparisonGuides, comparisonMatchMessage } from './ui/comparisonFinder.js';
 import { formatComparisonHash, parseComparisonHash, resolveComparisonState } from './ui/comparisonState.js';
 import { formatResearchHash, parseResearchHash } from './ui/researchState.js';
 import { buildResearchIndex, filterResearchIndex } from './ui/researchIndex.js';
@@ -47,6 +47,7 @@ let releaseFreshnessTimer = null;
 let releaseRecovery = null;
 let comparisonWorkspaceIds = [];
 let comparisonWorkspaceStorage = 'available';
+const comparisonRenderFrames = { a: null, b: null };
 const comparisonWorkspaceKey = 'triangle-packing-atlas:comparison-workspace:v1';
 const navToggle = $('#nav-toggle');
 const primaryNav = $('#primary-nav');
@@ -696,7 +697,8 @@ function renderComparisonCandidates(side) {
   const search = $(`#compare-search-${side}`);
   const selectedId = select.dataset.selectedId || select.value || comparisonDefaults()[side === 'a' ? 'left' : 'right'];
   const selected = canonicalRelease.records.find(record => record.id === selectedId);
-  const matches = filterComparisonCandidates(canonicalRelease.records, search.value);
+  const candidateWindow = boundedComparisonCandidates(canonicalRelease.records, search.value);
+  const matches = candidateWindow.visible;
   select.replaceChildren();
   if (selected && !matches.some(record => record.id === selected.id)) {
     const currentGroup = document.createElement('optgroup');
@@ -721,9 +723,18 @@ function renderComparisonCandidates(side) {
   select.value = selectedId;
   select.disabled = false;
   $(`#compare-status-${side}`).textContent = comparisonMatchMessage({
-    matches: matches.length,
+    matches: candidateWindow.total,
     total: canonicalRelease.records.length,
-    retained: Boolean(selected)
+    retained: Boolean(selected),
+    shown: matches.length
+  });
+}
+
+function scheduleComparisonCandidates(side) {
+  if (comparisonRenderFrames[side] !== null) cancelAnimationFrame(comparisonRenderFrames[side]);
+  comparisonRenderFrames[side] = requestAnimationFrame(() => {
+    comparisonRenderFrames[side] = null;
+    renderComparisonCandidates(side);
   });
 }
 
@@ -759,7 +770,7 @@ function setupComparison() {
     const select = $(`#compare-${side}`);
     const search = $(`#compare-search-${side}`);
     search.disabled = false;
-    search.oninput = () => renderComparisonCandidates(side);
+    search.oninput = () => scheduleComparisonCandidates(side);
     select.onchange = () => {
       select.dataset.selectedId = select.value;
       updateComparison();

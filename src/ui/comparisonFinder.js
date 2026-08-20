@@ -21,9 +21,20 @@ export function filterComparisonCandidates(records, query) {
   });
 }
 
-export function comparisonMatchMessage({ matches, total, retained }) {
-  if (matches === total) return `${total} verified records available.`;
+export function boundedComparisonCandidates(records, query, limit = 200) {
+  const matches = filterComparisonCandidates(records, query);
+  return {
+    visible: matches.slice(0, Math.max(1, limit)),
+    total: matches.length,
+    bounded: matches.length > limit,
+    limit: Math.max(1, limit)
+  };
+}
+
+export function comparisonMatchMessage({ matches, total, retained, shown = matches }) {
+  if (matches === total && shown === matches) return `${total} verified records available.`;
   if (matches === 0 && retained) return 'No other verified records match. The current result is retained.';
+  if (shown < matches) return `Showing the first ${shown} of ${matches} matching verified records. Refine the search to reach the rest.`;
   return `${matches} of ${total} verified records match.`;
 }
 

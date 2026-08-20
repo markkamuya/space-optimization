@@ -16,6 +16,7 @@
     "atlas:ui-benchmark": "node benchmarks/uiPhaseGrid.js",
     "atlas:research-ui-benchmark": "node benchmarks/researchExplorer.js",
     "atlas:release-ui-benchmark": "node benchmarks/releaseLoader.js",
+    "atlas:large-release-ui-benchmark": "node benchmarks/largeReleaseUi.js",
     "atlas:browser-certify": "node scripts/certify-browser-ui.js",
     "atlas:comparison-benchmark": "node benchmarks/comparisonFinder.js",
     "atlas:release": "node scripts/build-atlas-release.js",
