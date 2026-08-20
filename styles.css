@@ -243,6 +243,16 @@ dt { color:var(--muted); } dd { margin:0; font-weight:700; text-align:right; }
 .research-summary div:last-child { border:0; }
 .research-summary b { display:block; font-size:32px; }
 .research-summary span { font:9px "DM Mono"; text-transform:uppercase; }
+.evidence-ladder-explainer { margin:0 6vw 24px; display:grid; grid-template-columns:minmax(220px,.7fr) 1.5fr; gap:24px; padding:22px; border:1px solid var(--ink); background:var(--panel); }
+.evidence-ladder-explainer h3 { margin:7px 0; font-size:24px; }
+.evidence-ladder-explainer p:last-child { margin:0; color:var(--muted); font-size:11px; line-height:1.55; }
+.evidence-ladder-explainer ol { display:grid; grid-template-columns:repeat(4,1fr); margin:0; padding:0; list-style:none; counter-reset:evidence; }
+.evidence-ladder-explainer li { position:relative; min-width:0; padding:38px 14px 8px; border-top:3px solid var(--ink); counter-increment:evidence; }
+.evidence-ladder-explainer li::before { content:counter(evidence); position:absolute; top:-17px; left:12px; display:grid; width:30px; height:30px; place-items:center; border:2px solid var(--ink); border-radius:50%; background:var(--paper); font:700 10px "DM Mono"; }
+.evidence-ladder-explainer b,.evidence-ladder-explainer span { display:block; }
+.evidence-ladder-explainer b { font-size:11px; }
+.evidence-ladder-explainer span { margin-top:6px; color:var(--muted); font:9px/1.45 "DM Mono"; }
+@media(max-width:720px){.evidence-ladder-explainer{grid-template-columns:1fr;margin-inline:24px}.evidence-ladder-explainer ol{grid-template-columns:1fr}.evidence-ladder-explainer li{padding:12px 12px 12px 54px;border-top:0;border-left:3px solid var(--ink)}.evidence-ladder-explainer li::before{top:7px;left:-17px}}
 .research-toolbar { margin:0 6vw; display:grid; grid-template-columns:2fr 1fr 1fr auto; gap:12px; align-items:end; padding:20px; border:1px solid var(--ink); background:var(--panel); }
 .research-toolbar label { font:9px "DM Mono"; text-transform:uppercase; color:var(--muted); }
 .research-toolbar input,.research-toolbar select { display:block; width:100%; margin-top:8px; padding:11px; border:1px solid var(--line); background:white; }
