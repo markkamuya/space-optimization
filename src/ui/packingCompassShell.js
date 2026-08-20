@@ -74,7 +74,11 @@ export function setupPackingCompassShell({ document, location, history }) {
   function syncFromLocation() {
     const mode = atlasModeForHash(location.hash);
     setMode(mode);
-    if (mode === 'guided') renderGoal(parseCompassHash(location.hash).goal);
+    if (mode === 'guided') {
+      const { goal } = parseCompassHash(location.hash);
+      renderGoal(goal);
+      window.dispatchEvent(new CustomEvent('packing-compass:goal', { detail: { goal } }));
+    }
   }
 
   goalButtons.forEach(button => button.addEventListener('click', () => {
@@ -82,6 +86,7 @@ export function setupPackingCompassShell({ document, location, history }) {
     history.pushState(null, '', formatCompassHash(goal));
     setMode('guided');
     renderGoal(goal, { focus: true });
+    window.dispatchEvent(new CustomEvent('packing-compass:goal', { detail: { goal } }));
   }));
 
   modeToggle.addEventListener('click', () => {

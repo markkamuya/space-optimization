@@ -24,7 +24,8 @@ import { freshnessDelay, releaseFreshness } from './ui/releaseFreshness.js';
 import { createResearchSession, restoreResearchSession } from './ui/researchSession.js';
 import { registerOfflineCache, requestOfflineCacheStatus } from './ui/offlineCache.js';
 import { runProductionDiagnostics } from './ui/productionDiagnostics.js';
-import { setupPackingCompassShell } from './ui/packingCompassShell.js';
+import { parseCompassHash, setupPackingCompassShell } from './ui/packingCompassShell.js';
+import { COMPASS_CONTAINER_OPTIONS, COMPASS_TRIANGLE_OPTIONS, compassEvidence, matchCompassQuestion } from './ui/packingCompass.js';
 
 const $ = selector => document.querySelector(selector);
 const percent = value => `${(value * 100).toFixed(1)}%`;
@@ -60,6 +61,72 @@ const pageFooter = $('footer');
 const brandLink = $('.brand');
 const compatibility = browserCompatibility(globalThis);
 const packingCompassShell = setupPackingCompassShell({ document, location, history });
+
+function compassOptionMarkup(options) {
+  return options.map(([value, label]) => `<option value="${escapeHtml(value)}">${escapeHtml(label)}</option>`).join('');
+}
+
+function compassRecordMarkup(record) {
+  const evidence = compassEvidence(record);
+  return `<article class="compass-answer-card">
+    <div class="compass-answer-heading"><span>${escapeHtml(evidence.label)}</span><h3>${escapeHtml(record.problem.name)}</h3><p>${escapeHtml(evidence.explanation)}</p></div>
+    <dl><div><dt>Rectangle filled</dt><dd>${percent(record.verification.utilization)}</dd></div><div><dt>Triangles fitted</dt><dd>${record.verification.pieceCount}</dd></div><div><dt>Room for improvement</dt><dd>${percent(record.bounds.optimalityGap)}</dd></div></dl>
+    <p class="compass-answer-pattern">Best verified method: <b>${escapeHtml(record.pattern)}</b></p>
+    <nav aria-label="Continue with this answer"><a href="#research?record=${escapeHtml(record.id)}">Inspect why we trust this answer</a><a href="${escapeHtml(researchComparisonHref(record))}">Compare this result</a><a href="#challenges">${record.evidence.state === 'proven_optimal' ? 'Explore open challenges' : 'Try to improve it'}</a></nav>
+  </article>`;
+}
+
+function renderPackingCompassAnswer(question) {
+  const answer = matchCompassQuestion(canonicalRelease?.records, question);
+  const answerRegion = $('#compass-answer');
+  if (!answer.records.length) {
+    answerRegion.innerHTML = '<div class="compass-answer-empty" role="alert"><h3>No verified answer is available.</h3><p>Change one choice or open Advanced mode. The Atlas will not substitute modeled or unverified data.</p></div>';
+  } else {
+    const pairAction = answer.records.length === 2
+      ? `<a class="compass-pair-action" href="${escapeHtml(formatComparisonHash({ left: answer.records[0].id, right: answer.records[1].id }))}">Compare these two verified results</a>`
+      : '';
+    answerRegion.innerHTML = `<p class="kicker">${answer.records.length === 2 ? 'TWO VERIFIED RESULTS' : 'MATCHING VERIFIED ANSWER'}</p><p class="compass-answer-scope">Your plain-language choices identify a nearby sampled Atlas problem. Evidence statements apply only to each exact triangle and rectangle shown below.</p>${answer.records.map(compassRecordMarkup).join('')}${pairAction}`;
+  }
+  answerRegion.hidden = false;
+  answerRegion.focus({ preventScroll: true });
+}
+
+function renderPackingCompassQuestion(goal) {
+  const slot = $('#compass-question-slot');
+  const releaseStatus = $('#compass-release-status');
+  if (!canonicalRelease || releasePhase !== 'ready') {
+    releaseStatus.textContent = releasePhase === 'failed'
+      ? 'Verified Atlas data is unavailable. Guided answers are withheld until integrity checks recover.'
+      : 'Checking the verified Atlas release before answering a research question…';
+    slot.innerHTML = '<p>Guided controls remain unavailable until the release passes integrity checks. No modeled answer will be shown as verified.</p>';
+    return;
+  }
+  releaseStatus.textContent = `${canonicalRelease.coverage.records} verified records are ready. Answers are matched only against release ${canonicalRelease.version}.`;
+  if (!goal) {
+    slot.innerHTML = '<p>Choose one goal above. Then make two plain-language choices to receive a verified answer.</p>';
+    return;
+  }
+  const defaults = goal === 'improve'
+    ? { triangle: 'obtuse', container: 'wide' }
+    : goal === 'verify'
+      ? { triangle: 'right', container: 'tall' }
+      : { triangle: 'equilateral', container: 'balanced' };
+  slot.innerHTML = `<form id="compass-question-form">
+    <label>What kind of triangle?<select name="triangle">${compassOptionMarkup(COMPASS_TRIANGLE_OPTIONS)}</select></label>
+    <label>What kind of rectangle?<select name="container">${compassOptionMarkup(COMPASS_CONTAINER_OPTIONS)}</select></label>
+    <button type="submit">${goal === 'compare' ? 'Show two verified results' : 'Show my verified answer'}</button>
+  </form><p class="compass-question-note">These choices select an existing Atlas problem. They do not change its coordinates, proof status, or evidence.</p>
+  <section id="compass-answer" class="compass-answer" tabindex="-1" aria-label="Packing Compass answer" hidden></section>`;
+  slot.querySelector('[name="triangle"]').value = defaults.triangle;
+  slot.querySelector('[name="container"]').value = defaults.container;
+  slot.querySelector('form').addEventListener('submit', event => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    renderPackingCompassAnswer({ goal, triangle: data.get('triangle'), container: data.get('container') });
+  });
+}
+
+window.addEventListener('packing-compass:goal', event => renderPackingCompassQuestion(event.detail.goal));
 let offlineCacheSupported = false;
 let offlineFallbackActive = false;
 
@@ -943,6 +1010,7 @@ async function loadResearchRelease() {
       : `${canonicalRelease.coverage.records} records passed the canonical checksum after a shard was unavailable. No partial shard data is shown.`));
     await renderOfflineReadiness();
     renderProductionDiagnostics();
+    renderPackingCompassQuestion(parseCompassHash(location.hash).goal);
     restoreInitialTaskAnchor();
   } catch (error) {
     if (attempt !== researchLoadAttempt || error.name === 'AbortError') return;
