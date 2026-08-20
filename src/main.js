@@ -29,7 +29,7 @@ import { COMPASS_CONTAINER_OPTIONS, COMPASS_TRIANGLE_OPTIONS, compassEvidence, m
 import { advancedOrientation } from './ui/advancedOrientation.js';
 import { evidenceLadder, recordConclusion } from './ui/evidenceStory.js';
 import { buildResearchTrail, createResearchTrailReport, researchTrailReportSummary } from './ui/researchTrail.js';
-import { nextBestActions } from './ui/nextBestAction.js';
+import { nextBestActions, parseResearchCommand } from './ui/nextBestAction.js';
 
 const $ = selector => document.querySelector(selector);
 const percent = value => `${(value * 100).toFixed(1)}%`;
@@ -1550,6 +1550,37 @@ $('#research-trail-download').addEventListener('click', () => {
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 0);
   status.textContent = 'Research trail downloaded with exact release, record, and reproduction identity.';
+});
+$('#research-command-form').addEventListener('submit', event => {
+  event.preventDefault();
+  const status = $('#research-command-status');
+  const command = parseResearchCommand($('#research-command').value);
+  status.textContent = command.message;
+  if (!command.valid || !canonicalRelease || releasePhase !== 'ready') return;
+  if (command.comparison) {
+    const matches = canonicalRelease.records.filter(record =>
+      (command.family === 'all' || record.family === command.family)
+      && (command.evidence === 'all' || record.evidence.state === command.evidence));
+    if (matches.length < 2) {
+      status.textContent = `${command.message} Fewer than two verified records match, so no comparison was opened.`;
+      return;
+    }
+    applyComparisonState({ left: matches[0].id, right: matches[1].id });
+    history.pushState(null, '', formatComparisonHash({ left: matches[0].id, right: matches[1].id }));
+    renderResearchTrail();
+    return;
+  }
+  if (command.evidence !== 'all' || command.family !== 'all') {
+    const query = [command.angle, command.ratio].filter(value => value != null).join(' ');
+    const state = { query, family: command.family, evidence: command.evidence, record: null };
+    applyResearchState(state);
+    history.pushState(null, '', formatResearchHash(state));
+    renderResearchExplorer();
+    return;
+  }
+  if (command.angle != null) $('#angle').value = command.angle;
+  if (command.ratio != null) $('#ratio').value = command.ratio;
+  updatePhase({ historyMode: 'push' });
 });
 for (const selector of ['#research-search', '#research-family', '#research-evidence']) {
   $(selector).addEventListener(selector === '#research-search' ? 'input' : 'change', () => {

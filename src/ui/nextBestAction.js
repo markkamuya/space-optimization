@@ -36,3 +36,29 @@ export function nextBestActions(records, anchor) {
     }
   ].filter(Boolean).slice(0, 3);
 }
+
+const FAMILY_WORDS = Object.freeze(['equilateral', 'isosceles', 'scalene', 'right']);
+
+export function parseResearchCommand(input) {
+  const raw = String(input ?? '').trim().slice(0, 160);
+  const text = raw.toLowerCase();
+  if (!text) return { valid: false, message: 'Describe a triangle, container, evidence question, or comparison.' };
+  const family = FAMILY_WORDS.find(word => text.includes(word)) ?? 'all';
+  const angleMatch = text.match(/\b(35|[4-9]\d|10\d|110)\s*°?/);
+  const angle = angleMatch ? Number(angleMatch[1]) : null;
+  const explicitRatio = text.match(/\b(0\.75|0\.9|1(?:\.\d+)?|2(?:\.\d+)?|3(?:\.0+)?)\s*(?::\s*1)?\b/);
+  const ratio = text.includes('very wide') || text.includes('panoramic') ? 2.4
+    : text.includes('wide') ? 1.8
+      : text.includes('tall') ? 0.75
+        : text.includes('square') ? 1.05
+          : explicitRatio ? Math.min(3, Math.max(.75, Number(explicitRatio[1]))) : null;
+  const evidence = /\b(open|unproven|improve)\b/.test(text) ? 'verified_best_known'
+    : /\b(proven|proof|optimal)\b/.test(text) ? 'proven_optimal' : 'all';
+  const comparison = /\b(compare|versus|difference)\b/.test(text);
+  const recognized = family !== 'all' || angle !== null || ratio !== null || evidence !== 'all' || comparison;
+  if (!recognized) return { valid: false, message: 'Try “show open 60° cases near a square” or “compare proven right triangles”.' };
+  return {
+    valid: true, family, angle, ratio, evidence, comparison,
+    message: `Interpreted as ${evidence === 'all' ? 'verified' : evidence.replaceAll('_', ' ')} ${family === 'all' ? 'triangle' : family} results${angle == null ? '' : ` near ${angle}°`}${ratio == null ? '' : ` in a ${ratio.toFixed(2)}:1 rectangle`}.`
+  };
+}

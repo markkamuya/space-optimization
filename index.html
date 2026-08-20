@@ -207,6 +207,11 @@
       <section id="next-best-action" class="next-best-action" aria-labelledby="next-best-action-title">
         <div><p class="kicker">WHAT NEXT?</p><h2 id="next-best-action-title">Continue from this verified result</h2><p id="next-best-action-status" role="status">Recommendations will appear after the verified release is ready.</p></div>
         <div id="next-best-action-list" class="next-best-action-list"><p>Waiting for integrity-checked records.</p></div>
+        <form id="research-command-form" class="research-command-form">
+          <label for="research-command">Ask the Atlas in plain language</label>
+          <div><input id="research-command" type="search" maxlength="160" placeholder="Show open 60° cases near a square" autocomplete="off"><button type="submit">Find verified results</button></div>
+          <p id="research-command-status" role="status" aria-live="polite">Uses bounded shape, angle, container, evidence, and comparison terms. It never generates scientific claims.</p>
+        </form>
       </section>
 
       <section class="session-tools" aria-labelledby="session-tools-title">
