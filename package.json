@@ -19,6 +19,7 @@
     "atlas:large-release-ui-benchmark": "node benchmarks/largeReleaseUi.js",
     "atlas:browser-certify": "node scripts/certify-browser-ui.js",
     "atlas:accessibility-certify": "node scripts/certify-accessibility-ui.js",
+    "atlas:visual-certify": "node scripts/certify-visual-ui.js",
     "atlas:comparison-benchmark": "node benchmarks/comparisonFinder.js",
     "atlas:release": "node scripts/build-atlas-release.js",
     "atlas:research": "node scripts/build-research-release.js",
