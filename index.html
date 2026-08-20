@@ -148,15 +148,15 @@
         <a href="#challenges"><b>4</b> Improve</a>
       </nav>
 
-      <section id="research" class="research-explorer">
+      <section id="research" class="research-explorer" aria-labelledby="research-title">
         <div class="section-intro">
-          <div><p class="kicker">ALL VERIFIED RESULTS</p><h2>Search the full dataset.</h2></div>
+          <div><p class="kicker">ALL VERIFIED RESULTS</p><h2 id="research-title">Search the full dataset.</h2></div>
           <p>Filter by triangle family or evidence level. Open any result to see its coordinates, verification details, known bounds, and reproduction command.</p>
         </div>
         <aside id="research-load-status" class="research-load-status" role="status" aria-live="polite" aria-atomic="true" tabindex="-1">
           <strong class="release-state-label">Checking</strong><b>Loading verified research data…</b><span>Checking release integrity before results are shown.</span><small class="release-provenance">No verified release is currently displayed</small>
         </aside>
-        <div class="research-summary" id="research-summary" aria-live="polite"></div>
+        <div class="research-summary" id="research-summary" aria-label="Verified release summary"></div>
         <div class="research-toolbar">
           <label>Search results<input id="research-search" type="search" placeholder="Try: equilateral, 60°, or vertical"></label>
           <label>Family<select id="research-family"><option value="all">All families</option><option>right</option><option>equilateral</option><option>isosceles</option><option>scalene</option></select></label>
@@ -168,17 +168,17 @@
           <h3>Machine-checkable finite-domain proofs</h3><p>Loading proof scope and verification details…</p>
         </aside>
         <div class="registry-head"><span>Triangle and rectangle</span><span>Packing pattern</span><span>What we know</span><span>Filled / possible gain</span></div>
-        <div id="research-results" class="registry-results" aria-live="polite" aria-busy="true"></div>
-        <div class="registry-footer"><span id="research-result-count">Loading canonical release…</span><button id="research-more" type="button">Show more records</button></div>
+        <div id="research-results" class="registry-results" role="list" aria-label="Verified research results" aria-busy="true"></div>
+        <div class="registry-footer"><span id="research-result-count" role="status" aria-live="polite" aria-atomic="true">Loading canonical release…</span><button id="research-more" type="button">Show more records</button></div>
         <div class="transition-panel">
           <div><p class="kicker">WHERE PATTERNS CHANGE</p><h3>Changes seen between neighboring test cases.</h3></div>
           <div id="transition-list"></div>
         </div>
       </section>
 
-      <section id="compare" class="compare-section">
+      <section id="compare" class="compare-section" aria-labelledby="compare-title">
         <div class="section-intro">
-          <div><p class="kicker">COMPARE TWO RESULTS</p><h2>See which packing uses more space.</h2></div>
+          <div><p class="kicker">COMPARE TWO RESULTS</p><h2 id="compare-title">See which packing uses more space.</h2></div>
           <p>Choose two packings to compare how much of the rectangle they fill, how much remains empty, and which pattern they use.</p>
         </div>
         <div class="compare-controls">
@@ -205,7 +205,7 @@
               <button id="comparison-save-a" type="button" disabled>Save result A</button>
               <button id="comparison-save-b" type="button" disabled>Save result B</button>
             </div>
-            <ol id="comparison-workspace-list" aria-live="polite"><li>Waiting for verified records.</li></ol>
+            <ol id="comparison-workspace-list"><li>Waiting for verified records.</li></ol>
             <p id="comparison-workspace-status" role="status" aria-live="polite">The shortlist will be restored after release integrity checks finish.</p>
           </div>
         </section>
@@ -218,7 +218,7 @@
           <span id="comparison-share-status" role="status" aria-live="polite"></span>
         </div>
         <p id="comparison-summary" class="comparison-summary" role="status" aria-live="polite" tabindex="-1">Comparison will be available after release integrity checks finish.</p>
-        <div id="comparison" class="comparison" aria-busy="true"><p class="comparison-loading">Preparing verified comparison records…</p></div>
+        <div id="comparison" class="comparison" role="region" aria-label="Verified comparison details" aria-busy="true"><p class="comparison-loading">Preparing verified comparison records…</p></div>
       </section>
 
       <section id="challenges" class="challenge-section">
@@ -238,8 +238,8 @@
         <div id="leaderboard" class="leaderboard"></div>
       </section>
 
-      <section id="contribute" class="contribute-section">
-        <div><p class="kicker">CONTRIBUTE A RESULT</p><h2>Submit a packing<br><em>we can verify.</em></h2></div>
+      <section id="contribute" class="contribute-section" aria-labelledby="contribute-title">
+        <div><p class="kicker">CONTRIBUTE A RESULT</p><h2 id="contribute-title">Submit a packing<br><em>we can verify.</em></h2></div>
         <ol><li><b>01</b> Submit JSON</li><li><b>02</b> Verify geometry</li><li><b>03</b> Compare record</li><li><b>04</b> Review evidence</li><li><b>05</b> Publish</li></ol>
         <div class="contribute-copy">
           <p>Submit the triangle coordinates as JSON. Automated checks confirm that pieces stay inside the rectangle, do not overlap, and improve on the current result. A maintainer reviews proofs and citations.</p>
@@ -258,7 +258,7 @@
             </div>
             <p id="contribution-starter-status" role="status" aria-live="polite"></p>
           </div>
-          <div id="contribution-preflight-results" class="contribution-preflight-results" aria-live="polite"></div>
+          <div id="contribution-preflight-results" class="contribution-preflight-results" role="region" aria-label="Contribution preflight results"></div>
           <div class="contribution-handoff" aria-labelledby="contribution-handoff-title">
             <h4 id="contribution-handoff-title">From baseline to review</h4>
             <ol id="contribution-handoff-steps"><li>Select a verified baseline to prepare a safe starter.</li></ol>

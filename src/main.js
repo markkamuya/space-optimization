@@ -615,7 +615,7 @@ function compare() {
   const result = compareCanonicalRecords(left, right);
   $('#comparison').setAttribute('aria-busy', 'false');
   $('#comparison').innerHTML = [left, right].map((record, index) => `
-    <article><span>${escapeHtml(record.evidence.state.replaceAll('_', ' '))}</span><small>Result ${index === 0 ? 'A' : 'B'} · ${escapeHtml(record.experimentId)}</small><h3>${escapeHtml(record.pattern)}</h3>
+    <article aria-labelledby="comparison-record-${index}"><span>${escapeHtml(record.evidence.state.replaceAll('_', ' '))}</span><small>Result ${index === 0 ? 'A' : 'B'} · ${escapeHtml(record.experimentId)}</small><h3 id="comparison-record-${index}">${escapeHtml(record.pattern)}</h3>
       <div class="comparison-bar"><i style="width:${percent(record.verification.utilization)}"></i></div>
       <dl><div><dt>Verified fill</dt><dd>${percent(record.verification.utilization)}</dd></div><div><dt>Verified pieces</dt><dd>${record.verification.pieceCount}</dd></div><div><dt>Room for improvement</dt><dd>${percent(record.bounds.optimalityGap)}</dd></div><div><dt>Numerical stability</dt><dd>${escapeHtml(stabilityLabel(record.verification.stability))}</dd></div></dl>
       <a href="${formatResearchHash({ query: '', family: 'all', evidence: 'all', record: record.id })}">Inspect result ${index === 0 ? 'A' : 'B'} evidence</a>
@@ -1053,7 +1053,8 @@ function openResearchRecord(record, { preserveContext = false } = {}) {
   detail.innerHTML = `
     <div class="detail-header"><div><p class="kicker">${escapeHtml(record.family)} / ${escapeHtml(record.evidence.state.replaceAll('_', ' '))}</p><h2 id="record-dialog-title">${escapeHtml(record.experimentId)}</h2><p id="record-dialog-summary">${escapeHtml(record.evidence.claim)}</p></div>
       <div class="detail-stat"><b>${percent(record.verification.utilization)}</b><span>verified lower bound</span></div></div>
-    <canvas width="1000" height="560" aria-label="${escapeHtml(record.id)} packing coordinates"></canvas>
+    <p id="record-visual-summary" class="sr-only">Packing diagram for ${escapeHtml(record.id)}: ${record.verification.pieceCount} triangles, ${percent(record.verification.utilization)} verified fill, and ${percent(record.bounds.optimalityGap)} room for improvement.</p>
+    <canvas width="1000" height="560" role="img" aria-label="${escapeHtml(record.id)} packing coordinates" aria-describedby="record-visual-summary"></canvas>
     <div class="detail-grid">
       <section><h3>Verification certificate</h3><p><code>${escapeHtml(record.verification.certificate)}</code></p><dl><div><dt>Pieces</dt><dd>${record.verification.pieceCount}</dd></div><div><dt>Overlap</dt><dd>0</dd></div><div><dt>Numerical stability</dt><dd>${escapeHtml(stabilityLabel(record.verification.stability))}</dd></div><div><dt>Verifier</dt><dd>${escapeHtml(record.verification.verifier)}</dd></div></dl></section>
       <section><h3>Best result and proven limit</h3><dl><div><dt>Verified fill</dt><dd>${percent(record.bounds.lowerBound)}</dd></div><div><dt>Proven maximum</dt><dd>${percent(record.bounds.upperBound)}</dd></div><div><dt>Room for improvement</dt><dd>${percent(record.bounds.optimalityGap)}</dd></div></dl><p>Priority for checking empty boundary space: ${escapeHtml(record.descriptors.boundaryGapAnalysis.priority)}.</p></section>
@@ -1084,12 +1085,12 @@ function renderResearchExplorer() {
     ['Open compute tasks', canonicalRelease.coverage.openDistributedTasks]
   ].map(([label, value]) => `<div><b>${value}</b><span>${label}</span></div>`).join('');
   $('#research-results').innerHTML = visible.length ? visible.map(record => `
-    <button type="button" data-record="${escapeHtml(record.id)}">
+    <div class="research-result-item" role="listitem"><button type="button" data-record="${escapeHtml(record.id)}">
       <span><b>${escapeHtml(researchRecordLabel(record))}</b><small>${escapeHtml(record.experimentId)}</small></span>
       <span>${escapeHtml(record.pattern)}</span>
       <span><i class="${escapeHtml(record.evidence.state)}">${escapeHtml(record.evidence.state.replaceAll('_', ' '))}</i></span>
       <span><b>${percent(record.verification.utilization)}</b><small>gap ${percent(record.bounds.optimalityGap)}</small></span>
-    </button>`).join('') : `<div class="research-empty" role="status"><h3>No verified results match these filters.</h3><p>Change the search terms or clear every filter to return to all ${canonicalRelease.coverage.records} records.</p><button type="button" data-clear-research>Clear filters</button></div>`;
+    </button></div>`).join('') : `<div class="research-empty" role="status"><h3>No verified results match these filters.</h3><p>Change the search terms or clear every filter to return to all ${canonicalRelease.coverage.records} records.</p><button type="button" data-clear-research>Clear filters</button></div>`;
   $('#research-results').querySelectorAll('[data-record]').forEach(button => {
     button.addEventListener('click', () =>
       openResearchRecord(canonicalRelease.records.find(record => record.id === button.dataset.record)));
