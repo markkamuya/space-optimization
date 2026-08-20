@@ -19,6 +19,7 @@ import { createEvidenceBundle, validateEvidenceBundle } from './ui/evidenceBundl
 import { COMPARISON_WORKSPACE_LIMIT, restoreComparisonWorkspace, serializeComparisonWorkspace, updateComparisonWorkspace } from './ui/comparisonWorkspace.js';
 import { comparisonReportSummary, createComparisonReport } from './ui/comparisonReport.js';
 import { preflightContribution } from './ui/submissionPreflight.js';
+import { contributionHandoff, createContributionStarter } from './ui/contributionStarter.js';
 
 const $ = selector => document.querySelector(selector);
 const percent = value => `${(value * 100).toFixed(1)}%`;
@@ -901,7 +902,22 @@ function setupContributionPreflight() {
   select.value = currentComparisonState().right;
   select.disabled = false;
   input.disabled = false;
+  $('#contribution-starter-download').disabled = false;
+  $('#contribution-command-copy').disabled = false;
   $('#contribution-preflight-status').textContent = 'Choose a proposed record JSON file up to 10 MB. Nothing is uploaded.';
+  renderContributionHandoff();
+}
+
+function selectedContributionBaseline() {
+  return canonicalRelease?.records.find(record => record.id === $('#contribution-baseline').value);
+}
+
+function renderContributionHandoff() {
+  const baseline = selectedContributionBaseline();
+  if (!baseline) return;
+  const handoff = contributionHandoff(baseline);
+  $('#contribution-handoff-steps').innerHTML = handoff.steps.map(step => `<li>${escapeHtml(step)}</li>`).join('');
+  $('#contribution-starter-status').textContent = `Starter target: ${handoff.filename}. It begins as a duplicate of ${baseline.id} and must be improved.`;
 }
 
 function researchRecordLabel(record) {
@@ -1290,6 +1306,34 @@ $('#contribution-file').addEventListener('change', async event => {
     status.textContent = 'The selected file is not readable JSON. No submission data was retained.';
   } finally {
     input.value = '';
+  }
+});
+$('#contribution-baseline').addEventListener('change', renderContributionHandoff);
+$('#contribution-starter-download').addEventListener('click', () => {
+  const status = $('#contribution-starter-status');
+  try {
+    const baseline = selectedContributionBaseline();
+    const starter = createContributionStarter(baseline, canonicalRelease, releaseIntegrity, releaseSource);
+    const handoff = contributionHandoff(baseline);
+    const url = URL.createObjectURL(new Blob([`${JSON.stringify(starter, null, 2)}\n`], { type: 'application/json' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = handoff.filename;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+    status.textContent = `Starter downloaded for ${baseline.id}. Replace the duplicate coordinates and placeholder attribution before verification.`;
+  } catch {
+    status.textContent = 'A verified baseline is unavailable, so no starter was downloaded.';
+  }
+});
+$('#contribution-command-copy').addEventListener('click', async () => {
+  const status = $('#contribution-starter-status');
+  try {
+    const handoff = contributionHandoff(selectedContributionBaseline());
+    await navigator.clipboard.writeText(handoff.verifyCommand);
+    status.textContent = `Full verifier command copied for ${handoff.filename}.`;
+  } catch {
+    status.textContent = 'Copy was unavailable. Run npm run atlas:submission with the downloaded starter path.';
   }
 });
 $('#comparison-guide-actions').addEventListener('click', event => {

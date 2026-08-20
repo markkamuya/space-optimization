@@ -252,8 +252,18 @@
             <label>Verified result to improve<select id="contribution-baseline" disabled><option>Loading verified records…</option></select></label>
             <label class="contribution-file">Choose proposed record JSON<input id="contribution-file" type="file" accept="application/json,.json" disabled></label>
             <p id="contribution-preflight-status" role="status" aria-live="polite">Waiting for an integrity-checked release.</p>
+            <div class="contribution-starter-actions">
+              <button id="contribution-starter-download" type="button" disabled>Download baseline starter</button>
+              <button id="contribution-command-copy" type="button" disabled>Copy full verifier command</button>
+            </div>
+            <p id="contribution-starter-status" role="status" aria-live="polite"></p>
           </div>
           <div id="contribution-preflight-results" class="contribution-preflight-results" aria-live="polite"></div>
+          <div class="contribution-handoff" aria-labelledby="contribution-handoff-title">
+            <h4 id="contribution-handoff-title">From baseline to review</h4>
+            <ol id="contribution-handoff-steps"><li>Select a verified baseline to prepare a safe starter.</li></ol>
+            <p>The starter repeats the current verified result and is not an improvement. GitHub submission and maintainer review remain separate steps.</p>
+          </div>
         </section>
       </section>
 
