@@ -112,13 +112,19 @@
               <span id="phase-dot"></span>
               <div><small id="phase-trust-label">MODELED PREVIEW</small><strong id="phase-name">—</strong><p id="phase-note"></p></div>
             </div>
-            <dl>
+            <dl class="map-essential-facts" aria-label="Essential packing facts">
               <div><dt>Evidence</dt><dd id="phase-status">—</dd></div>
               <div><dt>Rectangle filled</dt><dd id="phase-fill">—</dd></div>
-              <div><dt>Empty space</dt><dd id="phase-waste">—</dd></div>
               <div><dt>Room for improvement</dt><dd id="phase-gap">—</dd></div>
-              <div><dt>Distance from sampled case</dt><dd id="phase-distance">—</dd></div>
             </dl>
+            <details class="precision-disclosure">
+              <summary><span>More precision</span><small>Sampling distance and unused area</small></summary>
+              <dl aria-label="Specialist packing measurements">
+                <div><dt>Empty space</dt><dd id="phase-waste">—</dd></div>
+                <div><dt>Distance from sampled case</dt><dd id="phase-distance">—</dd></div>
+              </dl>
+              <p>Distance measures how far your slider choices are from the nearest sampled Atlas problem. It does not measure proof quality.</p>
+            </details>
             <nav class="map-next-actions" aria-label="Next steps for selected packing">
               <a id="map-evidence-link" href="#research">Inspect this result’s evidence</a>
               <a id="map-similar-link" href="#research">Find similar verified results</a>
@@ -215,11 +221,17 @@
           <label>Family<select id="research-family"><option value="all">All families</option><option>right</option><option>equilateral</option><option>isosceles</option><option>scalene</option></select></label>
           <label>Evidence<select id="research-evidence"><option value="all">All evidence</option><option value="proven_optimal">Proven optimal</option><option value="verified_best_known">Verified best known</option></select></label>
           <button id="research-clear" class="secondary-action" type="button" hidden>Clear filters</button>
-          <div class="research-downloads"><a href="/atlas-v2.json" download>JSON ↓</a><a href="/atlas-v2.csv" download>CSV ↓</a><a href="/audit-v2.json" download>AUDIT ↓</a><a href="/work-queue-v2.json" download>WORK QUEUE ↓</a><a href="/finite-domain-proofs-v2.json" download>FINITE-DOMAIN PROOFS ↓</a><a href="/finite-domain-proof-jobs-v2.json" download>PROOF CHECKPOINTS ↓</a></div>
+          <details class="research-technical" id="research-technical">
+            <summary><span>Technical files</span><small>Downloads for reproducibility and independent checking</small></summary>
+            <div class="research-downloads"><a href="/atlas-v2.json" download>JSON ↓</a><a href="/atlas-v2.csv" download>CSV ↓</a><a href="/audit-v2.json" download>AUDIT ↓</a><a href="/work-queue-v2.json" download>WORK QUEUE ↓</a><a href="/finite-domain-proofs-v2.json" download>FINITE-DOMAIN PROOFS ↓</a><a href="/finite-domain-proof-jobs-v2.json" download>PROOF CHECKPOINTS ↓</a></div>
+          </details>
         </div>
-        <aside id="finite-domain-proof-summary" class="proof-summary" aria-live="polite">
-          <h3>Machine-checkable finite-domain proofs</h3><p>Loading proof scope and verification details…</p>
-        </aside>
+        <details class="proof-disclosure">
+          <summary><span>Machine-checkable proof scope</span><small>For researchers auditing finite-domain claims</small></summary>
+          <aside id="finite-domain-proof-summary" class="proof-summary" aria-live="polite">
+            <h3>Machine-checkable finite-domain proofs</h3><p>Loading proof scope and verification details…</p>
+          </aside>
+        </details>
         <div class="registry-head"><span>Triangle and rectangle</span><span>Packing pattern</span><span>What we know</span><span>Filled / possible gain</span></div>
         <div id="research-results" class="registry-results" role="list" aria-label="Verified research results" aria-busy="true"></div>
         <div class="registry-footer"><span id="research-result-count" role="status" aria-live="polite" aria-atomic="true">Loading canonical release…</span><button id="research-more" type="button">Show more records</button></div>

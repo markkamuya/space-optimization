@@ -82,6 +82,11 @@ input[type=range] { width:100%; accent-color:var(--orange); }
 .shape-readout p { font-size:11px; line-height:1.55; color:var(--muted); }
 dl { margin:0; }
 .map-controls dl>div { display:flex; justify-content:space-between; border-top:1px solid var(--line); padding:11px 0; font-size:10px; }
+.precision-disclosure { margin-top:8px; border-block:1px solid var(--line); }
+.precision-disclosure summary,.research-technical summary,.proof-disclosure summary { min-height:44px; display:flex; align-items:center; justify-content:space-between; gap:12px; cursor:pointer; font:700 10px "DM Mono"; }
+.precision-disclosure summary small,.research-technical summary small,.proof-disclosure summary small { color:var(--muted); font:500 9px "DM Mono"; text-align:right; }
+.precision-disclosure>p { margin:2px 0 14px; color:var(--muted); font-size:10px; line-height:1.55; }
+.precision-disclosure[open] summary,.research-technical[open] summary,.proof-disclosure[open] summary { border-bottom:1px solid var(--line); }
 .map-next-actions { display:grid; gap:7px; margin-top:22px; }
 .map-next-actions [aria-disabled="true"] { color:var(--muted); background:#eceae1; cursor:not-allowed; }
 .map-next-actions p { min-height:18px; margin:2px 0 0; color:var(--muted); font-size:10px; line-height:1.5; }
@@ -244,6 +249,13 @@ dt { color:var(--muted); } dd { margin:0; font-weight:700; text-align:right; }
 .secondary-action { min-height:42px; padding:10px 14px; border:1px solid var(--ink); background:var(--panel); cursor:pointer; white-space:nowrap; }
 .research-downloads { display:flex; gap:10px; padding-bottom:11px; }
 .research-downloads a { font:9px "DM Mono"; white-space:nowrap; }
+.research-technical { align-self:stretch; grid-column:1/-1; border-top:1px solid var(--line); }
+.research-technical summary { padding-top:8px; }
+.research-technical .research-downloads { padding:12px 0 4px; flex-wrap:wrap; }
+.research-technical .research-downloads a { display:inline-flex; min-height:44px; align-items:center; }
+.proof-disclosure { margin:16px 6vw 0; border:1px solid var(--ink); background:var(--panel); }
+.proof-disclosure>summary { padding:8px 18px; }
+.proof-disclosure .proof-summary { margin:0; border:0; }
 .proof-summary { margin:0 4vw 28px; padding:24px; border:1px solid var(--ink); display:grid; grid-template-columns:1fr 1.5fr 1fr; gap:24px; align-items:start; }
 .proof-summary h3 { margin:6px 0; }
 .proof-summary p { margin:0; font-size:11px; line-height:1.6; }
