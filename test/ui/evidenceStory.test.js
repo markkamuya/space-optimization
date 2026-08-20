@@ -32,3 +32,13 @@ test('proven conclusion remains scoped to the exact problem', () => {
   assert.match(story.whatIsProven, /no better packing exists for this exact/);
   assert.match(story.whatIsUnknown, /does not generalize/);
 });
+
+test('record dialog presents the three evidence questions and reached ladder', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const script = await readFile(new URL('../../src/main.js', import.meta.url), 'utf8');
+  assert.match(script, /What is proven\?/);
+  assert.match(script, /What remains unknown\?/);
+  assert.match(script, /Why do we trust this\?/);
+  assert.match(script, /aria-current="step"/);
+  assert.match(script, /researchEvidenceStory\(record\)/);
+});

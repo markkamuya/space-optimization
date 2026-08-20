@@ -27,6 +27,7 @@ import { runProductionDiagnostics } from './ui/productionDiagnostics.js';
 import { parseCompassHash, setupPackingCompassShell } from './ui/packingCompassShell.js';
 import { COMPASS_CONTAINER_OPTIONS, COMPASS_TRIANGLE_OPTIONS, compassEvidence, matchCompassQuestion } from './ui/packingCompass.js';
 import { advancedOrientation } from './ui/advancedOrientation.js';
+import { evidenceLadder, recordConclusion } from './ui/evidenceStory.js';
 
 const $ = selector => document.querySelector(selector);
 const percent = value => `${(value * 100).toFixed(1)}%`;
@@ -758,7 +759,7 @@ function compare() {
   const result = compareCanonicalRecords(left, right);
   $('#comparison').setAttribute('aria-busy', 'false');
   $('#comparison').innerHTML = [left, right].map((record, index) => `
-    <article aria-labelledby="comparison-record-${index}"><span>${escapeHtml(record.evidence.state.replaceAll('_', ' '))}</span><small>Result ${index === 0 ? 'A' : 'B'} · ${escapeHtml(record.experimentId)}</small><h3 id="comparison-record-${index}">${escapeHtml(record.pattern)}</h3>
+    <article aria-labelledby="comparison-record-${index}"><span>${escapeHtml(evidenceStoryLabel(record))}</span><small>Result ${index === 0 ? 'A' : 'B'} · ${escapeHtml(record.experimentId)}</small><h3 id="comparison-record-${index}">${escapeHtml(record.pattern)}</h3>
       <div class="comparison-bar"><i style="width:${percent(record.verification.utilization)}"></i></div>
       <dl><div><dt>Verified fill</dt><dd>${percent(record.verification.utilization)}</dd></div><div><dt>Verified pieces</dt><dd>${record.verification.pieceCount}</dd></div><div><dt>Room for improvement</dt><dd>${percent(record.bounds.optimalityGap)}</dd></div><div><dt>Numerical stability</dt><dd>${escapeHtml(stabilityLabel(record.verification.stability))}</dd></div></dl>
       <a href="${formatResearchHash({ query: '', family: 'all', evidence: 'all', record: record.id })}">Inspect result ${index === 0 ? 'A' : 'B'} evidence</a>
@@ -789,7 +790,7 @@ function renderComparisonWorkspace(message = '') {
   const list = $('#comparison-workspace-list');
   list.innerHTML = comparisonWorkspaceIds.length ? comparisonWorkspaceIds.map((id, index) => {
     const record = canonicalRelease.records.find(item => item.id === id);
-    return `<li data-workspace-record="${escapeHtml(id)}"><div><b>${escapeHtml(comparisonOptionLabel(record))}</b><span>${escapeHtml(record.evidence.state.replaceAll('_', ' '))}</span></div>
+    return `<li data-workspace-record="${escapeHtml(id)}"><div><b>${escapeHtml(comparisonOptionLabel(record))}</b><span>${escapeHtml(evidenceStoryLabel(record))}</span></div>
       <div class="workspace-record-actions"><button type="button" data-workspace-use="a" aria-label="Use ${escapeHtml(id)} as result A">A</button><button type="button" data-workspace-use="b" aria-label="Use ${escapeHtml(id)} as result B">B</button><button type="button" data-workspace-action="up" aria-label="Move ${escapeHtml(id)} earlier" ${index === 0 ? 'disabled' : ''}>↑</button><button type="button" data-workspace-action="down" aria-label="Move ${escapeHtml(id)} later" ${index === comparisonWorkspaceIds.length - 1 ? 'disabled' : ''}>↓</button><button type="button" data-workspace-action="remove" aria-label="Remove ${escapeHtml(id)} from shortlist">×</button></div></li>`;
   }).join('') : '<li class="workspace-empty">No saved records yet. Save result A or B to build a shortlist.</li>';
   const storageNote = comparisonWorkspaceStorage === 'unavailable'
@@ -1181,6 +1182,25 @@ function researchProvenanceChain(record) {
   </section>`;
 }
 
+function evidenceStoryLabel(record) {
+  return recordConclusion(record)?.label ?? 'Candidate';
+}
+
+function researchEvidenceStory(record) {
+  const conclusion = recordConclusion(record);
+  if (!conclusion) return '<section class="record-conclusion" role="alert"><h3>Evidence conclusion unavailable</h3><p>This record is not shown as verified because its evidence fields are incomplete.</p></section>';
+  const ladder = evidenceLadder(conclusion.state);
+  return `<section class="record-conclusion" aria-labelledby="record-conclusion-title">
+    <div class="record-conclusion-heading"><p class="kicker">SAFE CONCLUSION</p><h3 id="record-conclusion-title">${escapeHtml(conclusion.label)} for this exact problem</h3><p>Read the claim and its limits before using this result.</p></div>
+    <ol class="record-evidence-ladder" aria-label="Evidence level reached">${ladder.map(step => `<li class="${step.reached ? 'reached' : ''} ${step.current ? 'current' : ''}" ${step.current ? 'aria-current="step"' : ''}><b>${escapeHtml(step.label)}</b><span>${escapeHtml(step.description)}</span></li>`).join('')}</ol>
+    <dl class="record-conclusion-answers">
+      <div><dt>What is proven?</dt><dd>${escapeHtml(conclusion.whatIsProven)}</dd></div>
+      <div><dt>What remains unknown?</dt><dd>${escapeHtml(conclusion.whatIsUnknown)}</dd></div>
+      <div><dt>Why do we trust this?</dt><dd>${escapeHtml(conclusion.whyTrusted)}</dd></div>
+    </dl>
+  </section>`;
+}
+
 function researchReproductionTools(record) {
   return `<section class="reproduction-panel" aria-labelledby="reproduction-tools-title">
     <div><p class="kicker">Reproduction tools</p><h3 id="reproduction-tools-title">Take this evidence with you</h3><p>Copy the deterministic command, download only this record and its verified release identity, then re-import that file here to check it has not changed.</p></div>
@@ -1200,8 +1220,9 @@ function openResearchRecord(record, { preserveContext = false } = {}) {
   }
   const detail = $('#record-detail');
   detail.innerHTML = `
-    <div class="detail-header"><div><p class="kicker">${escapeHtml(record.family)} / ${escapeHtml(record.evidence.state.replaceAll('_', ' '))}</p><h2 id="record-dialog-title">${escapeHtml(record.experimentId)}</h2><p id="record-dialog-summary">${escapeHtml(record.evidence.claim)}</p></div>
+    <div class="detail-header"><div><p class="kicker">${escapeHtml(record.family)} / ${escapeHtml(evidenceStoryLabel(record))}</p><h2 id="record-dialog-title">${escapeHtml(record.experimentId)}</h2><p id="record-dialog-summary">${escapeHtml(record.evidence.claim)}</p></div>
       <div class="detail-stat"><b>${percent(record.verification.utilization)}</b><span>verified lower bound</span></div></div>
+    ${researchEvidenceStory(record)}
     <p id="record-visual-summary" class="sr-only">Packing diagram for ${escapeHtml(record.id)}: ${record.verification.pieceCount} triangles, ${percent(record.verification.utilization)} verified fill, and ${percent(record.bounds.optimalityGap)} room for improvement.</p>
     <canvas width="1000" height="560" role="img" aria-label="${escapeHtml(record.id)} packing coordinates" aria-describedby="record-visual-summary"></canvas>
     <div class="detail-grid">
@@ -1237,7 +1258,7 @@ function renderResearchExplorer() {
     <div class="research-result-item" role="listitem"><button type="button" data-record="${escapeHtml(record.id)}">
       <span><b>${escapeHtml(researchRecordLabel(record))}</b><small>${escapeHtml(record.experimentId)}</small></span>
       <span>${escapeHtml(record.pattern)}</span>
-      <span><i class="${escapeHtml(record.evidence.state)}">${escapeHtml(record.evidence.state.replaceAll('_', ' '))}</i></span>
+      <span><i class="${escapeHtml(record.evidence.state)}">${escapeHtml(evidenceStoryLabel(record))}</i></span>
       <span><b>${percent(record.verification.utilization)}</b><small>gap ${percent(record.bounds.optimalityGap)}</small></span>
     </button></div>`).join('') : `<div class="research-empty" role="status"><h3>No verified results match these filters.</h3><p>Change the search terms or clear every filter to return to all ${canonicalRelease.coverage.records} records.</p><button type="button" data-clear-research>Clear filters</button></div>`;
   $('#research-results').querySelectorAll('[data-record]').forEach(button => {
