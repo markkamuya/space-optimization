@@ -312,6 +312,11 @@
               <li><b>Safari</b><span>Current release target</span></li>
               <li><b>Chromium</b><span>Current release target</span></li>
             </ul>
+            <div class="browser-diagnostics">
+              <button id="browser-diagnostics-run" type="button">Run checks in this browser</button>
+              <p id="browser-diagnostics-status" role="status" aria-live="polite" aria-atomic="true" tabindex="-1">Live workflow diagnostics will run after verified data loads.</p>
+              <ul id="browser-diagnostics-results" aria-label="Live browser diagnostic results"></ul>
+            </div>
             <small>Certification covers verified loading, search, map controls, comparison, result dialogs, keyboard and screen-reader operation, recovery states, high contrast, reduced motion, and 320px–1440px layouts that represent up to 400% zoom. Unsupported browsers fail closed before showing verified research data.</small>
           </section>
           <a href="/atlas-v2.json" download class="primary-action">Download canonical v2 dataset <span>↓</span></a>

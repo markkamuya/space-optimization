@@ -48,6 +48,7 @@ a { color:inherit; }
 @media(max-width:1000px) and (min-width:721px) { .topbar { grid-template-columns:minmax(180px,1fr) auto; } .contribute-link { display:none; } }
 @media(max-width:520px) { .task-launchpad { grid-template-columns:1fr; } .task-launchpad a { border-right:0; } .task-launchpad a:nth-last-child(-n+2) { border-bottom:1px solid var(--line); } .task-launchpad a:last-child { border-bottom:0; } }
 @media(max-width:520px) { .browser-support ul { grid-template-columns:1fr; } .browser-support li { border-right:0; border-bottom:1px solid var(--line); } .browser-support li:last-child { border-bottom:0; } }
+@media(max-width:520px) { .browser-diagnostics ul { grid-template-columns:1fr; } .browser-diagnostics li { border-right:0; } .browser-diagnostics button { width:100%; } }
 @media(max-width:520px) { .offline-readiness { padding-inline:16px; align-items:stretch; flex-direction:column; } .offline-readiness button { width:100%; } }
 .section-intro { padding:80px 6vw 42px; display:grid; grid-template-columns:1fr minmax(260px,430px); gap:8vw; align-items:end; }
 .section-intro h2,.research-section>h2 { font-size:clamp(36px,4vw,62px); line-height:.98; letter-spacing:-.055em; margin:10px 0 0; }
@@ -344,6 +345,14 @@ dt { color:var(--muted); } dd { margin:0; font-weight:700; text-align:right; }
 .browser-support li:last-child { border:0; }
 .browser-support li b { font-size:11px; }
 .browser-support li span { color:var(--muted); font:9px "DM Mono"; }
+.browser-diagnostics { margin:14px 0; padding:14px; border:1px solid var(--line); }
+.browser-diagnostics button { min-height:44px; padding:9px 13px; border:1px solid var(--ink); background:var(--acid); cursor:pointer; font:600 9px "DM Mono"; }
+.browser-diagnostics p { margin:10px 0; color:var(--muted); font-size:10px; line-height:1.5; }
+.browser-diagnostics ul { display:grid; grid-template-columns:repeat(2,1fr); margin:0; padding:0; list-style:none; border:1px solid var(--line); }
+.browser-diagnostics li { min-height:44px; padding:9px; border-right:1px solid var(--line); border-bottom:1px solid var(--line); font:9px/1.5 "DM Mono"; }
+.browser-diagnostics li:nth-child(even) { border-right:0; }
+.browser-diagnostics li.passed:before { content:'PASS · '; font-weight:700; }
+.browser-diagnostics li.failed:before { content:'CHECK · '; font-weight:700; }
 .archive-section .primary-action { background:var(--panel); }
 .archive-section dd.passed { color:#126c4f; }
 .archive-section dd.pending_external { color:#a04722; }
@@ -455,4 +464,9 @@ footer { padding:22px 3vw; display:flex; justify-content:space-between; backgrou
   .phase-cell{border:1px solid ButtonText}
   .phase-cell:after,.comparison-bar i,.detail-waste span{background:Highlight}
   .release-state-label{forced-color-adjust:none;background:Canvas;color:CanvasText}
+}
+@media(max-width:520px){
+  .browser-support ul,.browser-diagnostics ul{grid-template-columns:1fr}
+  .browser-support li,.browser-diagnostics li{border-right:0;border-bottom:1px solid var(--line)}
+  .browser-diagnostics button{width:100%}
 }

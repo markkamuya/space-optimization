@@ -23,6 +23,7 @@ import { contributionHandoff, createContributionStarter } from './ui/contributio
 import { freshnessDelay, releaseFreshness } from './ui/releaseFreshness.js';
 import { createResearchSession, restoreResearchSession } from './ui/researchSession.js';
 import { registerOfflineCache, requestOfflineCacheStatus } from './ui/offlineCache.js';
+import { runProductionDiagnostics } from './ui/productionDiagnostics.js';
 
 const $ = selector => document.querySelector(selector);
 const percent = value => `${(value * 100).toFixed(1)}%`;
@@ -100,6 +101,23 @@ function renderBrowserCompatibility() {
   const notice = $('#browser-compatibility');
   notice.hidden = false;
   notice.innerHTML = `<strong>Browser update required</strong><span>${compatibility.message}</span>`;
+}
+
+function renderProductionDiagnostics({ focus = false } = {}) {
+  const report = runProductionDiagnostics(document);
+  const labels = {
+    semanticWorkflows: 'Named research workflows', verifiedRelease: 'Verified release loaded', keyboardFocus: 'Keyboard focus support',
+    dialogSemantics: 'Result dialog semantics', canvasAlternatives: 'Canvas text alternatives', viewportFit: 'No page overflow',
+    integrityPrimitives: 'Integrity-check primitives', recoveryControls: 'Recovery controls'
+  };
+  $('#browser-diagnostics-results').innerHTML = Object.entries(report.gates)
+    .map(([gate, passed]) => `<li class="${passed ? 'passed' : 'failed'}">${labels[gate]}</li>`).join('');
+  const status = $('#browser-diagnostics-status');
+  status.textContent = report.passed
+    ? 'This browser passed every live Atlas workflow diagnostic.'
+    : `${report.failures.length} live diagnostic${report.failures.length === 1 ? '' : 's'} need attention. Verified data remains fail-closed.`;
+  if (focus) status.focus({ preventScroll: true });
+  return report;
 }
 
 function setNavigationIsolation(isolated) {
@@ -922,6 +940,7 @@ async function loadResearchRelease() {
       ? `${canonicalRelease.coverage.records} records passed integrity checks from the canonical release shards.`
       : `${canonicalRelease.coverage.records} records passed the canonical checksum after a shard was unavailable. No partial shard data is shown.`));
     await renderOfflineReadiness();
+    renderProductionDiagnostics();
     restoreInitialTaskAnchor();
   } catch (error) {
     if (attempt !== researchLoadAttempt || error.name === 'AbortError') return;
@@ -1339,6 +1358,7 @@ $('#offline-readiness-check').addEventListener('click', async () => {
   await renderOfflineReadiness();
   $('#offline-readiness-status').focus({ preventScroll: true });
 });
+$('#browser-diagnostics-run').addEventListener('click', () => renderProductionDiagnostics({ focus: true }));
 window.addEventListener('offline', showOfflineExperience);
 window.addEventListener('offline', () => renderOfflineReadiness());
 window.addEventListener('online', () => {
