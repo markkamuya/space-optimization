@@ -20,6 +20,7 @@ import { COMPARISON_WORKSPACE_LIMIT, restoreComparisonWorkspace, serializeCompar
 import { comparisonReportSummary, createComparisonReport } from './ui/comparisonReport.js';
 import { preflightContribution } from './ui/submissionPreflight.js';
 import { contributionHandoff, createContributionStarter } from './ui/contributionStarter.js';
+import { freshnessDelay, releaseFreshness } from './ui/releaseFreshness.js';
 
 const $ = selector => document.querySelector(selector);
 const percent = value => `${(value * 100).toFixed(1)}%`;
@@ -41,6 +42,8 @@ let releaseSource = null;
 let releaseIntegrity = null;
 let releasePhase = 'loading';
 let releaseVerifiedAt = null;
+let releaseVerifiedEpoch = null;
+let releaseFreshnessTimer = null;
 let releaseRecovery = null;
 let comparisonWorkspaceIds = [];
 let comparisonWorkspaceStorage = 'available';
@@ -274,12 +277,14 @@ function updateMapActions() {
 }
 
 function renderReleaseExperience(phase) {
+  const freshness = releaseFreshness(releaseVerifiedEpoch, Date.now(), navigator.onLine);
   const experience = releaseExperience({
     phase,
     hasVerifiedRelease: Boolean(canonicalRelease),
     source: releaseSource,
     online: navigator.onLine,
-    verifiedAt: releaseVerifiedAt
+    verifiedAt: releaseVerifiedAt,
+    freshness
   });
   const mapStatus = $('#map-data-status');
   mapStatus.className = `map-data-status ${experience.mode}`;
@@ -310,6 +315,27 @@ function renderReleaseExperience(phase) {
   $('#phase-trust-label').textContent = experience.canUseVerified ? 'BEST VERIFIED SAMPLE' : 'MODELED PREVIEW · NOT VERIFIED DATA';
   updateMapActions();
   return experience;
+}
+
+function scheduleReleaseFreshnessCheck() {
+  clearTimeout(releaseFreshnessTimer);
+  const delay = freshnessDelay(releaseVerifiedEpoch);
+  if (delay === null) return;
+  releaseFreshnessTimer = setTimeout(() => {
+    if (document.visibilityState === 'visible' && canonicalRelease && releasePhase === 'ready') {
+      const experience = renderReleaseExperience('ready');
+      renderResearchReleaseStatus(experience, 'The last verified data remains available. Recheck when convenient to learn whether a newer release exists.');
+    }
+  }, delay + 50);
+}
+
+function refreshLongSessionStatus() {
+  if (document.visibilityState !== 'visible' || !canonicalRelease || releasePhase !== 'ready') return;
+  const experience = renderReleaseExperience('ready');
+  if (experience.mode === 'recheck_due') {
+    renderResearchReleaseStatus(experience, 'The last verified data remains available. Recheck when convenient to learn whether a newer release exists.');
+  }
+  scheduleReleaseFreshnessCheck();
 }
 
 function renderResearchReleaseStatus(experience, detail = experience.detail) {
@@ -818,6 +844,8 @@ async function loadResearchRelease() {
     releaseIntegrity = loaded.integrity;
     releasePhase = 'ready';
     releaseVerifiedAt = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(new Date());
+    releaseVerifiedEpoch = Date.now();
+    scheduleReleaseFreshnessCheck();
     researchRelease = {
       records: canonicalRelease.records,
       verifiedCount: canonicalRelease.coverage.verified,
@@ -1199,6 +1227,11 @@ $('#map-data-status').addEventListener('click', event => {
 });
 window.addEventListener('offline', showOfflineExperience);
 window.addEventListener('online', () => startReleaseRecovery({ reason: 'reconnected' }));
+document.addEventListener('visibilitychange', refreshLongSessionStatus);
+window.addEventListener('pagehide', () => {
+  clearTimeout(releaseFreshnessTimer);
+  researchLoadController?.abort();
+});
 window.addEventListener('popstate', () => {
   if (location.hash.startsWith('#map')) applyMapState(parseMapHash(location.hash));
   if (location.hash.startsWith('#compare')) applyComparisonState(parseComparisonHash(location.hash));

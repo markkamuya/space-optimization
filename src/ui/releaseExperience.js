@@ -46,20 +46,27 @@ const MESSAGES = Object.freeze({
     trust: 'verified',
     headline: 'Verified fallback release ready',
     detail: 'Every displayed research record passed the canonical checksum after a shard was unavailable.'
+  },
+  recheck_due: {
+    label: 'Recheck due',
+    trust: 'retained',
+    headline: 'Verified earlier · check for release updates',
+    detail: 'The displayed records remain integrity-checked, but this long-open tab has not checked for a newer release recently.'
   }
 });
 
-export function releaseExperience({ phase, hasVerifiedRelease = false, source = null, online = true, verifiedAt = null }) {
+export function releaseExperience({ phase, hasVerifiedRelease = false, source = null, online = true, verifiedAt = null, freshness = null }) {
   let mode;
   if (!online) mode = hasVerifiedRelease ? 'offline_retained' : 'offline_empty';
   else if (phase === 'loading') mode = hasVerifiedRelease ? 'refreshing' : 'loading';
+  else if (phase === 'ready' && hasVerifiedRelease && freshness?.recheckDue) mode = 'recheck_due';
   else if (phase === 'ready') mode = source === 'verified_monolith_fallback' ? 'verified_fallback' : 'verified_shards';
   else mode = hasVerifiedRelease ? 'failed_retained' : 'failed_empty';
   const message = MESSAGES[mode];
   return {
     mode,
     canUseVerified: hasVerifiedRelease || phase === 'ready',
-    preserveVerified: mode === 'refreshing' || mode.endsWith('_retained'),
+    preserveVerified: mode === 'refreshing' || mode === 'recheck_due' || mode.endsWith('_retained'),
     canRetry: online && !['loading', 'refreshing'].includes(mode),
     provenance: message.trust === 'verified' && verifiedAt
       ? `Integrity checked this session at ${verifiedAt}`

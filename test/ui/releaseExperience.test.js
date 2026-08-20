@@ -39,3 +39,12 @@ test('session provenance says when verified data was checked without implying st
   assert.equal(ready.provenance, 'Integrity checked this session at 3:42 PM');
   assert.equal(retained.provenance, 'Last integrity check this session: 3:42 PM');
 });
+
+test('a long-open verified tab requests a non-destructive freshness check', () => {
+  const experience = releaseExperience({ phase: 'ready', hasVerifiedRelease: true, source: 'verified_shards', online: true, verifiedAt: '10:00 AM', freshness: { recheckDue: true } });
+  assert.equal(experience.mode, 'recheck_due');
+  assert.equal(experience.preserveVerified, true);
+  assert.equal(experience.canUseVerified, true);
+  assert.equal(experience.canRetry, true);
+  assert.match(experience.detail, /remain integrity-checked/i);
+});
