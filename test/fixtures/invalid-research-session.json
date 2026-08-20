@@ -1,0 +1,6 @@
+{
+  "format": "triangle-packing-atlas-research-session/v1",
+  "release": { "version": "forged" },
+  "session": { "research": { "query": "must not be applied" } },
+  "checksum": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+}

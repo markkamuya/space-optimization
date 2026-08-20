@@ -148,6 +148,15 @@
         <a href="#challenges"><b>4</b> Improve</a>
       </nav>
 
+      <section class="session-tools" aria-labelledby="session-tools-title">
+        <div><p class="kicker">PORTABLE RESEARCH SESSION</p><h2 id="session-tools-title">Move this investigation safely.</h2><p>Save the current map, filters, comparison, and shortlist in one integrity-checked file. A session stores research context—not new scientific evidence.</p></div>
+        <div class="session-actions">
+          <button id="session-download" type="button" disabled>Download research session</button>
+          <label>Restore a research session<input id="session-file" type="file" accept="application/json,.json" disabled></label>
+          <p id="session-status" role="status" aria-live="polite" aria-atomic="true" tabindex="-1">Waiting for an integrity-checked Atlas release.</p>
+        </div>
+      </section>
+
       <section id="research" class="research-explorer" aria-labelledby="research-title">
         <div class="section-intro">
           <div><p class="kicker">ALL VERIFIED RESULTS</p><h2 id="research-title">Search the full dataset.</h2></div>

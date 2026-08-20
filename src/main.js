@@ -21,6 +21,7 @@ import { comparisonReportSummary, createComparisonReport } from './ui/comparison
 import { preflightContribution } from './ui/submissionPreflight.js';
 import { contributionHandoff, createContributionStarter } from './ui/contributionStarter.js';
 import { freshnessDelay, releaseFreshness } from './ui/releaseFreshness.js';
+import { createResearchSession, restoreResearchSession } from './ui/researchSession.js';
 
 const $ = selector => document.querySelector(selector);
 const percent = value => `${(value * 100).toFixed(1)}%`;
@@ -876,6 +877,9 @@ async function loadResearchRelease() {
     renderLeaderboard();
     setupComparison();
     setupContributionPreflight();
+    $('#session-download').disabled = false;
+    $('#session-file').disabled = false;
+    $('#session-status').textContent = 'Ready to save or restore this verified research context.';
     applyResearchState(parseResearchHash(location.hash));
     renderResearchExplorer();
     const readyExperience = renderReleaseExperience('ready');
@@ -1215,6 +1219,65 @@ $('#map-share').addEventListener('click', async () => {
     status.textContent = 'Link copied. It will reopen this exact verified sample.';
   } catch {
     status.textContent = 'Copy was unavailable. Use the address bar to copy this view.';
+  }
+});
+function currentPortableSession() {
+  return {
+    map: currentMapState(),
+    research: currentResearchState(),
+    comparison: currentComparisonState(),
+    shortlist: comparisonWorkspaceIds
+  };
+}
+
+$('#session-download').addEventListener('click', async () => {
+  const status = $('#session-status');
+  try {
+    const bundle = await createResearchSession(currentPortableSession(), canonicalRelease, releaseIntegrity, canonicalRelease.records.map(record => record.id));
+    const url = URL.createObjectURL(new Blob([`${JSON.stringify(bundle, null, 2)}\n`], { type: 'application/json' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `triangle-packing-atlas-session-${canonicalRelease.version}.json`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+    status.textContent = 'Research session downloaded with this verified release identity.';
+  } catch {
+    status.textContent = 'The session was not downloaded because verified release identity is unavailable.';
+  }
+});
+
+$('#session-file').addEventListener('change', async event => {
+  const input = event.currentTarget;
+  const status = $('#session-status');
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 64 * 1024) {
+    status.textContent = 'That session is larger than 64 KB and was not opened.';
+    input.value = '';
+    return;
+  }
+  try {
+    const result = await restoreResearchSession(await file.text(), canonicalRelease, releaseIntegrity, canonicalRelease.records.map(record => record.id));
+    if (!result.valid) {
+      status.textContent = `${result.issues[0]} No research context was changed.`;
+      return;
+    }
+    applyMapState(result.session.map);
+    applyResearchState(result.session.research);
+    renderResearchExplorer();
+    applyComparisonState(result.session.comparison);
+    comparisonWorkspaceIds = result.session.shortlist;
+    persistComparisonWorkspace('The imported shortlist was checked against this verified release.');
+    status.textContent = result.releaseChanged
+      ? `Session restored against the current release. ${result.removed} unavailable saved reference${result.removed === 1 ? ' was' : 's were'} removed.`
+      : result.removed
+        ? `Session restored partially. ${result.removed} unavailable saved reference${result.removed === 1 ? ' was' : 's were'} removed.`
+        : 'Research session restored and checked against this verified release.';
+    status.focus({ preventScroll: true });
+  } catch {
+    status.textContent = 'The session could not be read safely. No research context was changed.';
+  } finally {
+    input.value = '';
   }
 });
 for (const selector of ['#research-search', '#research-family', '#research-evidence']) {
