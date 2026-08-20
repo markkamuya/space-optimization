@@ -24,6 +24,7 @@ import { freshnessDelay, releaseFreshness } from './ui/releaseFreshness.js';
 import { createResearchSession, restoreResearchSession } from './ui/researchSession.js';
 import { registerOfflineCache, requestOfflineCacheStatus } from './ui/offlineCache.js';
 import { runProductionDiagnostics } from './ui/productionDiagnostics.js';
+import { setupPackingCompassShell } from './ui/packingCompassShell.js';
 
 const $ = selector => document.querySelector(selector);
 const percent = value => `${(value * 100).toFixed(1)}%`;
@@ -58,6 +59,7 @@ const pageMain = $('#main-content');
 const pageFooter = $('footer');
 const brandLink = $('.brand');
 const compatibility = browserCompatibility(globalThis);
+const packingCompassShell = setupPackingCompassShell({ document, location, history });
 let offlineCacheSupported = false;
 let offlineFallbackActive = false;
 

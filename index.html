@@ -16,7 +16,7 @@
     <title>Triangle Packing Atlas</title>
     <link rel="stylesheet" href="./styles.css">
   </head>
-  <body>
+  <body class="guided-mode">
     <a class="skip-link" href="#main-content">Skip to main content</a>
     <header class="topbar">
       <a class="brand" href="#top" aria-label="Triangle Packing Atlas home"><span class="brand-mark"></span><span>Triangle Packing Atlas</span></a>
@@ -24,6 +24,7 @@
       <nav id="primary-nav" aria-label="Main navigation">
         <a href="#map">Explore</a><a href="#research">Verify evidence</a><a href="#compare">Compare</a><a href="#challenges">Improve records</a><a href="#contribute">Contribute</a>
       </nav>
+      <button id="atlas-mode-toggle" class="atlas-mode-toggle" type="button" aria-pressed="false">Open advanced Atlas</button>
       <a class="contribute-link" href="#contribute">How to contribute</a>
     </header>
 
@@ -34,6 +35,31 @@
         <div><strong id="offline-readiness-title">Offline research</strong><span id="offline-readiness-status" role="status" aria-live="polite" aria-atomic="true" tabindex="-1">Checking whether this browser can safely reopen cached Atlas data…</span></div>
         <button id="offline-readiness-check" type="button">Check offline readiness</button>
       </aside>
+      <section id="compass" class="packing-compass" aria-labelledby="compass-title">
+        <div class="compass-intro">
+          <p class="kicker">PACKING COMPASS</p>
+          <h1 id="compass-title" tabindex="-1">What are you trying to discover?</h1>
+          <p>Choose one goal. The Atlas will show only the decisions needed for that research task, while the complete technical interface remains available.</p>
+          <p id="compass-release-status" class="compass-release-status" role="status" aria-live="polite" aria-atomic="true">Checking the verified Atlas release before answering a research question…</p>
+        </div>
+        <div class="compass-goals" role="group" aria-label="Choose a research goal">
+          <button type="button" data-compass-goal="find" aria-pressed="false"><span>01</span><b>Find the best packing</b><small>Choose a triangle and rectangle.</small></button>
+          <button type="button" data-compass-goal="verify" aria-pressed="false"><span>02</span><b>Check whether a claim is proven</b><small>Inspect evidence and bounds.</small></button>
+          <button type="button" data-compass-goal="compare" aria-pressed="false"><span>03</span><b>Compare two results</b><small>See meaningful differences.</small></button>
+          <button type="button" data-compass-goal="improve" aria-pressed="false"><span>04</span><b>Improve an open result</b><small>Start from a verified baseline.</small></button>
+        </div>
+        <section id="compass-workspace" class="compass-workspace" aria-labelledby="compass-workspace-title" hidden>
+          <div>
+            <p class="kicker">YOUR RESEARCH QUESTION</p>
+            <h2 id="compass-workspace-title" tabindex="-1"></h2>
+            <p id="compass-workspace-guidance"></p>
+          </div>
+          <div id="compass-question-slot" class="compass-question-slot">
+            <p>The guided question controls will appear after the integrity-checked release is ready.</p>
+          </div>
+          <a id="compass-advanced-link" class="secondary-action" href="#map">Open advanced tools</a>
+        </section>
+      </section>
       <section class="hero">
         <div>
           <p class="kicker">OPEN TRIANGLE-PACKING DATA</p>
