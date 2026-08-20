@@ -79,6 +79,7 @@ export function setupPackingCompassShell({ document, location, history }) {
       renderGoal(goal);
       window.dispatchEvent(new CustomEvent('packing-compass:goal', { detail: { goal } }));
     }
+    window.dispatchEvent(new CustomEvent('atlas:location', { detail: { mode, hash: location.hash } }));
   }
 
   goalButtons.forEach(button => button.addEventListener('click', () => {

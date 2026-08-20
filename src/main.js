@@ -26,6 +26,7 @@ import { registerOfflineCache, requestOfflineCacheStatus } from './ui/offlineCac
 import { runProductionDiagnostics } from './ui/productionDiagnostics.js';
 import { parseCompassHash, setupPackingCompassShell } from './ui/packingCompassShell.js';
 import { COMPASS_CONTAINER_OPTIONS, COMPASS_TRIANGLE_OPTIONS, compassEvidence, matchCompassQuestion } from './ui/packingCompass.js';
+import { advancedOrientation } from './ui/advancedOrientation.js';
 
 const $ = selector => document.querySelector(selector);
 const percent = value => `${(value * 100).toFixed(1)}%`;
@@ -127,6 +128,7 @@ function renderPackingCompassQuestion(goal) {
 }
 
 window.addEventListener('packing-compass:goal', event => renderPackingCompassQuestion(event.detail.goal));
+window.addEventListener('atlas:location', () => renderAdvancedOrientation());
 let offlineCacheSupported = false;
 let offlineFallbackActive = false;
 
@@ -637,7 +639,26 @@ function updatePhase({ historyMode = null } = {}) {
   $('#waste-bar').style.width = percent(1 - selectedPhase.utilization);
   drawPattern($('#live-canvas'), angle, ratio, selectedPhase);
   updateMapActions();
+  renderAdvancedOrientation();
   if (historyMode) history[`${historyMode}State`](null, '', formatMapHash(currentMapState()));
+}
+
+function renderAdvancedOrientation() {
+  const view = advancedOrientation({
+    hash: location.hash,
+    angle: Number($('#angle').value),
+    ratio: Number($('#ratio').value),
+    record: selectedPhaseRecord,
+    releaseReady: releasePhase === 'ready'
+  });
+  $('#advanced-orientation-title').textContent = `${view.stage}: understand this exact problem`;
+  $('#advanced-orientation-guidance').textContent = view.guidance;
+  $('#advanced-orientation-problem').textContent = view.problem;
+  $('#advanced-orientation-sample').textContent = view.sample;
+  $('#advanced-orientation-evidence').textContent = view.evidence;
+  const action = $('#advanced-orientation-action');
+  action.href = view.recordId ? `#research?record=${encodeURIComponent(view.recordId)}` : '#map';
+  action.textContent = view.recordId ? 'Inspect this sample’s evidence' : 'Return to the packing map';
 }
 
 function statusLabel(record) {

@@ -203,6 +203,15 @@ dt { color:var(--muted); } dd { margin:0; font-weight:700; text-align:right; }
 .workspace-rail a:last-child { border-right:0; }
 .workspace-rail a:hover,.workspace-rail a:focus-visible,.workspace-rail a[aria-current="location"] { background:var(--acid); }
 .workspace-rail b { display:grid; width:24px; height:24px; place-items:center; flex:none; border:1px solid currentColor; border-radius:50%; }
+.advanced-orientation { margin:28px 6vw; display:grid; grid-template-columns:minmax(240px,.9fr) minmax(420px,1.6fr) auto; gap:28px; align-items:center; padding:24px; border:1px solid var(--ink); border-left:7px solid var(--orange); background:var(--panel); }
+.advanced-orientation-heading h2 { margin:5px 0 8px; font-size:clamp(22px,2vw,32px); letter-spacing:-.035em; }
+.advanced-orientation-heading p:last-child { margin:0; color:var(--muted); font-size:11px; line-height:1.55; }
+.advanced-orientation dl { display:grid; grid-template-columns:repeat(3,1fr); margin:0; }
+.advanced-orientation dl div { min-width:0; padding:4px 18px; border-left:1px solid var(--line); }
+.advanced-orientation dt { margin-bottom:7px; color:var(--muted); font:700 9px "DM Mono"; letter-spacing:.06em; text-transform:uppercase; }
+.advanced-orientation dd { margin:0; font-size:11px; line-height:1.45; overflow-wrap:anywhere; }
+.advanced-orientation>a { display:inline-flex; min-height:44px; padding:10px 14px; align-items:center; justify-content:center; border:1px solid var(--ink); background:var(--acid); color:var(--ink); font:600 10px "DM Mono"; text-align:center; text-decoration:none; }
+.guided-mode .advanced-orientation { display:none; }
 .session-tools { margin:24px 6vw 0; padding:20px; display:grid; grid-template-columns:minmax(220px,.8fr) 1.2fr; gap:24px; border:1px solid var(--ink); background:var(--panel); }
 .session-tools h2 { margin:5px 0 8px; font-size:24px; }
 .session-tools p { margin:0; color:var(--muted); font-size:10px; line-height:1.6; }
@@ -518,6 +527,8 @@ footer { padding:22px 3vw; display:flex; justify-content:space-between; backgrou
   .phase-cell:after,.comparison-bar i,.detail-waste span{background:Highlight}
   .release-state-label{forced-color-adjust:none;background:Canvas;color:CanvasText}
 }
+@media(max-width:1050px){.advanced-orientation{grid-template-columns:1fr 1.5fr}.advanced-orientation>a{grid-column:1/-1}}
+@media(max-width:720px){.advanced-orientation{grid-template-columns:1fr;margin:20px 24px;padding:20px;gap:18px}.advanced-orientation dl{grid-template-columns:1fr}.advanced-orientation dl div{padding:12px 0;border-left:0;border-top:1px solid var(--line)}.advanced-orientation>a{grid-column:auto}}
 @media(max-width:520px){
   .browser-support ul,.browser-diagnostics ul{grid-template-columns:1fr}
   .browser-support li,.browser-diagnostics li{border-right:0;border-bottom:1px solid var(--line)}
