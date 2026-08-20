@@ -28,6 +28,7 @@ import { parseCompassHash, setupPackingCompassShell } from './ui/packingCompassS
 import { COMPASS_CONTAINER_OPTIONS, COMPASS_TRIANGLE_OPTIONS, compassEvidence, matchCompassQuestion } from './ui/packingCompass.js';
 import { advancedOrientation } from './ui/advancedOrientation.js';
 import { evidenceLadder, recordConclusion } from './ui/evidenceStory.js';
+import { buildResearchTrail, researchTrailSummary } from './ui/researchTrail.js';
 
 const $ = selector => document.querySelector(selector);
 const percent = value => `${(value * 100).toFixed(1)}%`;
@@ -641,6 +642,7 @@ function updatePhase({ historyMode = null } = {}) {
   drawPattern($('#live-canvas'), angle, ratio, selectedPhase);
   updateMapActions();
   renderAdvancedOrientation();
+  renderResearchTrail();
   if (historyMode) history[`${historyMode}State`](null, '', formatMapHash(currentMapState()));
 }
 
@@ -660,6 +662,26 @@ function renderAdvancedOrientation() {
   const action = $('#advanced-orientation-action');
   action.href = view.recordId ? `#research?record=${encodeURIComponent(view.recordId)}` : '#map';
   action.textContent = view.recordId ? 'Inspect this sample’s evidence' : 'Return to the packing map';
+}
+
+function currentResearchTrail() {
+  const linkedResearch = parseResearchHash(location.hash);
+  return buildResearchTrail({
+    map: currentMapState(),
+    research: currentResearchState(),
+    comparison: canonicalRelease ? currentComparisonState() : {},
+    activeRecord: location.hash.startsWith('#research') ? linkedResearch.record : null,
+    includeComparison: location.hash.startsWith('#compare'),
+    verified: releasePhase === 'ready' && Boolean(canonicalRelease && releaseIntegrity?.digest)
+  });
+}
+
+function renderResearchTrail() {
+  const trail = currentResearchTrail();
+  $('#research-trail-status').textContent = trail.status;
+  $('#research-trail-steps').innerHTML = trail.steps.map(step => `<li><a href="${escapeHtml(step.href)}"><b>${escapeHtml(step.label)}</b><span>${escapeHtml(step.value)}</span></a></li>`).join('');
+  $('#research-trail-copy').disabled = !trail.verified;
+  return trail;
 }
 
 function statusLabel(record) {
@@ -769,6 +791,7 @@ function compare() {
   const fillLead = result.higherFill === 'tie' ? 'Both results have the same verified fill.' : `Result ${result.higherFill === 'left' ? 'A' : 'B'} fills ${percent(fillDifference)} more of its rectangle.`;
   const gapLead = result.smallerGap === 'tie' ? 'Both results have the same optimality gap.' : `Result ${result.smallerGap === 'left' ? 'A' : 'B'} has ${percent(gapDifference)} less room for improvement.`;
   $('#comparison-summary').textContent = `${fillLead} ${gapLead} Different triangle and rectangle sizes can make piece counts non-comparable.`;
+  renderResearchTrail();
 }
 
 function persistComparisonWorkspace(message) {
@@ -1240,6 +1263,7 @@ function openResearchRecord(record, { preserveContext = false } = {}) {
     { state: record.solution.placements }
   ));
   history.pushState(null, '', formatResearchHash(currentResearchState({ record: record.id })));
+  renderResearchTrail();
 }
 
 function renderResearchExplorer() {
@@ -1277,6 +1301,7 @@ function renderResearchExplorer() {
     const record = canonicalRelease.records.find(item => item.id === linkedState.record);
     if (record && !$('#record-dialog').open) openResearchRecord(record);
   }
+  renderResearchTrail();
 }
 
 function scheduleResearchExplorerRender() {
@@ -1445,6 +1470,17 @@ $('#session-file').addEventListener('change', async event => {
   } finally {
     input.value = '';
   }
+});
+$('#research-trail-reset').addEventListener('click', () => {
+  if (!canonicalRelease) return;
+  applyMapState({ angle: 60, ratio: 1.5, record: null, view: 'overview' });
+  applyResearchState({ query: '', family: 'all', evidence: 'all', record: null });
+  applyComparisonState(comparisonDefaults());
+  history.pushState(null, '', '#map');
+  renderResearchExplorer();
+  renderResearchTrail();
+  $('#advanced-orientation-title').focus?.({ preventScroll: true });
+  $('#research-trail-action-status').textContent = 'A new research trail started from the default verified map view.';
 });
 for (const selector of ['#research-search', '#research-family', '#research-evidence']) {
   $(selector).addEventListener(selector === '#research-search' ? 'input' : 'change', () => {

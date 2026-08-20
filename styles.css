@@ -217,6 +217,22 @@ dt { color:var(--muted); } dd { margin:0; font-weight:700; text-align:right; }
 .advanced-orientation dd { margin:0; font-size:11px; line-height:1.45; overflow-wrap:anywhere; }
 .advanced-orientation>a { display:inline-flex; min-height:44px; padding:10px 14px; align-items:center; justify-content:center; border:1px solid var(--ink); background:var(--acid); color:var(--ink); font:600 10px "DM Mono"; text-align:center; text-decoration:none; }
 .guided-mode .advanced-orientation { display:none; }
+.research-trail { margin:28px 6vw; display:grid; grid-template-columns:minmax(180px,.65fr) 1.5fr minmax(180px,.55fr); gap:24px; align-items:start; padding:22px; border:1px solid var(--ink); background:#edf7f2; }
+.research-trail h2 { margin:6px 0; font-size:24px; }
+.research-trail>div>p:last-child { margin:0; color:var(--muted); font-size:10px; line-height:1.5; }
+.research-trail ol { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); margin:0; padding:0; list-style:none; }
+.research-trail li { min-width:0; border-left:1px solid var(--line); }
+.research-trail li a { display:block; min-height:66px; padding:10px 12px; color:var(--ink); text-decoration:none; }
+.research-trail li a:hover,.research-trail li a:focus-visible { background:var(--acid); }
+.research-trail b,.research-trail span { display:block; overflow-wrap:anywhere; }
+.research-trail b { font:700 9px "DM Mono"; text-transform:uppercase; }
+.research-trail span { margin-top:7px; font-size:10px; line-height:1.4; }
+.research-trail-actions { display:grid; gap:8px; }
+.research-trail-actions button { min-height:44px; padding:9px 12px; border:1px solid var(--ink); background:var(--panel); color:var(--ink); cursor:pointer; font:600 9px "DM Mono"; }
+.research-trail-actions button:disabled { color:var(--muted); cursor:not-allowed; }
+.guided-mode .research-trail { display:none; }
+@media(max-width:1050px){.research-trail{grid-template-columns:1fr 2fr}.research-trail-actions{grid-column:1/-1;grid-template-columns:1fr 1fr}.research-trail-actions p{grid-column:1/-1}}
+@media(max-width:720px){.research-trail{grid-template-columns:1fr;margin:20px 24px}.research-trail ol{grid-template-columns:1fr}.research-trail li{border-left:0;border-top:1px solid var(--line)}.research-trail-actions{grid-column:auto;grid-template-columns:1fr}.research-trail-actions p{grid-column:auto}}
 .session-tools { margin:24px 6vw 0; padding:20px; display:grid; grid-template-columns:minmax(220px,.8fr) 1.2fr; gap:24px; border:1px solid var(--ink); background:var(--panel); }
 .session-tools h2 { margin:5px 0 8px; font-size:24px; }
 .session-tools p { margin:0; color:var(--muted); font-size:10px; line-height:1.6; }
