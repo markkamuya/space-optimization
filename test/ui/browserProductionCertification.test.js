@@ -11,6 +11,7 @@ test('production UI exposes its browser target and runtime certification result'
   assert.match(html, /Firefox/);
   assert.match(html, /Safari/);
   assert.match(html, /Chromium/);
-  assert.match(html, /390px–1440px layouts/);
+  assert.match(html, /320px–1440px layouts/);
+  assert.match(html, /up to 400% zoom/);
   assert.match(script, /passed the Atlas verification and interaction capability check/);
 });
