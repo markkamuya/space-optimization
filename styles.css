@@ -231,6 +231,17 @@ dt { color:var(--muted); } dd { margin:0; font-weight:700; text-align:right; }
 .research-trail-actions button { min-height:44px; padding:9px 12px; border:1px solid var(--ink); background:var(--panel); color:var(--ink); cursor:pointer; font:600 9px "DM Mono"; }
 .research-trail-actions button:disabled { color:var(--muted); cursor:not-allowed; }
 .guided-mode .research-trail { display:none; }
+.next-best-action { margin:28px 6vw; display:grid; grid-template-columns:minmax(220px,.6fr) 1.6fr; gap:26px; padding:24px; border:1px solid var(--ink); background:var(--dark); color:white; }
+.next-best-action h2 { margin:7px 0; font-size:28px; }
+.next-best-action>div>p:last-child { color:#aab5af; font-size:10px; line-height:1.55; }
+.next-best-action-list { display:grid; grid-template-columns:repeat(3,1fr); }
+.next-best-action-list a { min-width:0; min-height:112px; padding:18px; border-left:1px solid #44504a; color:white; text-decoration:none; }
+.next-best-action-list a:hover,.next-best-action-list a:focus-visible { background:#26332d; outline-color:var(--mint); }
+.next-best-action-list b,.next-best-action-list span { display:block; }
+.next-best-action-list b { color:var(--mint); font-size:11px; }
+.next-best-action-list span { margin-top:10px; color:#c2cbc6; font-size:10px; line-height:1.55; }
+.guided-mode .next-best-action { display:none; }
+@media(max-width:720px){.next-best-action{grid-template-columns:1fr;margin:20px 24px}.next-best-action-list{grid-template-columns:1fr}.next-best-action-list a{min-height:76px;border-left:0;border-top:1px solid #44504a}}
 @media(max-width:1050px){.research-trail{grid-template-columns:1fr 2fr}.research-trail-actions{grid-column:1/-1;grid-template-columns:1fr 1fr}.research-trail-actions p{grid-column:1/-1}}
 @media(max-width:720px){.research-trail{grid-template-columns:1fr;margin:20px 24px}.research-trail ol{grid-template-columns:1fr}.research-trail li{border-left:0;border-top:1px solid var(--line)}.research-trail-actions{grid-column:auto;grid-template-columns:1fr}.research-trail-actions p{grid-column:auto}}
 .session-tools { margin:24px 6vw 0; padding:20px; display:grid; grid-template-columns:minmax(220px,.8fr) 1.2fr; gap:24px; border:1px solid var(--ink); background:var(--panel); }

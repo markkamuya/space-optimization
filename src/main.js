@@ -29,6 +29,7 @@ import { COMPASS_CONTAINER_OPTIONS, COMPASS_TRIANGLE_OPTIONS, compassEvidence, m
 import { advancedOrientation } from './ui/advancedOrientation.js';
 import { evidenceLadder, recordConclusion } from './ui/evidenceStory.js';
 import { buildResearchTrail, createResearchTrailReport, researchTrailReportSummary } from './ui/researchTrail.js';
+import { nextBestActions } from './ui/nextBestAction.js';
 
 const $ = selector => document.querySelector(selector);
 const percent = value => `${(value * 100).toFixed(1)}%`;
@@ -643,6 +644,7 @@ function updatePhase({ historyMode = null } = {}) {
   updateMapActions();
   renderAdvancedOrientation();
   renderResearchTrail();
+  renderNextBestActions();
   if (historyMode) history[`${historyMode}State`](null, '', formatMapHash(currentMapState()));
 }
 
@@ -683,6 +685,25 @@ function renderResearchTrail() {
   $('#research-trail-copy').disabled = !trail.verified;
   $('#research-trail-download').disabled = !trail.verified;
   return trail;
+}
+
+function renderNextBestActions() {
+  const list = $('#next-best-action-list');
+  if (!canonicalRelease || releasePhase !== 'ready' || !selectedPhaseRecord) {
+    $('#next-best-action-status').textContent = 'Recommendations are withheld until a verified record and release identity are available.';
+    list.innerHTML = '<p>Waiting for integrity-checked records.</p>';
+    return;
+  }
+  const actions = nextBestActions(canonicalRelease.records, selectedPhaseRecord);
+  $('#next-best-action-status').textContent = `Suggestions are based only on ${selectedPhaseRecord.id} and verified release ${canonicalRelease.version}.`;
+  list.innerHTML = actions.map(action => {
+    const href = action.kind === 'research'
+      ? formatResearchHash({ query: '', family: 'all', evidence: 'all', record: action.recordId })
+      : action.kind === 'compare'
+        ? formatComparisonHash({ left: action.left, right: action.right })
+        : '#contribute';
+    return `<a href="${escapeHtml(href)}"><b>${escapeHtml(action.label)}</b><span>${escapeHtml(action.description)}</span></a>`;
+  }).join('');
 }
 
 function currentResearchTrailReport() {
@@ -1320,6 +1341,7 @@ function renderResearchExplorer() {
     if (record && !$('#record-dialog').open) openResearchRecord(record);
   }
   renderResearchTrail();
+  renderNextBestActions();
 }
 
 function scheduleResearchExplorerRender() {
