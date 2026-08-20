@@ -14,7 +14,9 @@ test('refresh and connectivity recovery retain only integrity-verified results',
   assert.match(script, /releaseVerifiedAt/);
   assert.match(script, /dataset\.releaseTrust/);
   assert.match(script, /window\.addEventListener\('offline', showOfflineExperience\)/);
-  assert.match(script, /window\.addEventListener\('online', \(\) => startReleaseRecovery\(\{ reason: 'reconnected' \}\)\)/);
+  assert.match(script, /window\.addEventListener\('online', \(\) => \{/);
+  assert.match(script, /offlineFallbackActive = false/);
+  assert.match(script, /startReleaseRecovery\(\{ reason: 'reconnected' \}\)/);
   assert.match(script, /Connection restored\. Recovery complete/);
   assert.match(script, /attempt !== researchLoadAttempt/);
   assert.match(script, /error\.name === 'AbortError'/);
@@ -22,7 +24,8 @@ test('refresh and connectivity recovery retain only integrity-verified results',
 
 test('offline initial load stays fail-closed and promises automatic recovery', async () => {
   const script = await readFile(new URL('../../src/main.js', import.meta.url), 'utf8');
-  assert.match(script, /if \(!navigator\.onLine\)/);
+  assert.match(script, /if \(!navigator\.onLine && !navigator\.serviceWorker\?\.controller\)/);
+  assert.match(script, /offline_cache_miss|No verified research records are shown/);
   assert.match(script, /No verified research records are shown/);
   assert.match(script, /retry automatically/);
   assert.match(script, /The map is a modeled preview until verified data can be checked/);
