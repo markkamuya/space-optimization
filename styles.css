@@ -403,4 +403,37 @@ footer { padding:22px 3vw; display:flex; justify-content:space-between; backgrou
 @media(max-width:720px){.contribution-preflight{grid-template-columns:1fr;margin-top:20px;padding:20px}.contribution-preflight-results{grid-column:auto}}
 @media(max-width:720px){.contribution-starter-actions{grid-template-columns:1fr}.contribution-handoff{grid-column:auto}.contribution-handoff ol{grid-template-columns:1fr}.contribution-handoff li{border-right:0;border-bottom:1px solid var(--line)}.contribution-handoff li:last-child{border-bottom:0}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.record-card,.primary-action,.phase-cell:after{animation:none;transition:none}.primary-action:hover{transform:none}}
-@media(forced-colors:active){.brand-mark,.triangle-icon,.shape-readout>span{forced-color-adjust:auto}.phase-cell{border:1px solid ButtonText}.phase-cell:after{background:ButtonText}}
+@media(max-width:480px){
+  body{min-width:0}
+  .hero,.section-intro,.research-section,.contribute-section,.archive-section{padding-inline:16px}
+  .research-summary,.research-toolbar,.registry-results button,.registry-footer,.transition-panel,.compare-controls,.comparison-guides,.comparison-workspace,.comparison-actions,.comparison-summary,.comparison,.challenge-grid,.record-grid{margin-inline:16px}
+  .research-summary{grid-template-columns:1fr}
+  .research-summary div,.research-summary div:nth-child(even){border-right:0;border-bottom:1px solid var(--ink)}
+  .research-summary div:last-child{border-bottom:0}
+  .registry-footer{align-items:stretch;flex-direction:column;gap:12px;line-height:1.6}
+  .workspace-rail{grid-template-columns:1fr}
+  .workspace-rail>span{grid-column:auto}
+  .workspace-rail a,.workspace-rail a:nth-child(odd){border-right:0;border-top:1px solid var(--line)}
+  .contribute-section>*{min-width:0}
+  .contribution-preflight-controls select,.contribution-file{width:100%;min-width:0}
+  dialog{width:100vw;max-width:100vw;max-height:100dvh}
+  .detail-header{padding:62px 18px 24px;gap:16px}
+  .detail-header h2{font-size:clamp(24px,9vw,32px);line-height:1.1}
+  .detail-stat{padding-right:0}
+  .detail-grid section,.provenance-panel,.reproduction-panel{padding-inline:18px}
+  .detail-navigation{grid-template-columns:1fr;padding-inline:18px}
+  .detail-navigation p{grid-column:auto;grid-row:auto}
+  .detail-navigation button:last-child{justify-self:stretch}
+}
+@media(prefers-contrast:more){
+  :root{--muted:#44504a;--line:#68746e}
+  button,input,select,a{text-decoration-thickness:2px}
+}
+@media(forced-colors:active){
+  .brand-mark,.triangle-icon,.shape-readout>span{forced-color-adjust:auto}
+  button,input,select,a,.research-load-status,.map-data-status,.research-summary,.research-toolbar,.comparison-workspace,.contribution-preflight{border-color:ButtonText}
+  button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible,.reproduction-actions label:focus-within{outline:3px solid Highlight;outline-offset:3px}
+  .phase-cell{border:1px solid ButtonText}
+  .phase-cell:after,.comparison-bar i,.detail-waste span{background:Highlight}
+  .release-state-label{forced-color-adjust:none;background:Canvas;color:CanvasText}
+}
