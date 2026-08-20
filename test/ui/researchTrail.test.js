@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { buildResearchTrail, researchTrailSummary } from '../../src/ui/researchTrail.js';
+import { buildResearchTrail, createResearchTrailReport, researchTrailReportSummary, researchTrailSummary } from '../../src/ui/researchTrail.js';
 
 test('research trail preserves geometry, filters, record, and comparison in order', () => {
   const trail = buildResearchTrail({
@@ -13,6 +13,9 @@ test('research trail preserves geometry, filters, record, and comparison in orde
   });
   assert.deepEqual(trail.steps.map(step => step.id), ['problem', 'filters', 'record', 'comparison']);
   assert.match(trail.steps[1].value, /vertical.*isosceles.*verified best known/);
+  assert.match(trail.steps[0].href, /angle=50.*ratio=1\.95/);
+  assert.match(trail.steps[2].href, /q=vertical.*record=iso-a50-r1p95/);
+  assert.equal(trail.steps[3].href, '#compare?a=iso-a50-r1p95&b=iso-a90-r0p75');
   assert.match(researchTrailSummary(trail), /iso-a50-r1p95 vs iso-a90-r0p75/);
 });
 
@@ -32,4 +35,21 @@ test('production UI renders and can reset the complete trail', async () => {
   assert.match(html, /id="research-trail-reset"/);
   assert.match(script, /function renderResearchTrail\(\)/);
   assert.match(script, /applyComparisonState\(comparisonDefaults\(\)\)/);
+});
+
+test('shareable report binds context to release integrity and exact evidence', () => {
+  const trail = buildResearchTrail({ map: {}, research: {}, verified: true });
+  const report = createResearchTrailReport(trail, {
+    release: { version: '2.0.0', releasedAt: '2026-07-26T00:00:00.000Z' },
+    integrity: { algorithm: 'sha256', digest: 'abc', artifact: 'atlas-v2.json' },
+    records: [{ id: 'r1', experimentId: 'e1', evidence: { state: 'verified_best_known', citations: [] }, verification: { fingerprint: 'f1' }, reproducibility: { command: 'npm run atlas:experiment -- --record r1' } }]
+  });
+  assert.equal(report.format, 'triangle-packing-research-trail/v1');
+  assert.equal(report.records[0].fingerprint, 'f1');
+  assert.match(report.assumptions.join(' '), /does not mean globally optimal/);
+  assert.match(researchTrailReportSummary(report), /Integrity sha256: abc/);
+});
+
+test('report export fails closed without verified release identity', () => {
+  assert.equal(createResearchTrailReport(buildResearchTrail({ verified: false }), {}), null);
 });

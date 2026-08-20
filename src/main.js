@@ -28,7 +28,7 @@ import { parseCompassHash, setupPackingCompassShell } from './ui/packingCompassS
 import { COMPASS_CONTAINER_OPTIONS, COMPASS_TRIANGLE_OPTIONS, compassEvidence, matchCompassQuestion } from './ui/packingCompass.js';
 import { advancedOrientation } from './ui/advancedOrientation.js';
 import { evidenceLadder, recordConclusion } from './ui/evidenceStory.js';
-import { buildResearchTrail, researchTrailSummary } from './ui/researchTrail.js';
+import { buildResearchTrail, createResearchTrailReport, researchTrailReportSummary } from './ui/researchTrail.js';
 
 const $ = selector => document.querySelector(selector);
 const percent = value => `${(value * 100).toFixed(1)}%`;
@@ -681,7 +681,25 @@ function renderResearchTrail() {
   $('#research-trail-status').textContent = trail.status;
   $('#research-trail-steps').innerHTML = trail.steps.map(step => `<li><a href="${escapeHtml(step.href)}"><b>${escapeHtml(step.label)}</b><span>${escapeHtml(step.value)}</span></a></li>`).join('');
   $('#research-trail-copy').disabled = !trail.verified;
+  $('#research-trail-download').disabled = !trail.verified;
   return trail;
+}
+
+function currentResearchTrailReport() {
+  const trail = currentResearchTrail();
+  const ids = new Set();
+  const linked = parseResearchHash(location.hash).record;
+  if (linked) ids.add(linked);
+  if (location.hash.startsWith('#compare')) {
+    const comparison = currentComparisonState();
+    ids.add(comparison.left);
+    ids.add(comparison.right);
+  }
+  return createResearchTrailReport(trail, {
+    release: canonicalRelease,
+    integrity: releaseIntegrity,
+    records: canonicalRelease?.records.filter(record => ids.has(record.id)) ?? []
+  });
 }
 
 function statusLabel(record) {
@@ -1481,6 +1499,35 @@ $('#research-trail-reset').addEventListener('click', () => {
   renderResearchTrail();
   $('#advanced-orientation-title').focus?.({ preventScroll: true });
   $('#research-trail-action-status').textContent = 'A new research trail started from the default verified map view.';
+});
+$('#research-trail-copy').addEventListener('click', async () => {
+  const status = $('#research-trail-action-status');
+  const summary = researchTrailReportSummary(currentResearchTrailReport());
+  if (!summary) {
+    status.textContent = 'A verified release identity is unavailable, so no evidence summary was copied.';
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(summary);
+    status.textContent = 'Research summary copied with verified release identity and evidence scope.';
+  } catch {
+    status.textContent = 'Copy was unavailable. Download the integrity-linked trail report instead.';
+  }
+});
+$('#research-trail-download').addEventListener('click', () => {
+  const status = $('#research-trail-action-status');
+  const report = currentResearchTrailReport();
+  if (!report) {
+    status.textContent = 'A verified release identity is unavailable, so no trail report was downloaded.';
+    return;
+  }
+  const url = URL.createObjectURL(new Blob([`${JSON.stringify(report, null, 2)}\n`], { type: 'application/json' }));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `triangle-packing-research-trail-${report.release.version}.json`;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+  status.textContent = 'Research trail downloaded with exact release, record, and reproduction identity.';
 });
 for (const selector of ['#research-search', '#research-family', '#research-evidence']) {
   $(selector).addEventListener(selector === '#research-search' ? 'input' : 'change', () => {
