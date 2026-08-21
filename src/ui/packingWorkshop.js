@@ -1,5 +1,5 @@
-import { assessSubmission } from '../atlas/submission.js';
 import { packingProblemIdentity } from '../atlas/problemIdentity.js';
+import { verifyPacking } from '../atlas/verifier.js';
 import { preflightContribution } from './submissionPreflight.js';
 
 export const PACKING_WORKSHOP_FORMAT = 'triangle-packing-workshop/v1';
@@ -19,6 +19,7 @@ function candidateEvidence(baselineId) {
 function normalizedCandidate(candidate, baselineId) {
   return {
     ...clone(candidate),
+    id: `${baselineId}-candidate`,
     evidence: candidateEvidence(baselineId)
   };
 }
@@ -140,8 +141,41 @@ export function updateWorkshopProvenance(candidate, patch) {
 export function validateWorkshopCandidate(candidate, baseline, publishedRecords) {
   const safeCandidate = normalizedCandidate(candidate, baseline.id);
   const preflight = preflightContribution(safeCandidate, baseline);
-  const assessment = assessSubmission(safeCandidate, publishedRecords);
-  const candidateUtilization = assessment.verification.metrics?.utilization ?? null;
+  const verification = verifyPacking(safeCandidate.problem, safeCandidate.solution.placements);
+  let identity = null;
+  try { identity = packingProblemIdentity(safeCandidate.problem); } catch { identity = null; }
+  const comparable = identity === null ? [] : publishedRecords.filter(record => {
+    try {
+      return record?.verification?.valid && packingProblemIdentity(record.problem) === identity;
+    } catch {
+      return false;
+    }
+  });
+  const duplicate = verification.fingerprint
+    ? comparable.find(record => record.verification.fingerprint === verification.fingerprint)
+    : null;
+  const best = [...comparable].sort((left, right) => right.verification.utilization - left.verification.utilization)[0];
+  const candidateUtilization = verification.metrics?.utilization ?? null;
+  const improvement = best && candidateUtilization != null ? candidateUtilization - best.verification.utilization : null;
+  let disposition = 'review';
+  if (!preflight.readyForFullVerification || !verification.valid) disposition = 'reject_invalid';
+  else if (duplicate) disposition = 'reject_duplicate';
+  else if (best && improvement <= 1e-9) disposition = 'reject_inferior';
+  else if (!best) disposition = 'new_problem';
+  else disposition = 'improves_record';
+  const assessment = {
+    verification,
+    disposition,
+    comparison: {
+      comparableRecords: comparable.map(record => record.id),
+      duplicateOf: duplicate?.id ?? null,
+      bestKnownId: best?.id ?? null,
+      bestKnownUtilization: best?.verification?.utilization ?? null,
+      candidateUtilization,
+      improvement
+    },
+    humanReviewRequired: true
+  };
   const baselineUtilization = baseline.verification.utilization;
   const delta = candidateUtilization == null ? null : candidateUtilization - baselineUtilization;
   const geometryValid = assessment.verification.valid;

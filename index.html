@@ -22,7 +22,7 @@
       <a class="brand" href="#top" aria-label="Triangle Packing Atlas home"><span class="brand-mark"></span><span>Triangle Packing Atlas</span></a>
       <button id="nav-toggle" class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav">Menu</button>
       <nav id="primary-nav" aria-label="Main navigation">
-        <a href="#map">Explore</a><a href="#research">Verify evidence</a><a href="#compare">Compare</a><a href="#challenges">Improve records</a><a href="#contribute">Contribute</a>
+        <a href="#map">Explore</a><a href="#research">Verify evidence</a><a href="#compare">Compare</a><a href="#workshop">Packing Workshop <span class="sr-only">· Improve records</span></a><a href="#contribute">Contribute</a>
       </nav>
       <button id="atlas-mode-toggle" class="atlas-mode-toggle" type="button" aria-pressed="false">Open advanced Atlas</button>
       <a class="contribute-link" href="#contribute">How to contribute</a>
@@ -59,6 +59,93 @@
           </div>
           <a id="compass-advanced-link" class="secondary-action" href="#map">Open advanced tools</a>
         </section>
+      </section>
+      <section id="workshop" class="packing-workshop" aria-labelledby="workshop-title">
+        <div class="workshop-heading">
+          <div><p class="kicker">PACKING WORKSHOP</p><h1 id="workshop-title" tabindex="-1">Test a packing without overstating it.</h1></div>
+          <p>Start from integrity-checked coordinates, adjust one triangle at a time, and run the Atlas geometry verifier in this browser. Nothing here changes the published record.</p>
+        </div>
+        <aside id="workshop-release-status" class="workshop-release-status" role="status" aria-live="polite" aria-atomic="true" tabindex="-1">
+          Waiting for a verified Atlas release. Editing stays locked until the baseline passes integrity checks.
+        </aside>
+        <div class="workshop-layout" aria-busy="true">
+          <section class="workshop-visual" aria-labelledby="workshop-baseline-title">
+            <label for="workshop-baseline">Verified baseline</label>
+            <select id="workshop-baseline" disabled></select>
+            <h2 id="workshop-baseline-title">No verified baseline loaded</h2>
+            <p id="workshop-baseline-scope">The Workshop will preserve the exact container, triangle shape, and published incumbent identity.</p>
+            <dl class="workshop-baseline-facts">
+              <div><dt>Published fill</dt><dd id="workshop-baseline-fill">—</dd></div>
+              <div><dt>Pieces</dt><dd id="workshop-baseline-pieces">—</dd></div>
+              <div><dt>Evidence</dt><dd id="workshop-baseline-evidence">—</dd></div>
+            </dl>
+            <p id="workshop-canvas-summary" class="sr-only">No candidate packing is available.</p>
+            <canvas id="workshop-canvas" width="920" height="560" role="img" aria-label="Packing Workshop candidate" aria-describedby="workshop-canvas-summary"></canvas>
+            <div id="workshop-claim-status" class="workshop-claim-status untested"><b>Unvalidated candidate</b><span>Run local validation before drawing any conclusion.</span></div>
+          </section>
+          <section class="workshop-editor" aria-labelledby="workshop-editor-title">
+            <div><p class="kicker">COORDINATE EDITOR</p><h2 id="workshop-editor-title">Move one triangle precisely.</h2><p>Select a placement, enter finite coordinates and angle, then apply. Reflection stays locked when the verified problem forbids it.</p></div>
+            <label>Triangle placement<select id="workshop-placement" disabled></select></label>
+            <div class="workshop-coordinate-grid">
+              <label>X coordinate<input id="workshop-x" type="number" step="0.01" inputmode="decimal" disabled></label>
+              <label>Y coordinate<input id="workshop-y" type="number" step="0.01" inputmode="decimal" disabled></label>
+              <label>Angle (radians)<input id="workshop-angle" type="number" step="0.01" inputmode="decimal" disabled></label>
+              <label class="workshop-reflect"><input id="workshop-reflect" type="checkbox" disabled> Reflect triangle</label>
+            </div>
+            <div class="workshop-nudges" role="group" aria-label="Nudge selected triangle">
+              <button type="button" data-workshop-nudge="x:-0.1" disabled>← X −0.1</button>
+              <button type="button" data-workshop-nudge="x:0.1" disabled>X +0.1 →</button>
+              <button type="button" data-workshop-nudge="y:-0.1" disabled>↑ Y −0.1</button>
+              <button type="button" data-workshop-nudge="y:0.1" disabled>Y +0.1 ↓</button>
+            </div>
+            <div class="workshop-piece-actions">
+              <button id="workshop-apply" type="button" disabled>Apply coordinates</button>
+              <button id="workshop-remove-piece" type="button" disabled>Remove selected triangle</button>
+              <button id="workshop-add-piece" type="button" disabled>Add triangle</button>
+            </div>
+            <p id="workshop-editor-status" role="status" aria-live="polite">Choose a verified baseline to begin.</p>
+          </section>
+          <section class="workshop-validation" aria-labelledby="workshop-validation-title">
+            <div><p class="kicker">LOCAL VALIDATION</p><h2 id="workshop-validation-title">Check constraints and compare.</h2><p>The same geometry engine checks bounds, overlap, spacing, fingerprint, and the current incumbent. Local success is still not proof or publication.</p></div>
+            <div class="workshop-metadata">
+              <label>Contributor name<input id="workshop-contributor" type="text" maxlength="120" autocomplete="name" disabled></label>
+              <label>Method name<input id="workshop-method" type="text" maxlength="120" disabled></label>
+              <label>Method version<input id="workshop-version" type="text" maxlength="80" disabled></label>
+              <label>Deterministic seed<input id="workshop-seed" type="text" maxlength="256" disabled></label>
+            </div>
+            <button id="workshop-validate" class="workshop-primary" type="button" disabled>Validate locally</button>
+            <div id="workshop-validation-result" class="workshop-validation-result" role="status" aria-live="polite" aria-atomic="true" tabindex="-1">
+              <b>No local validation yet</b><p>Published evidence remains authoritative.</p>
+            </div>
+            <dl class="workshop-comparison">
+              <div><dt>Published fill</dt><dd id="workshop-incumbent-fill">—</dd></div>
+              <div><dt>Candidate fill</dt><dd id="workshop-candidate-fill">—</dd></div>
+              <div><dt>Difference</dt><dd id="workshop-fill-delta">—</dd></div>
+            </dl>
+            <details id="workshop-findings"><summary>Validation findings</summary><ul><li>Run local validation to inspect geometry and submission-readiness findings.</li></ul></details>
+          </section>
+          <section class="workshop-handoff" aria-labelledby="workshop-handoff-title">
+            <div><p class="kicker">SAVE · RECOVER · CONTRIBUTE</p><h2 id="workshop-handoff-title">Keep the work reproducible.</h2><p>Browser saves and exported bundles are checksummed and bound to this verified release. They are working files, not scientific evidence.</p></div>
+            <div class="workshop-save-actions">
+              <button id="workshop-save" type="button" disabled>Save in this browser</button>
+              <button id="workshop-recover" type="button" disabled>Recover saved work</button>
+              <button id="workshop-reset" type="button" disabled>Reset to baseline</button>
+              <label>Open workshop bundle<input id="workshop-file" type="file" accept="application/json,.json" disabled></label>
+            </div>
+            <div class="workshop-export-actions">
+              <button id="workshop-export" class="workshop-primary" type="button" disabled>Export reproducible bundle</button>
+              <button id="workshop-copy-command" type="button" disabled>Copy full verifier command</button>
+              <a id="workshop-github" href="https://github.com/markkamuya/space-optimization/blob/main/docs/CONTRIBUTING.md" target="_blank" rel="noreferrer" aria-disabled="true">Prepare GitHub contribution ↗</a>
+            </div>
+            <p id="workshop-save-status" role="status" aria-live="polite">No draft has been saved or exported.</p>
+            <ol class="workshop-review-steps">
+              <li>Export the candidate and exact verified baseline identity.</li>
+              <li>Run the full CLI verifier and retain its report.</li>
+              <li>Open a reviewable GitHub contribution only when local checks support it.</li>
+              <li>Wait for independent verification and maintainer review before claiming improvement or proof.</li>
+            </ol>
+          </section>
+        </div>
       </section>
       <section class="hero">
         <div>

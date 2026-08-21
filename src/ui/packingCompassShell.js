@@ -21,7 +21,7 @@ export const COMPASS_GOALS = Object.freeze({
     label: 'Improve an open result',
     title: 'Begin with a reproducible challenge.',
     guidance: 'Choose an open result, reproduce its verified baseline, and prepare a candidate without changing the published claim.',
-    destination: '#challenges'
+    destination: '#workshop'
   }
 });
 
@@ -68,7 +68,10 @@ export function setupPackingCompassShell({ document, location, history }) {
     guidance.textContent = selected.guidance;
     advancedLink.href = selected.destination;
     advancedLink.textContent = `Open ${selected.label.toLowerCase()} tools`;
-    if (focus) title.focus({ preventScroll: true });
+    if (focus) {
+      workspace.scrollIntoView({ block: 'start' });
+      title.focus({ preventScroll: true });
+    }
   }
 
   function syncFromLocation() {

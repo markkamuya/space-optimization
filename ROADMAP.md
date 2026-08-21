@@ -160,3 +160,42 @@ open-ended research work.
 
 **Status:** code-complete. External participation and DOI minting are facts
 that the project records only after they happen.
+
+## Milestone 37 — Evidence-safe Packing Workshop
+
+**User and researcher value:** A researcher can begin with any of the 304
+integrity-checked incumbents, edit its coordinates in the browser, run local
+geometry and incumbent checks, recover the exact draft, and export a reviewable
+handoff without turning a candidate into a published or proven claim.
+
+**Completion criteria:** Packing Compass remains the default home; every
+Workshop baseline is bound to the verified release; finite coordinate edits,
+piece removal, and permitted homogeneous-piece additions are checked locally;
+published and candidate fill are compared only after valid geometry; browser
+saves and exported bundles detect modification and release drift; GitHub handoff
+stays locked until local checks support an improvement candidate; the 1440 px
+desktop and 390 px mobile workflows have no horizontal overflow, keep all
+controls at least 44 px high, and move focus to visible content; all repository,
+release, browser, accessibility, visual, performance, deterministic-artifact,
+and backward-compatibility gates pass.
+
+**Risks:** Browser validation shares project code with the primary JavaScript
+verifier and is not independent replication; local persistence can be cleared
+by browser settings; all current challenge incumbents already use the 300-piece
+schema ceiling, so coordinate rearrangement alone cannot honestly imply higher
+fill. The UI states each boundary and retains mandatory CLI and maintainer
+review.
+
+The milestone has exactly two implementation workstreams:
+
+1. **Bounded candidate verification:** clone verified coordinates, edit finite
+   placements and synchronized homogeneous inventories, force candidate-only
+   evidence, run geometry and incumbent comparison locally, and bind recovery
+   bundles to the exact release and baseline.
+2. **Accessible research handoff:** provide the responsive coordinate editor,
+   visible focus movement, local save/recovery, reproducible export, full
+   verifier command, and conditional GitHub contribution preparation from both
+   Packing Compass and the advanced Atlas.
+
+**Status:** implemented; publication remains conditional on the complete
+production gate and deployment process.

@@ -4,7 +4,7 @@ export function runProductionDiagnostics(document, environment = globalThis) {
   const root = document.documentElement;
   const dialog = document.querySelector('#record-dialog');
   const gates = {
-    semanticWorkflows: ['research', 'compare', 'contribute'].every(id => document.getElementById(id)?.hasAttribute('aria-labelledby')),
+    semanticWorkflows: ['workshop', 'research', 'compare', 'contribute'].every(id => document.getElementById(id)?.hasAttribute('aria-labelledby')),
     verifiedRelease: document.querySelector('#research-load-status')?.dataset.releaseTrust === 'verified',
     keyboardFocus: typeof document.querySelector('#research-search')?.focus === 'function' && document.querySelector('.skip-link') !== null,
     dialogSemantics: dialog?.tagName === 'DIALOG' && dialog.hasAttribute('aria-labelledby') && dialog.hasAttribute('aria-describedby'),

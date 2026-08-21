@@ -30,6 +30,18 @@ import { advancedOrientation } from './ui/advancedOrientation.js';
 import { evidenceLadder, recordConclusion } from './ui/evidenceStory.js';
 import { buildResearchTrail, createResearchTrailReport, researchTrailReportSummary } from './ui/researchTrail.js';
 import { nextBestActions, parseResearchCommand } from './ui/nextBestAction.js';
+import {
+  addWorkshopPiece,
+  createWorkshopBundle,
+  createWorkshopCandidate,
+  formatWorkshopHash,
+  parseWorkshopHash,
+  removeWorkshopPiece,
+  restoreWorkshopBundle,
+  updateWorkshopPlacement,
+  updateWorkshopProvenance,
+  validateWorkshopCandidate
+} from './ui/packingWorkshop.js';
 
 const $ = selector => document.querySelector(selector);
 const percent = value => `${(value * 100).toFixed(1)}%`;
@@ -54,6 +66,10 @@ let releaseVerifiedAt = null;
 let releaseVerifiedEpoch = null;
 let releaseFreshnessTimer = null;
 let releaseRecovery = null;
+let workshopCandidate = null;
+let workshopValidation = null;
+let workshopBaselineId = null;
+let workshopPlacementIndex = 0;
 let comparisonWorkspaceIds = [];
 let comparisonWorkspaceStorage = 'available';
 const comparisonRenderFrames = { a: null, b: null };
@@ -76,8 +92,147 @@ function compassRecordMarkup(record) {
     <div class="compass-answer-heading"><span>${escapeHtml(evidence.label)}</span><h3>${escapeHtml(record.problem.name)}</h3><p>${escapeHtml(evidence.explanation)}</p></div>
     <dl><div><dt>Rectangle filled</dt><dd>${percent(record.verification.utilization)}</dd></div><div><dt>Triangles fitted</dt><dd>${record.verification.pieceCount}</dd></div><div><dt>Room for improvement</dt><dd>${percent(record.bounds.optimalityGap)}</dd></div></dl>
     <p class="compass-answer-pattern">Best verified method: <b>${escapeHtml(record.pattern)}</b></p>
-    <nav aria-label="Continue with this answer"><a href="#research?record=${escapeHtml(record.id)}">Inspect why we trust this answer</a><a href="${escapeHtml(researchComparisonHref(record))}">Compare this result</a><a href="#challenges">${record.evidence.state === 'proven_optimal' ? 'Explore open challenges' : 'Try to improve it'}</a></nav>
+    <nav aria-label="Continue with this answer"><a href="#research?record=${escapeHtml(record.id)}">Inspect why we trust this answer</a><a href="${escapeHtml(researchComparisonHref(record))}">Compare this result</a><a href="${record.evidence.state === 'proven_optimal' ? '#challenges' : escapeHtml(formatWorkshopHash(record.id))}">${record.evidence.state === 'proven_optimal' ? 'Explore open challenges' : 'Open in Packing Workshop'}</a></nav>
   </article>`;
+}
+
+function selectedWorkshopBaseline() {
+  return canonicalRelease?.records.find(record => record.id === workshopBaselineId) ?? null;
+}
+
+function workshopStorageKey() {
+  return workshopBaselineId ? `triangle-packing-atlas:workshop:v1:${workshopBaselineId}` : null;
+}
+
+function setWorkshopControls(enabled) {
+  for (const selector of [
+    '#workshop-baseline', '#workshop-placement', '#workshop-x', '#workshop-y', '#workshop-angle', '#workshop-reflect',
+    '#workshop-apply', '#workshop-remove-piece', '#workshop-add-piece', '#workshop-contributor',
+    '#workshop-method', '#workshop-version', '#workshop-seed', '#workshop-validate', '#workshop-save',
+    '#workshop-recover', '#workshop-reset', '#workshop-file', '#workshop-export', '#workshop-copy-command'
+  ]) $(selector).disabled = !enabled;
+  for (const button of document.querySelectorAll('[data-workshop-nudge]')) button.disabled = !enabled;
+}
+
+function applyWorkshopMetadata() {
+  if (!workshopCandidate) return;
+  workshopCandidate = updateWorkshopProvenance(workshopCandidate, {
+    contributor: $('#workshop-contributor').value.trim(),
+    generator: $('#workshop-method').value.trim(),
+    version: $('#workshop-version').value.trim(),
+    seed: $('#workshop-seed').value.trim(),
+    runtimeMs: 0
+  });
+}
+
+function renderWorkshopValidation() {
+  const result = $('#workshop-validation-result');
+  const github = $('#workshop-github');
+  if (!workshopValidation) {
+    result.className = 'workshop-validation-result';
+    result.innerHTML = '<b>No local validation yet</b><p>Published evidence remains authoritative.</p>';
+    $('#workshop-candidate-fill').textContent = '—';
+    $('#workshop-fill-delta').textContent = '—';
+    $('#workshop-findings').innerHTML = '<summary>Validation findings</summary><ul><li>Run local validation to inspect geometry and submission-readiness findings.</li></ul>';
+    github.setAttribute('aria-disabled', 'true');
+    return;
+  }
+  const validation = workshopValidation;
+  result.className = `workshop-validation-result ${validation.eligibleForContribution ? 'ready' : validation.geometryValid ? 'valid' : 'failed'}`;
+  result.innerHTML = `<b>${escapeHtml(validation.headline)}</b><p>${escapeHtml(validation.boundary)}</p>`;
+  $('#workshop-candidate-fill').textContent = validation.geometryValid ? percent(validation.comparison.candidateUtilization) : 'Withheld — invalid geometry';
+  $('#workshop-fill-delta').textContent = validation.geometryValid
+    ? `${validation.comparison.delta >= 0 ? '+' : '−'}${percent(Math.abs(validation.comparison.delta))}`
+    : '—';
+  const findings = [
+    ...validation.preflight.checks.filter(item => !item.passed).map(item => `${item.label}: ${item.detail}`),
+    ...validation.assessment.verification.errors.map(item => `${item.code}: ${item.message}`)
+  ];
+  $('#workshop-findings').innerHTML = `<summary>Validation findings · ${findings.length}</summary><ul>${(findings.length ? findings : ['No local geometry or readiness failures were found. Independent verification and review are still required.']).slice(0, 30).map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`;
+  github.setAttribute('aria-disabled', String(!validation.eligibleForContribution));
+  const claim = $('#workshop-claim-status');
+  claim.className = `workshop-claim-status ${validation.eligibleForContribution ? 'candidate-improvement' : validation.geometryValid ? 'locally-valid' : 'invalid'}`;
+  claim.innerHTML = `<b>${escapeHtml(validation.headline)}</b><span>${escapeHtml(validation.boundary)}</span>`;
+}
+
+function renderWorkshopCandidate({ resetMetadata = false } = {}) {
+  const baseline = selectedWorkshopBaseline();
+  if (!baseline || !workshopCandidate) return;
+  workshopPlacementIndex = Math.min(workshopPlacementIndex, workshopCandidate.solution.placements.length - 1);
+  const placementSelect = $('#workshop-placement');
+  if (placementSelect.options.length !== workshopCandidate.solution.placements.length) {
+    placementSelect.replaceChildren(...workshopCandidate.solution.placements.map((_, index) => new Option(`Triangle ${index + 1}`, String(index))));
+  }
+  placementSelect.value = String(workshopPlacementIndex);
+  const placement = workshopCandidate.solution.placements[workshopPlacementIndex];
+  $('#workshop-x').value = String(placement.x);
+  $('#workshop-y').value = String(placement.y);
+  $('#workshop-angle').value = String(placement.angle ?? 0);
+  $('#workshop-reflect').checked = placement.reflect ?? false;
+  $('#workshop-reflect').disabled = !baseline.problem.allowReflection;
+  $('#workshop-remove-piece').disabled = workshopCandidate.solution.placements.length <= 1;
+  $('#workshop-add-piece').disabled = workshopCandidate.solution.placements.length >= workshopCandidate.problem.maxPieces;
+  $('#workshop-baseline-title').textContent = baseline.problem.name;
+  $('#workshop-baseline-scope').textContent = `${baseline.id} · ${baseline.problem.width} × ${baseline.problem.height} container · release ${canonicalRelease.version}. The published coordinates remain read-only.`;
+  $('#workshop-baseline-fill').textContent = percent(baseline.verification.utilization);
+  $('#workshop-baseline-pieces').textContent = String(baseline.verification.pieceCount);
+  $('#workshop-baseline-evidence').textContent = evidenceStoryLabel(baseline);
+  $('#workshop-incumbent-fill').textContent = percent(baseline.verification.utilization);
+  $('#workshop-canvas-summary').textContent = `Candidate based on ${baseline.id}, with ${workshopCandidate.solution.placements.length} triangles. It has not been accepted as valid or better until local validation passes.`;
+  if (resetMetadata) {
+    $('#workshop-contributor').value = workshopCandidate.provenance.contributor;
+    $('#workshop-method').value = workshopCandidate.provenance.generator;
+    $('#workshop-version').value = workshopCandidate.provenance.version;
+    $('#workshop-seed').value = String(workshopCandidate.provenance.seed);
+  }
+  requestAnimationFrame(() => renderPacking(
+    $('#workshop-canvas'),
+    normalizeProblem(workshopCandidate.problem),
+    { state: workshopCandidate.solution.placements, showLabels: false }
+  ));
+  renderWorkshopValidation();
+}
+
+function markWorkshopDirty(message) {
+  workshopValidation = null;
+  const claim = $('#workshop-claim-status');
+  claim.className = 'workshop-claim-status untested';
+  claim.innerHTML = '<b>Unvalidated candidate</b><span>Coordinates changed. Run local validation before drawing any conclusion.</span>';
+  $('#workshop-editor-status').textContent = message;
+  renderWorkshopCandidate();
+}
+
+function startWorkshop(baselineId, { updateHash = false } = {}) {
+  const baseline = canonicalRelease?.records.find(record => record.id === baselineId);
+  if (!baseline) return;
+  workshopBaselineId = baseline.id;
+  workshopPlacementIndex = 0;
+  workshopCandidate = createWorkshopCandidate(baseline);
+  workshopValidation = null;
+  $('#workshop-baseline').value = baseline.id;
+  $('.workshop-layout').setAttribute('aria-busy', 'false');
+  setWorkshopControls(true);
+  $('#workshop-reflect').disabled = !baseline.problem.allowReflection;
+  $('#workshop-release-status').textContent = `Verified baseline ${baseline.id} loaded from release ${canonicalRelease.version}. All edits remain local to this browser.`;
+  $('#workshop-editor-status').textContent = baseline.problem.maxPieces <= baseline.solution.placements.length
+    ? `All ${baseline.problem.maxPieces} allowed piece slots are already used. Rearranging coordinates can restore validity but cannot increase fill without a reviewable change to the problem contract.`
+    : 'Select a triangle and adjust its coordinates.';
+  renderWorkshopCandidate({ resetMetadata: true });
+  if (updateHash) history.pushState(null, '', formatWorkshopHash(baseline.id));
+}
+
+function setupPackingWorkshop() {
+  const select = $('#workshop-baseline');
+  select.replaceChildren(...canonicalRelease.records.map(record => new Option(comparisonOptionLabel(record), record.id)));
+  const linked = parseWorkshopHash(location.hash).record;
+  const fallback = canonicalRelease.records.find(record => record.evidence.state !== 'proven_optimal' && record.bounds.optimalityGap > 0) ?? canonicalRelease.records[0];
+  startWorkshop(canonicalRelease.records.some(record => record.id === linked) ? linked : fallback.id);
+}
+
+function syncPackingWorkshopFromLocation() {
+  if (!canonicalRelease || !location.hash.startsWith('#workshop')) return;
+  const linked = parseWorkshopHash(location.hash).record;
+  if (linked && linked !== workshopBaselineId && canonicalRelease.records.some(record => record.id === linked)) startWorkshop(linked);
 }
 
 function renderPackingCompassAnswer(question) {
@@ -131,7 +286,10 @@ function renderPackingCompassQuestion(goal) {
 }
 
 window.addEventListener('packing-compass:goal', event => renderPackingCompassQuestion(event.detail.goal));
-window.addEventListener('atlas:location', () => renderAdvancedOrientation());
+window.addEventListener('atlas:location', () => {
+  renderAdvancedOrientation();
+  syncPackingWorkshopFromLocation();
+});
 let offlineCacheSupported = false;
 let offlineFallbackActive = false;
 
@@ -1082,6 +1240,7 @@ async function loadResearchRelease() {
     renderLeaderboard();
     setupComparison();
     setupContributionPreflight();
+    setupPackingWorkshop();
     $('#session-download').disabled = false;
     $('#session-file').disabled = false;
     $('#session-status').textContent = 'Ready to save or restore this verified research context.';
@@ -1422,6 +1581,163 @@ async function loadV1Context() {
     $('#release-gates').innerHTML = '<div><dt>Release status</dt><dd>Verification details could not be loaded. Try refreshing the page.</dd></div>';
   }
 }
+
+$('#workshop-baseline').addEventListener('change', event => startWorkshop(event.currentTarget.value, { updateHash: true }));
+$('#workshop-placement').addEventListener('change', event => {
+  workshopPlacementIndex = Number(event.currentTarget.value);
+  renderWorkshopCandidate();
+});
+$('#workshop-apply').addEventListener('click', () => {
+  try {
+    workshopCandidate = updateWorkshopPlacement(workshopCandidate, workshopPlacementIndex, {
+      x: Number($('#workshop-x').value),
+      y: Number($('#workshop-y').value),
+      angle: Number($('#workshop-angle').value),
+      reflect: $('#workshop-reflect').checked
+    });
+    markWorkshopDirty(`Triangle ${workshopPlacementIndex + 1} coordinates were applied locally.`);
+  } catch (error) {
+    $('#workshop-editor-status').textContent = `${error.message} The candidate was not changed.`;
+  }
+});
+$('.workshop-nudges').addEventListener('click', event => {
+  const button = event.target.closest('[data-workshop-nudge]');
+  if (!button || !workshopCandidate) return;
+  const [axis, amount] = button.dataset.workshopNudge.split(':');
+  const placement = workshopCandidate.solution.placements[workshopPlacementIndex];
+  try {
+    workshopCandidate = updateWorkshopPlacement(workshopCandidate, workshopPlacementIndex, {
+      [axis]: placement[axis] + Number(amount)
+    });
+    markWorkshopDirty(`Triangle ${workshopPlacementIndex + 1} moved ${axis.toUpperCase()} ${Number(amount) > 0 ? '+' : ''}${amount}.`);
+  } catch (error) {
+    $('#workshop-editor-status').textContent = `${error.message} The candidate was not changed.`;
+  }
+});
+$('#workshop-remove-piece').addEventListener('click', () => {
+  try {
+    workshopCandidate = removeWorkshopPiece(workshopCandidate, workshopPlacementIndex);
+    workshopPlacementIndex = Math.min(workshopPlacementIndex, workshopCandidate.solution.placements.length - 1);
+    markWorkshopDirty('The selected triangle was removed from the candidate inventory.');
+  } catch (error) {
+    $('#workshop-editor-status').textContent = `${error.message} The candidate was not changed.`;
+  }
+});
+$('#workshop-add-piece').addEventListener('click', () => {
+  try {
+    workshopCandidate = addWorkshopPiece(workshopCandidate);
+    workshopPlacementIndex = workshopCandidate.solution.placements.length - 1;
+    markWorkshopDirty('A homogeneous triangle was added at the container origin. Move it before validating.');
+  } catch (error) {
+    $('#workshop-editor-status').textContent = `${error.message} The candidate was not changed.`;
+  }
+});
+for (const selector of ['#workshop-contributor', '#workshop-method', '#workshop-version', '#workshop-seed']) {
+  $(selector).addEventListener('input', () => {
+    workshopValidation = null;
+    renderWorkshopValidation();
+    $('#workshop-save-status').textContent = 'Metadata changed. Run local validation again before preparing a contribution.';
+  });
+}
+$('#workshop-validate').addEventListener('click', () => {
+  const baseline = selectedWorkshopBaseline();
+  if (!baseline || !workshopCandidate || !canonicalRelease) return;
+  applyWorkshopMetadata();
+  workshopValidation = validateWorkshopCandidate(workshopCandidate, baseline, canonicalRelease.records);
+  workshopCandidate = workshopValidation.candidate;
+  renderWorkshopValidation();
+  $('#workshop-validation-result').focus({ preventScroll: true });
+});
+$('#workshop-save').addEventListener('click', async () => {
+  const status = $('#workshop-save-status');
+  try {
+    applyWorkshopMetadata();
+    const bundle = await createWorkshopBundle({ candidate: workshopCandidate, baseline: selectedWorkshopBaseline(), validation: workshopValidation, release: canonicalRelease, integrity: releaseIntegrity, source: releaseSource });
+    localStorage.setItem(workshopStorageKey(), JSON.stringify(bundle));
+    status.textContent = `Draft saved in this browser for ${workshopBaselineId}. Its checksum detects accidental changes but is not scientific verification.`;
+  } catch {
+    status.textContent = 'The draft could not be saved in this browser. Export a bundle instead.';
+  }
+});
+$('#workshop-recover').addEventListener('click', async () => {
+  const status = $('#workshop-save-status');
+  const raw = localStorage.getItem(workshopStorageKey());
+  if (!raw) {
+    status.textContent = `No saved browser draft exists for ${workshopBaselineId}.`;
+    return;
+  }
+  const restored = await restoreWorkshopBundle(raw, selectedWorkshopBaseline(), canonicalRelease, releaseIntegrity, releaseSource);
+  if (!restored.valid) {
+    status.textContent = `${restored.issues[0]} The current candidate was not changed.`;
+    return;
+  }
+  workshopCandidate = restored.candidate;
+  workshopValidation = null;
+  workshopPlacementIndex = 0;
+  renderWorkshopCandidate({ resetMetadata: true });
+  status.textContent = `Saved work recovered for ${workshopBaselineId}. Run local validation again before using its conclusions.`;
+});
+$('#workshop-reset').addEventListener('click', () => {
+  startWorkshop(workshopBaselineId);
+  $('#workshop-save-status').textContent = 'Candidate reset to the verified baseline. Saved browser work was not deleted.';
+});
+$('#workshop-file').addEventListener('change', async event => {
+  const input = event.currentTarget;
+  const status = $('#workshop-save-status');
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) {
+    status.textContent = 'That workshop bundle is larger than 5 MB and was not opened.';
+    input.value = '';
+    return;
+  }
+  try {
+    const restored = await restoreWorkshopBundle(await file.text(), selectedWorkshopBaseline(), canonicalRelease, releaseIntegrity, releaseSource);
+    if (!restored.valid) {
+      status.textContent = `${restored.issues[0]} The current candidate was not changed.`;
+      return;
+    }
+    workshopCandidate = restored.candidate;
+    workshopValidation = null;
+    workshopPlacementIndex = 0;
+    renderWorkshopCandidate({ resetMetadata: true });
+    status.textContent = `Workshop bundle recovered for ${workshopBaselineId}. Local validation must be rerun.`;
+  } catch {
+    status.textContent = 'The workshop bundle could not be read safely. The current candidate was not changed.';
+  } finally {
+    input.value = '';
+  }
+});
+$('#workshop-export').addEventListener('click', async () => {
+  const status = $('#workshop-save-status');
+  try {
+    applyWorkshopMetadata();
+    const bundle = await createWorkshopBundle({ candidate: workshopCandidate, baseline: selectedWorkshopBaseline(), validation: workshopValidation, release: canonicalRelease, integrity: releaseIntegrity, source: releaseSource });
+    const url = URL.createObjectURL(new Blob([`${JSON.stringify(bundle, null, 2)}\n`], { type: 'application/json' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${workshopCandidate.id}-workshop.json`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+    status.textContent = `Reproducible workshop bundle exported for ${workshopBaselineId}. It remains candidate evidence.`;
+  } catch {
+    status.textContent = 'The workshop bundle could not be exported because verified release identity is unavailable.';
+  }
+});
+$('#workshop-copy-command').addEventListener('click', async () => {
+  const status = $('#workshop-save-status');
+  try {
+    await navigator.clipboard.writeText(`npm run atlas:submission -- ${workshopCandidate.id}.json`);
+    status.textContent = 'Full local submission verifier command copied.';
+  } catch {
+    status.textContent = `Copy was unavailable. Run npm run atlas:submission -- ${workshopCandidate.id}.json after exporting the candidate.`;
+  }
+});
+$('#workshop-github').addEventListener('click', event => {
+  if (event.currentTarget.getAttribute('aria-disabled') === 'false') return;
+  event.preventDefault();
+  $('#workshop-save-status').textContent = 'GitHub handoff stays locked until local geometry, metadata, and incumbent comparison support an improvement candidate.';
+});
 
 $('#angle').addEventListener('input', () => updatePhase({ historyMode: 'replace' }));
 $('#ratio').addEventListener('input', () => updatePhase({ historyMode: 'replace' }));
