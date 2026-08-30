@@ -19,6 +19,7 @@ test('production exposes an evidence-safe browser Packing Workshop', async () =>
   for (const control of ['workshop-placement', 'workshop-x', 'workshop-y', 'workshop-angle', 'workshop-validate', 'workshop-save', 'workshop-recover', 'workshop-export', 'workshop-github']) {
     assert.match(html, new RegExp(`id="${control}"`));
   }
+  for (const control of ['workshop-undo', 'workshop-redo']) assert.match(html, new RegExp(`id="${control}"`));
   assert.match(html, /Angle \(radians\)/);
   assert.match(html, /tabindex="0" aria-label="Interactive Packing Workshop candidate"/);
   assert.match(html, /Arrow keys move the selected triangle by 0\.01/);
@@ -26,6 +27,11 @@ test('production exposes an evidence-safe browser Packing Workshop', async () =>
   assert.match(script, /workshopPlacementAtPoint/);
   assert.match(script, /addEventListener\('pointermove'/);
   assert.match(script, /workshopKeyboardPatch/);
+  assert.match(script, /scheduleWorkshopRecovery/);
+  assert.match(script, /scheduleWorkshopValidation/);
+  assert.match(script, /setTimeout\(async \(\) =>/);
+  assert.match(script, /setTimeout\(\(\) =>/);
+  assert.match(script, /:autosave/);
   assert.match(script, /restoreWorkshopBundle/);
   assert.match(script, /aria-disabled', String\(!validation\.eligibleForContribution\)/);
   assert.match(script, /All .* allowed piece slots are already used/);

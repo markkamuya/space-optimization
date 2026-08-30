@@ -2,6 +2,7 @@ import { ATLAS_RECORDS, OPEN_PROBLEMS, phaseAt } from './atlas/catalog.js';
 import { normalizeProblem } from './core/problem.js';
 import { renderPacking } from './rendering/canvas.js';
 import { workshopKeyboardPatch, workshopPlacementAtPoint, workshopProblemPoint } from './ui/workshopInteraction.js';
+import { createWorkshopTimeline, recordWorkshopState, redoWorkshopState, undoWorkshopState } from './ui/workshopTimeline.js';
 import { escapeHtml, safeExternalUrl } from './ui/safeText.js';
 import { validatePublicRelease } from './ui/releaseValidation.js';
 import { loadIntegrityCheckedRelease } from './ui/shardedReleaseLoader.js';
@@ -72,6 +73,9 @@ let workshopValidation = null;
 let workshopBaselineId = null;
 let workshopPlacementIndex = 0;
 let workshopDrag = null;
+let workshopTimeline = null;
+let workshopValidationTimer = null;
+let workshopAutosaveTimer = null;
 let comparisonWorkspaceIds = [];
 let comparisonWorkspaceStorage = 'available';
 const comparisonRenderFrames = { a: null, b: null };
@@ -115,6 +119,46 @@ function setWorkshopControls(enabled) {
   ]) $(selector).disabled = !enabled;
   for (const button of document.querySelectorAll('[data-workshop-nudge]')) button.disabled = !enabled;
   $('#workshop-canvas').setAttribute('aria-disabled', String(!enabled));
+}
+
+function renderWorkshopHistory() {
+  $('#workshop-undo').disabled = !workshopTimeline?.past.length;
+  $('#workshop-redo').disabled = !workshopTimeline?.future.length;
+}
+
+function scheduleWorkshopRecovery() {
+  clearTimeout(workshopAutosaveTimer);
+  workshopAutosaveTimer = setTimeout(async () => {
+    try {
+      const baseline = selectedWorkshopBaseline();
+      const bundle = await createWorkshopBundle({ candidate: workshopCandidate, baseline, validation: workshopValidation, release: canonicalRelease, integrity: releaseIntegrity, source: releaseSource });
+      localStorage.setItem(`${workshopStorageKey()}:autosave`, JSON.stringify(bundle));
+      $('#workshop-save-status').textContent = `Recovery copy updated for ${workshopBaselineId}. It remains a local candidate, not scientific evidence.`;
+    } catch {
+      $('#workshop-save-status').textContent = 'Automatic recovery is unavailable. Use Export reproducible bundle to protect this draft.';
+    }
+  }, 750);
+}
+
+function scheduleWorkshopValidation() {
+  clearTimeout(workshopValidationTimer);
+  workshopValidationTimer = setTimeout(() => {
+    const baseline = selectedWorkshopBaseline();
+    if (!baseline || !workshopCandidate || !canonicalRelease) return;
+    workshopValidation = validateWorkshopCandidate(workshopCandidate, baseline, canonicalRelease.records);
+    workshopCandidate = workshopValidation.candidate;
+    renderWorkshopValidation();
+    $('#workshop-editor-status').textContent = `Local preview updated for ${workshopCandidate.solution.placements.length} triangles. Independent verification and review are still required.`;
+  }, 300);
+}
+
+function commitWorkshopState(candidate, message) {
+  workshopTimeline = recordWorkshopState(workshopTimeline, candidate);
+  workshopCandidate = workshopTimeline.present;
+  markWorkshopDirty(message);
+  renderWorkshopHistory();
+  scheduleWorkshopRecovery();
+  scheduleWorkshopValidation();
 }
 
 function applyWorkshopMetadata() {
@@ -194,6 +238,7 @@ function renderWorkshopCandidate({ resetMetadata = false } = {}) {
     { state: workshopCandidate.solution.placements, showLabels: false, selectedIndex: workshopPlacementIndex }
   ));
   renderWorkshopValidation();
+  renderWorkshopHistory();
 }
 
 function markWorkshopDirty(message) {
@@ -211,6 +256,7 @@ function startWorkshop(baselineId, { updateHash = false } = {}) {
   workshopBaselineId = baseline.id;
   workshopPlacementIndex = 0;
   workshopCandidate = createWorkshopCandidate(baseline);
+  workshopTimeline = createWorkshopTimeline(workshopCandidate);
   workshopValidation = null;
   $('#workshop-baseline').value = baseline.id;
   $('.workshop-layout').setAttribute('aria-busy', 'false');
@@ -1603,8 +1649,7 @@ function workshopPointForEvent(event) {
 }
 
 function updateWorkshopFromCanvas(patch, message) {
-  workshopCandidate = updateWorkshopPlacement(workshopCandidate, workshopPlacementIndex, patch);
-  markWorkshopDirty(message);
+  commitWorkshopState(updateWorkshopPlacement(workshopCandidate, workshopPlacementIndex, patch), message);
 }
 
 $('#workshop-canvas').addEventListener('pointerdown', event => {
@@ -1617,7 +1662,7 @@ $('#workshop-canvas').addEventListener('pointerdown', event => {
   }
   workshopPlacementIndex = index;
   const placement = workshopCandidate.solution.placements[index];
-  workshopDrag = { pointerId: event.pointerId, offsetX: point.x - placement.x, offsetY: point.y - placement.y };
+  workshopDrag = { pointerId: event.pointerId, offsetX: point.x - placement.x, offsetY: point.y - placement.y, before: structuredClone(workshopCandidate), changed: false };
   event.currentTarget.setPointerCapture(event.pointerId);
   event.currentTarget.focus();
   renderWorkshopCandidate();
@@ -1627,15 +1672,24 @@ $('#workshop-canvas').addEventListener('pointerdown', event => {
 $('#workshop-canvas').addEventListener('pointermove', event => {
   if (!workshopDrag || workshopDrag.pointerId !== event.pointerId || !workshopCandidate) return;
   const point = workshopPointForEvent(event);
-  updateWorkshopFromCanvas(
-    { x: point.x - workshopDrag.offsetX, y: point.y - workshopDrag.offsetY },
-    `Triangle ${workshopPlacementIndex + 1} moved by direct manipulation. Run local validation before drawing any conclusion.`
-  );
+  workshopCandidate = updateWorkshopPlacement(workshopCandidate, workshopPlacementIndex, { x: point.x - workshopDrag.offsetX, y: point.y - workshopDrag.offsetY });
+  workshopDrag.changed = true;
+  workshopValidation = null;
+  renderWorkshopCandidate();
 });
 
 for (const type of ['pointerup', 'pointercancel']) {
   $('#workshop-canvas').addEventListener(type, event => {
-    if (workshopDrag?.pointerId === event.pointerId) workshopDrag = null;
+    if (workshopDrag?.pointerId !== event.pointerId) return;
+    if (workshopDrag.changed) {
+      workshopTimeline = recordWorkshopState({ ...workshopTimeline, present: workshopDrag.before }, workshopCandidate);
+      workshopCandidate = workshopTimeline.present;
+      markWorkshopDirty(`Triangle ${workshopPlacementIndex + 1} moved by direct manipulation. Run local validation before drawing any conclusion.`);
+      renderWorkshopHistory();
+      scheduleWorkshopRecovery();
+      scheduleWorkshopValidation();
+    }
+    workshopDrag = null;
   });
 }
 
@@ -1647,15 +1701,33 @@ $('#workshop-canvas').addEventListener('keydown', event => {
   event.preventDefault();
   updateWorkshopFromCanvas(patch, `Triangle ${workshopPlacementIndex + 1} adjusted with the keyboard. Run local validation before drawing any conclusion.`);
 });
+$('#workshop-undo').addEventListener('click', () => {
+  workshopTimeline = undoWorkshopState(workshopTimeline);
+  workshopCandidate = workshopTimeline.present;
+  workshopPlacementIndex = Math.min(workshopPlacementIndex, workshopCandidate.solution.placements.length - 1);
+  markWorkshopDirty('The previous Workshop edit was undone. Local validation is being refreshed.');
+  renderWorkshopHistory();
+  scheduleWorkshopRecovery();
+  scheduleWorkshopValidation();
+});
+$('#workshop-redo').addEventListener('click', () => {
+  workshopTimeline = redoWorkshopState(workshopTimeline);
+  workshopCandidate = workshopTimeline.present;
+  workshopPlacementIndex = Math.min(workshopPlacementIndex, workshopCandidate.solution.placements.length - 1);
+  markWorkshopDirty('The Workshop edit was redone. Local validation is being refreshed.');
+  renderWorkshopHistory();
+  scheduleWorkshopRecovery();
+  scheduleWorkshopValidation();
+});
 $('#workshop-apply').addEventListener('click', () => {
   try {
-    workshopCandidate = updateWorkshopPlacement(workshopCandidate, workshopPlacementIndex, {
+    const nextCandidate = updateWorkshopPlacement(workshopCandidate, workshopPlacementIndex, {
       x: Number($('#workshop-x').value),
       y: Number($('#workshop-y').value),
       angle: Number($('#workshop-angle').value),
       reflect: $('#workshop-reflect').checked
     });
-    markWorkshopDirty(`Triangle ${workshopPlacementIndex + 1} coordinates were applied locally.`);
+    commitWorkshopState(nextCandidate, `Triangle ${workshopPlacementIndex + 1} coordinates were applied locally.`);
   } catch (error) {
     $('#workshop-editor-status').textContent = `${error.message} The candidate was not changed.`;
   }
@@ -1666,28 +1738,29 @@ $('.workshop-nudges').addEventListener('click', event => {
   const [axis, amount] = button.dataset.workshopNudge.split(':');
   const placement = workshopCandidate.solution.placements[workshopPlacementIndex];
   try {
-    workshopCandidate = updateWorkshopPlacement(workshopCandidate, workshopPlacementIndex, {
+    const nextCandidate = updateWorkshopPlacement(workshopCandidate, workshopPlacementIndex, {
       [axis]: placement[axis] + Number(amount)
     });
-    markWorkshopDirty(`Triangle ${workshopPlacementIndex + 1} moved ${axis.toUpperCase()} ${Number(amount) > 0 ? '+' : ''}${amount}.`);
+    commitWorkshopState(nextCandidate, `Triangle ${workshopPlacementIndex + 1} moved ${axis.toUpperCase()} ${Number(amount) > 0 ? '+' : ''}${amount}.`);
   } catch (error) {
     $('#workshop-editor-status').textContent = `${error.message} The candidate was not changed.`;
   }
 });
 $('#workshop-remove-piece').addEventListener('click', () => {
   try {
-    workshopCandidate = removeWorkshopPiece(workshopCandidate, workshopPlacementIndex);
+    const nextCandidate = removeWorkshopPiece(workshopCandidate, workshopPlacementIndex);
+    workshopCandidate = nextCandidate;
     workshopPlacementIndex = Math.min(workshopPlacementIndex, workshopCandidate.solution.placements.length - 1);
-    markWorkshopDirty('The selected triangle was removed from the candidate inventory.');
+    commitWorkshopState(nextCandidate, 'The selected triangle was removed from the candidate inventory.');
   } catch (error) {
     $('#workshop-editor-status').textContent = `${error.message} The candidate was not changed.`;
   }
 });
 $('#workshop-add-piece').addEventListener('click', () => {
   try {
-    workshopCandidate = addWorkshopPiece(workshopCandidate);
-    workshopPlacementIndex = workshopCandidate.solution.placements.length - 1;
-    markWorkshopDirty('A homogeneous triangle was added at the container origin. Move it before validating.');
+    const nextCandidate = addWorkshopPiece(workshopCandidate);
+    workshopPlacementIndex = nextCandidate.solution.placements.length - 1;
+    commitWorkshopState(nextCandidate, 'A homogeneous triangle was added at the container origin. Move it before validating.');
   } catch (error) {
     $('#workshop-editor-status').textContent = `${error.message} The candidate was not changed.`;
   }
@@ -1721,7 +1794,7 @@ $('#workshop-save').addEventListener('click', async () => {
 });
 $('#workshop-recover').addEventListener('click', async () => {
   const status = $('#workshop-save-status');
-  const raw = localStorage.getItem(workshopStorageKey());
+  const raw = localStorage.getItem(workshopStorageKey()) ?? localStorage.getItem(`${workshopStorageKey()}:autosave`);
   if (!raw) {
     status.textContent = `No saved browser draft exists for ${workshopBaselineId}.`;
     return;
@@ -1732,6 +1805,7 @@ $('#workshop-recover').addEventListener('click', async () => {
     return;
   }
   workshopCandidate = restored.candidate;
+  workshopTimeline = createWorkshopTimeline(workshopCandidate);
   workshopValidation = null;
   workshopPlacementIndex = 0;
   renderWorkshopCandidate({ resetMetadata: true });
@@ -1758,6 +1832,7 @@ $('#workshop-file').addEventListener('change', async event => {
       return;
     }
     workshopCandidate = restored.candidate;
+    workshopTimeline = createWorkshopTimeline(workshopCandidate);
     workshopValidation = null;
     workshopPlacementIndex = 0;
     renderWorkshopCandidate({ resetMetadata: true });
