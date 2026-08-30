@@ -1,6 +1,7 @@
 import { ATLAS_RECORDS, OPEN_PROBLEMS, phaseAt } from './atlas/catalog.js';
 import { normalizeProblem } from './core/problem.js';
 import { renderPacking } from './rendering/canvas.js';
+import { workshopKeyboardPatch, workshopPlacementAtPoint, workshopProblemPoint } from './ui/workshopInteraction.js';
 import { escapeHtml, safeExternalUrl } from './ui/safeText.js';
 import { validatePublicRelease } from './ui/releaseValidation.js';
 import { loadIntegrityCheckedRelease } from './ui/shardedReleaseLoader.js';
@@ -70,6 +71,7 @@ let workshopCandidate = null;
 let workshopValidation = null;
 let workshopBaselineId = null;
 let workshopPlacementIndex = 0;
+let workshopDrag = null;
 let comparisonWorkspaceIds = [];
 let comparisonWorkspaceStorage = 'available';
 const comparisonRenderFrames = { a: null, b: null };
@@ -112,6 +114,7 @@ function setWorkshopControls(enabled) {
     '#workshop-recover', '#workshop-reset', '#workshop-file', '#workshop-export', '#workshop-copy-command'
   ]) $(selector).disabled = !enabled;
   for (const button of document.querySelectorAll('[data-workshop-nudge]')) button.disabled = !enabled;
+  $('#workshop-canvas').setAttribute('aria-disabled', String(!enabled));
 }
 
 function applyWorkshopMetadata() {
@@ -188,7 +191,7 @@ function renderWorkshopCandidate({ resetMetadata = false } = {}) {
   requestAnimationFrame(() => renderPacking(
     $('#workshop-canvas'),
     normalizeProblem(workshopCandidate.problem),
-    { state: workshopCandidate.solution.placements, showLabels: false }
+    { state: workshopCandidate.solution.placements, showLabels: false, selectedIndex: workshopPlacementIndex }
   ));
   renderWorkshopValidation();
 }
@@ -1586,6 +1589,63 @@ $('#workshop-baseline').addEventListener('change', event => startWorkshop(event.
 $('#workshop-placement').addEventListener('change', event => {
   workshopPlacementIndex = Number(event.currentTarget.value);
   renderWorkshopCandidate();
+});
+function workshopPointForEvent(event) {
+  const canvas = $('#workshop-canvas');
+  const rect = canvas.getBoundingClientRect();
+  return workshopProblemPoint(
+    normalizeProblem(workshopCandidate.problem),
+    rect.width,
+    rect.height,
+    event.clientX - rect.left,
+    event.clientY - rect.top
+  );
+}
+
+function updateWorkshopFromCanvas(patch, message) {
+  workshopCandidate = updateWorkshopPlacement(workshopCandidate, workshopPlacementIndex, patch);
+  markWorkshopDirty(message);
+}
+
+$('#workshop-canvas').addEventListener('pointerdown', event => {
+  if (!workshopCandidate || event.currentTarget.getAttribute('aria-disabled') === 'true') return;
+  const point = workshopPointForEvent(event);
+  const index = workshopPlacementAtPoint(normalizeProblem(workshopCandidate.problem), workshopCandidate.solution.placements, point);
+  if (index < 0) {
+    $('#workshop-editor-status').textContent = 'No triangle was selected. Choose a visible triangle or use the placement list.';
+    return;
+  }
+  workshopPlacementIndex = index;
+  const placement = workshopCandidate.solution.placements[index];
+  workshopDrag = { pointerId: event.pointerId, offsetX: point.x - placement.x, offsetY: point.y - placement.y };
+  event.currentTarget.setPointerCapture(event.pointerId);
+  event.currentTarget.focus();
+  renderWorkshopCandidate();
+  $('#workshop-editor-status').textContent = `Triangle ${index + 1} selected. Drag to move it, or use arrow keys for precise adjustment.`;
+});
+
+$('#workshop-canvas').addEventListener('pointermove', event => {
+  if (!workshopDrag || workshopDrag.pointerId !== event.pointerId || !workshopCandidate) return;
+  const point = workshopPointForEvent(event);
+  updateWorkshopFromCanvas(
+    { x: point.x - workshopDrag.offsetX, y: point.y - workshopDrag.offsetY },
+    `Triangle ${workshopPlacementIndex + 1} moved by direct manipulation. Run local validation before drawing any conclusion.`
+  );
+});
+
+for (const type of ['pointerup', 'pointercancel']) {
+  $('#workshop-canvas').addEventListener(type, event => {
+    if (workshopDrag?.pointerId === event.pointerId) workshopDrag = null;
+  });
+}
+
+$('#workshop-canvas').addEventListener('keydown', event => {
+  if (!workshopCandidate || event.currentTarget.getAttribute('aria-disabled') === 'true') return;
+  const placement = workshopCandidate.solution.placements[workshopPlacementIndex];
+  const patch = workshopKeyboardPatch(placement, event.key, event);
+  if (!patch) return;
+  event.preventDefault();
+  updateWorkshopFromCanvas(patch, `Triangle ${workshopPlacementIndex + 1} adjusted with the keyboard. Run local validation before drawing any conclusion.`);
 });
 $('#workshop-apply').addEventListener('click', () => {
   try {

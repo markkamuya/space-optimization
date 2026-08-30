@@ -20,12 +20,19 @@ test('production exposes an evidence-safe browser Packing Workshop', async () =>
     assert.match(html, new RegExp(`id="${control}"`));
   }
   assert.match(html, /Angle \(radians\)/);
+  assert.match(html, /tabindex="0" aria-label="Interactive Packing Workshop candidate"/);
+  assert.match(html, /Arrow keys move the selected triangle by 0\.01/);
   assert.match(script, /validateWorkshopCandidate\(workshopCandidate, baseline, canonicalRelease\.records\)/);
+  assert.match(script, /workshopPlacementAtPoint/);
+  assert.match(script, /addEventListener\('pointermove'/);
+  assert.match(script, /workshopKeyboardPatch/);
   assert.match(script, /restoreWorkshopBundle/);
   assert.match(script, /aria-disabled', String\(!validation\.eligibleForContribution\)/);
   assert.match(script, /All .* allowed piece slots are already used/);
   assert.match(shell, /destination: '#workshop'/);
   assert.match(styles, /\.workshop-layout button,.workshop-export-actions a \{ min-height:44px/);
+  assert.match(styles, /#workshop-canvas:focus-visible/);
+  assert.match(styles, /touch-action:none/);
   assert.match(styles, /@media\(max-width:720px\).*\.workshop-coordinate-grid.*grid-template-columns:1fr/s);
 });
 
