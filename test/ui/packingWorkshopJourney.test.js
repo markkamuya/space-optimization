@@ -20,6 +20,7 @@ test('production exposes an evidence-safe browser Packing Workshop', async () =>
     assert.match(html, new RegExp(`id="${control}"`));
   }
   for (const control of ['workshop-undo', 'workshop-redo']) assert.match(html, new RegExp(`id="${control}"`));
+  for (const control of ['workshop-candidate-export', 'workshop-review-export']) assert.match(html, new RegExp(`id="${control}"`));
   assert.match(html, /Angle \(radians\)/);
   assert.match(html, /tabindex="0" aria-label="Interactive Packing Workshop candidate"/);
   assert.match(html, /Arrow keys move the selected triangle by 0\.01/);
@@ -32,6 +33,8 @@ test('production exposes an evidence-safe browser Packing Workshop', async () =>
   assert.match(script, /setTimeout\(async \(\) =>/);
   assert.match(script, /setTimeout\(\(\) =>/);
   assert.match(script, /:autosave/);
+  assert.match(script, /createWorkshopReviewPacket/);
+  assert.match(script, /workshopReviewMarkdown/);
   assert.match(script, /restoreWorkshopBundle/);
   assert.match(script, /aria-disabled', String\(!validation\.eligibleForContribution\)/);
   assert.match(script, /All .* allowed piece slots are already used/);

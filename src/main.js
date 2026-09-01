@@ -3,6 +3,7 @@ import { normalizeProblem } from './core/problem.js';
 import { renderPacking } from './rendering/canvas.js';
 import { workshopKeyboardPatch, workshopPlacementAtPoint, workshopProblemPoint } from './ui/workshopInteraction.js';
 import { createWorkshopTimeline, recordWorkshopState, redoWorkshopState, undoWorkshopState } from './ui/workshopTimeline.js';
+import { createWorkshopReviewPacket, workshopReviewMarkdown } from './ui/workshopHandoff.js';
 import { escapeHtml, safeExternalUrl } from './ui/safeText.js';
 import { validatePublicRelease } from './ui/releaseValidation.js';
 import { loadIntegrityCheckedRelease } from './ui/shardedReleaseLoader.js';
@@ -117,6 +118,8 @@ function setWorkshopControls(enabled) {
     '#workshop-method', '#workshop-version', '#workshop-seed', '#workshop-validate', '#workshop-save',
     '#workshop-recover', '#workshop-reset', '#workshop-file', '#workshop-export', '#workshop-copy-command'
   ]) $(selector).disabled = !enabled;
+  $('#workshop-candidate-export').disabled = true;
+  $('#workshop-review-export').disabled = true;
   for (const button of document.querySelectorAll('[data-workshop-nudge]')) button.disabled = !enabled;
   $('#workshop-canvas').setAttribute('aria-disabled', String(!enabled));
 }
@@ -182,6 +185,8 @@ function renderWorkshopValidation() {
     $('#workshop-fill-delta').textContent = '—';
     $('#workshop-findings').innerHTML = '<summary>Validation findings</summary><ul><li>Run local validation to inspect geometry and submission-readiness findings.</li></ul>';
     github.setAttribute('aria-disabled', 'true');
+    $('#workshop-candidate-export').disabled = true;
+    $('#workshop-review-export').disabled = true;
     return;
   }
   const validation = workshopValidation;
@@ -197,6 +202,8 @@ function renderWorkshopValidation() {
   ];
   $('#workshop-findings').innerHTML = `<summary>Validation findings · ${findings.length}</summary><ul>${(findings.length ? findings : ['No local geometry or readiness failures were found. Independent verification and review are still required.']).slice(0, 30).map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`;
   github.setAttribute('aria-disabled', String(!validation.eligibleForContribution));
+  $('#workshop-candidate-export').disabled = !validation.eligibleForContribution;
+  $('#workshop-review-export').disabled = !validation.eligibleForContribution;
   const claim = $('#workshop-claim-status');
   claim.className = `workshop-claim-status ${validation.eligibleForContribution ? 'candidate-improvement' : validation.geometryValid ? 'locally-valid' : 'invalid'}`;
   claim.innerHTML = `<b>${escapeHtml(validation.headline)}</b><span>${escapeHtml(validation.boundary)}</span>`;
@@ -1857,6 +1864,42 @@ $('#workshop-export').addEventListener('click', async () => {
     status.textContent = `Reproducible workshop bundle exported for ${workshopBaselineId}. It remains candidate evidence.`;
   } catch {
     status.textContent = 'The workshop bundle could not be exported because verified release identity is unavailable.';
+  }
+});
+function downloadWorkshopFile(contents, filename, type) {
+  const url = URL.createObjectURL(new Blob([contents], { type }));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+async function currentWorkshopReview() {
+  applyWorkshopMetadata();
+  const bundle = await createWorkshopBundle({ candidate: workshopCandidate, baseline: selectedWorkshopBaseline(), validation: workshopValidation, release: canonicalRelease, integrity: releaseIntegrity, source: releaseSource });
+  return { bundle, packet: createWorkshopReviewPacket(bundle, workshopValidation) };
+}
+
+$('#workshop-candidate-export').addEventListener('click', async () => {
+  const status = $('#workshop-save-status');
+  try {
+    const { bundle } = await currentWorkshopReview();
+    downloadWorkshopFile(`${JSON.stringify(bundle.candidate, null, 2)}\n`, `${bundle.candidate.id}.json`, 'application/json');
+    status.textContent = 'Candidate JSON downloaded. Attach the full verifier report before requesting review.';
+  } catch {
+    status.textContent = 'Candidate export remains locked until local checks support an improvement candidate.';
+  }
+});
+
+$('#workshop-review-export').addEventListener('click', async () => {
+  const status = $('#workshop-save-status');
+  try {
+    const { bundle, packet } = await currentWorkshopReview();
+    downloadWorkshopFile(workshopReviewMarkdown(packet), `${bundle.candidate.id}-review.md`, 'text/markdown');
+    status.textContent = 'Reviewer packet downloaded. It records local checks only; independent verification and approval remain required.';
+  } catch {
+    status.textContent = 'Reviewer packet export remains locked until local checks support an improvement candidate.';
   }
 });
 $('#workshop-copy-command').addEventListener('click', async () => {
