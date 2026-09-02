@@ -3,7 +3,7 @@ import { normalizeProblem } from './core/problem.js';
 import { renderPacking } from './rendering/canvas.js';
 import { workshopKeyboardPatch, workshopPlacementAtPoint, workshopProblemPoint } from './ui/workshopInteraction.js';
 import { createWorkshopTimeline, recordWorkshopState, redoWorkshopState, undoWorkshopState } from './ui/workshopTimeline.js';
-import { createWorkshopReviewPacket, workshopReviewMarkdown } from './ui/workshopHandoff.js';
+import { createWorkshopReviewPacket, resolveWorkshopChallenge, workshopGitHubSummary, workshopReviewMarkdown } from './ui/workshopHandoff.js';
 import { escapeHtml, safeExternalUrl } from './ui/safeText.js';
 import { validatePublicRelease } from './ui/releaseValidation.js';
 import { loadIntegrityCheckedRelease } from './ui/shardedReleaseLoader.js';
@@ -77,6 +77,7 @@ let workshopDrag = null;
 let workshopTimeline = null;
 let workshopValidationTimer = null;
 let workshopAutosaveTimer = null;
+let communityChallenges = null;
 let comparisonWorkspaceIds = [];
 let comparisonWorkspaceStorage = 'available';
 const comparisonRenderFrames = { a: null, b: null };
@@ -120,6 +121,7 @@ function setWorkshopControls(enabled) {
   ]) $(selector).disabled = !enabled;
   $('#workshop-candidate-export').disabled = true;
   $('#workshop-review-export').disabled = true;
+  $('#workshop-github-copy').disabled = true;
   for (const button of document.querySelectorAll('[data-workshop-nudge]')) button.disabled = !enabled;
   $('#workshop-canvas').setAttribute('aria-disabled', String(!enabled));
 }
@@ -187,6 +189,7 @@ function renderWorkshopValidation() {
     github.setAttribute('aria-disabled', 'true');
     $('#workshop-candidate-export').disabled = true;
     $('#workshop-review-export').disabled = true;
+    $('#workshop-github-copy').disabled = true;
     return;
   }
   const validation = workshopValidation;
@@ -201,9 +204,14 @@ function renderWorkshopValidation() {
     ...validation.assessment.verification.errors.map(item => `${item.code}: ${item.message}`)
   ];
   $('#workshop-findings').innerHTML = `<summary>Validation findings · ${findings.length}</summary><ul>${(findings.length ? findings : ['No local geometry or readiness failures were found. Independent verification and review are still required.']).slice(0, 30).map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`;
-  github.setAttribute('aria-disabled', String(!validation.eligibleForContribution));
+  const challenge = resolveWorkshopChallenge(communityChallenges?.challenges, selectedWorkshopBaseline());
+  const reviewReady = validation.eligibleForContribution && challenge !== null;
+  github.setAttribute('aria-disabled', String(!reviewReady));
+  github.href = challenge?.issueUrl ?? 'https://github.com/markkamuya/space-optimization/blob/main/docs/CONTRIBUTING.md';
+  github.textContent = challenge ? `Open challenge ${challenge.challengeId} on GitHub ↗` : 'Read contribution guidance ↗';
   $('#workshop-candidate-export').disabled = !validation.eligibleForContribution;
   $('#workshop-review-export').disabled = !validation.eligibleForContribution;
+  $('#workshop-github-copy').disabled = !reviewReady;
   const claim = $('#workshop-claim-status');
   claim.className = `workshop-claim-status ${validation.eligibleForContribution ? 'candidate-improvement' : validation.geometryValid ? 'locally-valid' : 'invalid'}`;
   claim.innerHTML = `<b>${escapeHtml(validation.headline)}</b><span>${escapeHtml(validation.boundary)}</span>`;
@@ -1582,6 +1590,8 @@ async function loadV1Context() {
     const audit = auditResponse.ok ? await auditResponse.json() : null;
     const literature = literatureResponse.ok ? await literatureResponse.json() : null;
     const challenges = challengeResponse.ok ? await challengeResponse.json() : null;
+    communityChallenges = challenges;
+    if (workshopCandidate) renderWorkshopValidation();
     const proofIndex = proofResponse.ok ? await proofResponse.json() : null;
     const proofJobIndex = proofJobResponse.ok ? await proofJobResponse.json() : null;
     const contributionStatus = contributionResponse.ok ? await contributionResponse.json() : null;
@@ -1900,6 +1910,18 @@ $('#workshop-review-export').addEventListener('click', async () => {
     status.textContent = 'Reviewer packet downloaded. It records local checks only; independent verification and approval remain required.';
   } catch {
     status.textContent = 'Reviewer packet export remains locked until local checks support an improvement candidate.';
+  }
+});
+$('#workshop-github-copy').addEventListener('click', async () => {
+  const status = $('#workshop-save-status');
+  try {
+    const { packet } = await currentWorkshopReview();
+    const challenge = resolveWorkshopChallenge(communityChallenges?.challenges, selectedWorkshopBaseline());
+    if (!challenge) throw new Error('No exact challenge');
+    await navigator.clipboard.writeText(workshopGitHubSummary(packet, challenge));
+    status.textContent = `Review summary copied for ${challenge.challengeId}. Attach candidate files and verifier output separately; nothing was posted.`;
+  } catch {
+    status.textContent = 'GitHub review handoff requires an eligible candidate and an exact open challenge for this baseline.';
   }
 });
 $('#workshop-copy-command').addEventListener('click', async () => {

@@ -54,3 +54,37 @@ export function workshopReviewMarkdown(packet) {
     ''
   ].join('\n');
 }
+
+export function resolveWorkshopChallenge(challenges, baseline) {
+  if (!Array.isArray(challenges) || !baseline?.id || !baseline?.verification?.fingerprint) return null;
+  const challenge = challenges.find(item =>
+    item?.status === 'open' &&
+    item.recordId === baseline.id &&
+    item.baseline?.fingerprint === baseline.verification.fingerprint
+  );
+  if (!challenge || !/^TPA-C\d{2}$/.test(challenge.challengeId)) return null;
+  try {
+    const issue = new URL(challenge.issueUrl);
+    if (issue.protocol !== 'https:' || issue.hostname !== 'github.com' || !/^\/markkamuya\/space-optimization\/issues\/\d+$/.test(issue.pathname)) return null;
+    return { ...challenge, issueUrl: issue.href };
+  } catch {
+    return null;
+  }
+}
+
+export function workshopGitHubSummary(packet, challenge) {
+  if (packet?.format !== WORKSHOP_REVIEW_PACKET_FORMAT || !challenge?.challengeId) {
+    throw new TypeError('A review packet and exact challenge are required.');
+  }
+  return [
+    `Local candidate prepared for ${challenge.challengeId} (${packet.baseline.id}).`,
+    `Candidate file: ${packet.candidateFile}`,
+    `Workshop checksum: ${packet.workshopChecksum}`,
+    `Local fill: ${(packet.localAssessment.candidateUtilization * 100).toFixed(6)}%`,
+    `Published fill: ${(packet.localAssessment.incumbentUtilization * 100).toFixed(6)}%`,
+    `Local difference: ${(packet.localAssessment.difference * 100).toFixed(6)}%`,
+    `Verifier: ${packet.verifierCommand}`,
+    'Candidate JSON, unedited verifier output, and reviewer packet will be attached separately.',
+    packet.boundary
+  ].join('\n');
+}
