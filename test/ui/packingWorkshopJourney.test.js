@@ -44,6 +44,8 @@ test('production exposes an evidence-safe browser Packing Workshop', async () =>
   assert.match(script, /workshopReviewMarkdown/);
   assert.match(script, /resolveWorkshopChallenge/);
   assert.match(script, /workshopGitHubSummary/);
+  assert.match(script, /workshopJourneyState/);
+  assert.match(script, /workshopPreservation/);
   assert.match(script, /#workshop-journey.*addEventListener\('click'/);
   assert.match(script, /removeAttribute\('aria-current'\)/);
   assert.match(script, /target\.focus\(\{ preventScroll: true \}\)/);
@@ -55,6 +57,7 @@ test('production exposes an evidence-safe browser Packing Workshop', async () =>
   assert.match(styles, /#workshop-canvas:focus-visible/);
   assert.match(styles, /touch-action:none/);
   assert.match(styles, /\.workshop-journey button\[aria-current="step"\]/);
+  assert.match(styles, /\.workshop-journey button\[data-state="needs-attention"\]/);
   assert.match(styles, /@media\(max-width:720px\).*\.workshop-journey ol\{grid-template-columns:1fr 1fr\}/s);
   assert.match(styles, /@media\(max-width:720px\).*\.workshop-coordinate-grid.*grid-template-columns:1fr/s);
 });

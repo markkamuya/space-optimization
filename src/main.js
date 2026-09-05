@@ -4,6 +4,7 @@ import { renderPacking } from './rendering/canvas.js';
 import { workshopKeyboardPatch, workshopPlacementAtPoint, workshopProblemPoint } from './ui/workshopInteraction.js';
 import { createWorkshopTimeline, recordWorkshopState, redoWorkshopState, undoWorkshopState } from './ui/workshopTimeline.js';
 import { createWorkshopReviewPacket, resolveWorkshopChallenge, workshopGitHubSummary, workshopReviewMarkdown } from './ui/workshopHandoff.js';
+import { WORKSHOP_JOURNEY_STEPS, workshopJourneyState } from './ui/workshopJourney.js';
 import { escapeHtml, safeExternalUrl } from './ui/safeText.js';
 import { validatePublicRelease } from './ui/releaseValidation.js';
 import { loadIntegrityCheckedRelease } from './ui/shardedReleaseLoader.js';
@@ -77,6 +78,7 @@ let workshopDrag = null;
 let workshopTimeline = null;
 let workshopValidationTimer = null;
 let workshopAutosaveTimer = null;
+let workshopPreservation = 'none';
 let communityChallenges = null;
 let comparisonWorkspaceIds = [];
 let comparisonWorkspaceStorage = 'available';
@@ -112,6 +114,36 @@ function workshopStorageKey() {
   return workshopBaselineId ? `triangle-packing-atlas:workshop:v1:${workshopBaselineId}` : null;
 }
 
+function workshopRecoveryAvailable() {
+  try {
+    return Boolean(localStorage.getItem(workshopStorageKey()) ?? localStorage.getItem(`${workshopStorageKey()}:autosave`));
+  } catch {
+    return false;
+  }
+}
+
+function renderWorkshopJourney() {
+  const challenge = resolveWorkshopChallenge(communityChallenges?.challenges, selectedWorkshopBaseline());
+  const journey = workshopJourneyState({
+    baselineReady: Boolean(selectedWorkshopBaseline() && canonicalRelease && releaseIntegrity),
+    validation: workshopValidation,
+    preservation: workshopPreservation,
+    recoveryAvailable: workshopRecoveryAvailable(),
+    challengeReady: Boolean(challenge)
+  });
+  $('#workshop-journey-summary').textContent = journey.summary;
+  for (const [index, step] of WORKSHOP_JOURNEY_STEPS.entries()) {
+    const control = document.querySelector(`[data-workshop-step="${step.id}"]`);
+    if (!control) continue;
+    const stage = journey.stages[index];
+    control.dataset.state = stage.state;
+    control.querySelector('small').textContent = stage.detail;
+    control.setAttribute('aria-label', `${index + 1}. ${step.name}: ${stage.detail}`);
+  }
+}
+
+renderWorkshopJourney();
+
 function setWorkshopControls(enabled) {
   for (const selector of [
     '#workshop-baseline', '#workshop-placement', '#workshop-x', '#workshop-y', '#workshop-angle', '#workshop-reflect',
@@ -138,6 +170,7 @@ function scheduleWorkshopRecovery() {
       const baseline = selectedWorkshopBaseline();
       const bundle = await createWorkshopBundle({ candidate: workshopCandidate, baseline, validation: workshopValidation, release: canonicalRelease, integrity: releaseIntegrity, source: releaseSource });
       localStorage.setItem(`${workshopStorageKey()}:autosave`, JSON.stringify(bundle));
+      renderWorkshopJourney();
       $('#workshop-save-status').textContent = `Recovery copy updated for ${workshopBaselineId}. It remains a local candidate, not scientific evidence.`;
     } catch {
       $('#workshop-save-status').textContent = 'Automatic recovery is unavailable. Use Export reproducible bundle to protect this draft.';
@@ -190,6 +223,7 @@ function renderWorkshopValidation() {
     $('#workshop-candidate-export').disabled = true;
     $('#workshop-review-export').disabled = true;
     $('#workshop-github-copy').disabled = true;
+    renderWorkshopJourney();
     return;
   }
   const validation = workshopValidation;
@@ -215,6 +249,7 @@ function renderWorkshopValidation() {
   const claim = $('#workshop-claim-status');
   claim.className = `workshop-claim-status ${validation.eligibleForContribution ? 'candidate-improvement' : validation.geometryValid ? 'locally-valid' : 'invalid'}`;
   claim.innerHTML = `<b>${escapeHtml(validation.headline)}</b><span>${escapeHtml(validation.boundary)}</span>`;
+  renderWorkshopJourney();
 }
 
 function renderWorkshopCandidate({ resetMetadata = false } = {}) {
@@ -258,6 +293,7 @@ function renderWorkshopCandidate({ resetMetadata = false } = {}) {
 
 function markWorkshopDirty(message) {
   workshopValidation = null;
+  workshopPreservation = 'none';
   const claim = $('#workshop-claim-status');
   claim.className = 'workshop-claim-status untested';
   claim.innerHTML = '<b>Unvalidated candidate</b><span>Coordinates changed. Run local validation before drawing any conclusion.</span>';
@@ -273,6 +309,7 @@ function startWorkshop(baselineId, { updateHash = false } = {}) {
   workshopCandidate = createWorkshopCandidate(baseline);
   workshopTimeline = createWorkshopTimeline(workshopCandidate);
   workshopValidation = null;
+  workshopPreservation = 'none';
   $('#workshop-baseline').value = baseline.id;
   $('.workshop-layout').setAttribute('aria-busy', 'false');
   setWorkshopControls(true);
@@ -1797,6 +1834,7 @@ $('#workshop-add-piece').addEventListener('click', () => {
 for (const selector of ['#workshop-contributor', '#workshop-method', '#workshop-version', '#workshop-seed']) {
   $(selector).addEventListener('input', () => {
     workshopValidation = null;
+    workshopPreservation = 'none';
     renderWorkshopValidation();
     $('#workshop-save-status').textContent = 'Metadata changed. Run local validation again before preparing a contribution.';
   });
@@ -1816,6 +1854,8 @@ $('#workshop-save').addEventListener('click', async () => {
     applyWorkshopMetadata();
     const bundle = await createWorkshopBundle({ candidate: workshopCandidate, baseline: selectedWorkshopBaseline(), validation: workshopValidation, release: canonicalRelease, integrity: releaseIntegrity, source: releaseSource });
     localStorage.setItem(workshopStorageKey(), JSON.stringify(bundle));
+    workshopPreservation = 'saved';
+    renderWorkshopJourney();
     status.textContent = `Draft saved in this browser for ${workshopBaselineId}. Its checksum detects accidental changes but is not scientific verification.`;
   } catch {
     status.textContent = 'The draft could not be saved in this browser. Export a bundle instead.';
@@ -1836,6 +1876,7 @@ $('#workshop-recover').addEventListener('click', async () => {
   workshopCandidate = restored.candidate;
   workshopTimeline = createWorkshopTimeline(workshopCandidate);
   workshopValidation = null;
+  workshopPreservation = 'none';
   workshopPlacementIndex = 0;
   renderWorkshopCandidate({ resetMetadata: true });
   status.textContent = `Saved work recovered for ${workshopBaselineId}. Run local validation again before using its conclusions.`;
@@ -1863,6 +1904,7 @@ $('#workshop-file').addEventListener('change', async event => {
     workshopCandidate = restored.candidate;
     workshopTimeline = createWorkshopTimeline(workshopCandidate);
     workshopValidation = null;
+    workshopPreservation = 'none';
     workshopPlacementIndex = 0;
     renderWorkshopCandidate({ resetMetadata: true });
     status.textContent = `Workshop bundle recovered for ${workshopBaselineId}. Local validation must be rerun.`;
@@ -1882,6 +1924,8 @@ $('#workshop-export').addEventListener('click', async () => {
     link.href = url;
     link.download = `${workshopCandidate.id}-workshop.json`;
     link.click();
+    workshopPreservation = 'exported';
+    renderWorkshopJourney();
     setTimeout(() => URL.revokeObjectURL(url), 0);
     status.textContent = `Reproducible workshop bundle exported for ${workshopBaselineId}. It remains candidate evidence.`;
   } catch {
@@ -1908,6 +1952,8 @@ $('#workshop-candidate-export').addEventListener('click', async () => {
   try {
     const { bundle } = await currentWorkshopReview();
     downloadWorkshopFile(`${JSON.stringify(bundle.candidate, null, 2)}\n`, `${bundle.candidate.id}.json`, 'application/json');
+    workshopPreservation = 'exported';
+    renderWorkshopJourney();
     status.textContent = 'Candidate JSON downloaded. Attach the full verifier report before requesting review.';
   } catch {
     status.textContent = 'Candidate export remains locked until local checks support an improvement candidate.';
@@ -1919,6 +1965,8 @@ $('#workshop-review-export').addEventListener('click', async () => {
   try {
     const { bundle, packet } = await currentWorkshopReview();
     downloadWorkshopFile(workshopReviewMarkdown(packet), `${bundle.candidate.id}-review.md`, 'text/markdown');
+    workshopPreservation = 'review-packet';
+    renderWorkshopJourney();
     status.textContent = 'Reviewer packet downloaded. It records local checks only; independent verification and approval remain required.';
   } catch {
     status.textContent = 'Reviewer packet export remains locked until local checks support an improvement candidate.';
