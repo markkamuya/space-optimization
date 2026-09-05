@@ -22,6 +22,12 @@ test('production exposes an evidence-safe browser Packing Workshop', async () =>
   for (const control of ['workshop-undo', 'workshop-redo']) assert.match(html, new RegExp(`id="${control}"`));
   for (const control of ['workshop-candidate-export', 'workshop-review-export']) assert.match(html, new RegExp(`id="${control}"`));
   assert.match(html, /id="workshop-github-copy"/);
+  assert.match(html, /id="workshop-journey" class="workshop-journey" aria-label="Packing Workshop steps"/);
+  for (const step of ['workshop-baseline-title', 'workshop-editor-title', 'workshop-validation-title', 'workshop-handoff-title']) {
+    assert.match(html, new RegExp(`data-workshop-step="${step}"`));
+    assert.match(html, new RegExp(`id="${step}" tabindex="-1"`));
+  }
+  assert.match(html, /data-workshop-step="workshop-baseline-title" aria-current="step"/);
   assert.match(html, /Angle \(radians\)/);
   assert.match(html, /tabindex="0" aria-label="Interactive Packing Workshop candidate"/);
   assert.match(html, /Arrow keys move the selected triangle by 0\.01/);
@@ -38,6 +44,9 @@ test('production exposes an evidence-safe browser Packing Workshop', async () =>
   assert.match(script, /workshopReviewMarkdown/);
   assert.match(script, /resolveWorkshopChallenge/);
   assert.match(script, /workshopGitHubSummary/);
+  assert.match(script, /#workshop-journey.*addEventListener\('click'/);
+  assert.match(script, /removeAttribute\('aria-current'\)/);
+  assert.match(script, /target\.focus\(\{ preventScroll: true \}\)/);
   assert.match(script, /restoreWorkshopBundle/);
   assert.match(script, /aria-disabled', String\(!reviewReady\)/);
   assert.match(script, /All .* allowed piece slots are already used/);
@@ -45,6 +54,8 @@ test('production exposes an evidence-safe browser Packing Workshop', async () =>
   assert.match(styles, /\.workshop-layout button,.workshop-export-actions a \{ min-height:44px/);
   assert.match(styles, /#workshop-canvas:focus-visible/);
   assert.match(styles, /touch-action:none/);
+  assert.match(styles, /\.workshop-journey button\[aria-current="step"\]/);
+  assert.match(styles, /@media\(max-width:720px\).*\.workshop-journey ol\{grid-template-columns:1fr 1fr\}/s);
   assert.match(styles, /@media\(max-width:720px\).*\.workshop-coordinate-grid.*grid-template-columns:1fr/s);
 });
 

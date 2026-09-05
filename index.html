@@ -68,11 +68,20 @@
         <aside id="workshop-release-status" class="workshop-release-status" role="status" aria-live="polite" aria-atomic="true" tabindex="-1">
           Waiting for a verified Atlas release. Editing stays locked until the baseline passes integrity checks.
         </aside>
+        <nav id="workshop-journey" class="workshop-journey" aria-label="Packing Workshop steps">
+          <p id="workshop-journey-summary">Step 1 of 4 · Start from a verified packing.</p>
+          <ol>
+            <li><button type="button" data-workshop-step="workshop-baseline-title" aria-current="step"><span>01 · Start</span><small>Choose a verified packing</small></button></li>
+            <li><button type="button" data-workshop-step="workshop-editor-title"><span>02 · Adjust</span><small>Move one triangle</small></button></li>
+            <li><button type="button" data-workshop-step="workshop-validation-title"><span>03 · Check</span><small>Validate constraints</small></button></li>
+            <li><button type="button" data-workshop-step="workshop-handoff-title"><span>04 · Preserve</span><small>Save or prepare review</small></button></li>
+          </ol>
+        </nav>
         <div class="workshop-layout" aria-busy="true">
           <section class="workshop-visual" aria-labelledby="workshop-baseline-title">
             <label for="workshop-baseline">Verified baseline</label>
             <select id="workshop-baseline" disabled></select>
-            <h2 id="workshop-baseline-title">No verified baseline loaded</h2>
+            <h2 id="workshop-baseline-title" tabindex="-1">No verified baseline loaded</h2>
             <p id="workshop-baseline-scope">The Workshop will preserve the exact container, triangle shape, and published incumbent identity.</p>
             <dl class="workshop-baseline-facts">
               <div><dt>Published fill</dt><dd id="workshop-baseline-fill">—</dd></div>
@@ -85,7 +94,7 @@
             <div id="workshop-claim-status" class="workshop-claim-status untested"><b>Unvalidated candidate</b><span>Run local validation before drawing any conclusion.</span></div>
           </section>
           <section class="workshop-editor" aria-labelledby="workshop-editor-title">
-            <div><p class="kicker">COORDINATE EDITOR</p><h2 id="workshop-editor-title">Move one triangle precisely.</h2><p>Select a placement, enter finite coordinates and angle, then apply. Reflection stays locked when the verified problem forbids it.</p></div>
+            <div><p class="kicker">COORDINATE EDITOR</p><h2 id="workshop-editor-title" tabindex="-1">Move one triangle precisely.</h2><p>Select a placement, enter finite coordinates and angle, then apply. Reflection stays locked when the verified problem forbids it.</p></div>
             <label>Triangle placement<select id="workshop-placement" disabled></select></label>
             <div class="workshop-coordinate-grid">
               <label>X coordinate<input id="workshop-x" type="number" step="0.01" inputmode="decimal" disabled></label>
@@ -111,7 +120,7 @@
             <p id="workshop-editor-status" role="status" aria-live="polite">Choose a verified baseline to begin.</p>
           </section>
           <section class="workshop-validation" aria-labelledby="workshop-validation-title">
-            <div><p class="kicker">LOCAL VALIDATION</p><h2 id="workshop-validation-title">Check constraints and compare.</h2><p>The same geometry engine checks bounds, overlap, spacing, fingerprint, and the current incumbent. Local success is still not proof or publication.</p></div>
+            <div><p class="kicker">LOCAL VALIDATION</p><h2 id="workshop-validation-title" tabindex="-1">Check constraints and compare.</h2><p>The same geometry engine checks bounds, overlap, spacing, fingerprint, and the current incumbent. Local success is still not proof or publication.</p></div>
             <div class="workshop-metadata">
               <label>Contributor name<input id="workshop-contributor" type="text" maxlength="120" autocomplete="name" disabled></label>
               <label>Method name<input id="workshop-method" type="text" maxlength="120" disabled></label>
@@ -130,7 +139,7 @@
             <details id="workshop-findings"><summary>Validation findings</summary><ul><li>Run local validation to inspect geometry and submission-readiness findings.</li></ul></details>
           </section>
           <section class="workshop-handoff" aria-labelledby="workshop-handoff-title">
-            <div><p class="kicker">SAVE · RECOVER · CONTRIBUTE</p><h2 id="workshop-handoff-title">Keep the work reproducible.</h2><p>Browser saves and exported bundles are checksummed and bound to this verified release. They are working files, not scientific evidence.</p></div>
+            <div><p class="kicker">SAVE · RECOVER · CONTRIBUTE</p><h2 id="workshop-handoff-title" tabindex="-1">Keep the work reproducible.</h2><p>Browser saves and exported bundles are checksummed and bound to this verified release. They are working files, not scientific evidence.</p></div>
             <div class="workshop-save-actions">
               <button id="workshop-save" type="button" disabled>Save in this browser</button>
               <button id="workshop-recover" type="button" disabled>Recover saved work</button>

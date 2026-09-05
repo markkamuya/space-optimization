@@ -1649,6 +1649,18 @@ async function loadV1Context() {
 }
 
 $('#workshop-baseline').addEventListener('change', event => startWorkshop(event.currentTarget.value, { updateHash: true }));
+$('#workshop-journey').addEventListener('click', event => {
+  const control = event.target.closest('[data-workshop-step]');
+  if (!control) return;
+  const target = document.getElementById(control.dataset.workshopStep);
+  if (!target) return;
+  for (const button of document.querySelectorAll('[data-workshop-step]')) button.removeAttribute('aria-current');
+  control.setAttribute('aria-current', 'step');
+  const position = [...document.querySelectorAll('[data-workshop-step]')].indexOf(control) + 1;
+  $('#workshop-journey-summary').textContent = `Step ${position} of 4 · ${control.querySelector('small').textContent}.`;
+  target.scrollIntoView({ block: 'start', behavior: compatibility.reducedMotion ? 'auto' : 'smooth' });
+  target.focus({ preventScroll: true });
+});
 $('#workshop-placement').addEventListener('change', event => {
   workshopPlacementIndex = Number(event.currentTarget.value);
   renderWorkshopCandidate();
