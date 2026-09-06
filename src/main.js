@@ -5,6 +5,7 @@ import { workshopKeyboardPatch, workshopPlacementAtPoint, workshopProblemPoint }
 import { createWorkshopTimeline, recordWorkshopState, redoWorkshopState, undoWorkshopState } from './ui/workshopTimeline.js';
 import { createWorkshopReviewPacket, resolveWorkshopChallenge, workshopGitHubSummary, workshopReviewMarkdown } from './ui/workshopHandoff.js';
 import { WORKSHOP_JOURNEY_STEPS, workshopJourneyState } from './ui/workshopJourney.js';
+import { buildWorkshopFindings } from './ui/workshopFindings.js';
 import { escapeHtml, safeExternalUrl } from './ui/safeText.js';
 import { validatePublicRelease } from './ui/releaseValidation.js';
 import { loadIntegrityCheckedRelease } from './ui/shardedReleaseLoader.js';
@@ -233,11 +234,13 @@ function renderWorkshopValidation() {
   $('#workshop-fill-delta').textContent = validation.geometryValid
     ? `${validation.comparison.delta >= 0 ? '+' : '−'}${percent(Math.abs(validation.comparison.delta))}`
     : '—';
-  const findings = [
-    ...validation.preflight.checks.filter(item => !item.passed).map(item => `${item.label}: ${item.detail}`),
-    ...validation.assessment.verification.errors.map(item => `${item.code}: ${item.message}`)
-  ];
-  $('#workshop-findings').innerHTML = `<summary>Validation findings · ${findings.length}</summary><ul>${(findings.length ? findings : ['No local geometry or readiness failures were found. Independent verification and review are still required.']).slice(0, 30).map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`;
+  const report = buildWorkshopFindings(validation, workshopCandidate);
+  const findingItems = report.findings.length ? report.findings.map(item => {
+    const content = `<b>${escapeHtml(item.label)}</b><span>${escapeHtml(item.detail)}</span>`;
+    return item.placementIndex === null ? `<li>${content}</li>` : `<li><button type="button" data-workshop-finding-placement="${item.placementIndex}">${content}<small>Focus triangle ${item.placementIndex + 1}</small></button></li>`;
+  }).join('') : '<li>No local geometry or readiness failures were found. Independent verification and review are still required.</li>';
+  $('#workshop-findings').innerHTML = `<summary>Validation findings · ${report.findings.length}${report.truncated ? '+' : ''}</summary><ul>${findingItems}</ul>`;
+  if (!validation.geometryValid) $('#workshop-findings').open = true;
   const challenge = resolveWorkshopChallenge(communityChallenges?.challenges, selectedWorkshopBaseline());
   const reviewReady = validation.eligibleForContribution && challenge !== null;
   github.setAttribute('aria-disabled', String(!reviewReady));
@@ -1701,6 +1704,16 @@ $('#workshop-journey').addEventListener('click', event => {
 $('#workshop-placement').addEventListener('change', event => {
   workshopPlacementIndex = Number(event.currentTarget.value);
   renderWorkshopCandidate();
+});
+$('#workshop-findings').addEventListener('click', event => {
+  const control = event.target.closest('[data-workshop-finding-placement]');
+  if (!control || !workshopCandidate) return;
+  const index = Number(control.dataset.workshopFindingPlacement);
+  if (!Number.isInteger(index) || index < 0 || index >= workshopCandidate.solution.placements.length) return;
+  workshopPlacementIndex = index;
+  renderWorkshopCandidate();
+  $('#workshop-editor-status').textContent = `Triangle ${index + 1} selected from a local validation finding. Adjust it, then run local validation again.`;
+  $('#workshop-placement').focus();
 });
 function workshopPointForEvent(event) {
   const canvas = $('#workshop-canvas');
