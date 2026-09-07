@@ -32,7 +32,12 @@ function diagnosticFindings(candidate, codes, limit) {
   return findings;
 }
 
-export function buildWorkshopFindings(validation, candidate, limit = 30) {
+function samePlacement(left, right) {
+  return left && right && left.x === right.x && left.y === right.y &&
+    (left.angle ?? 0) === (right.angle ?? 0) && (left.reflect ?? false) === (right.reflect ?? false);
+}
+
+export function buildWorkshopFindings(validation, candidate, baseline = null, limit = 30) {
   const failures = validation?.preflight?.checks?.filter(item => !item.passed) ?? [];
   const errors = validation?.assessment?.verification?.errors ?? [];
   const codes = new Set(errors.map(error => error.code));
@@ -47,5 +52,20 @@ export function buildWorkshopFindings(validation, candidate, limit = 30) {
     findings.push({ code: error.code, placementIndex: match ? Number(match[1]) : null, label: error.code.replaceAll('_', ' ').toLowerCase(), detail: error.message });
     if (findings.length >= limit) break;
   }
-  return { findings: findings.slice(0, limit), truncated: diagnostics.length > diagnosticLimit };
+  const candidatePlacements = candidate?.solution?.placements ?? [];
+  const baselinePlacements = baseline?.solution?.placements ?? [];
+  const recoverable = findings.slice(0, limit).map(item => {
+    let placementIndex = item.placementIndex;
+    if (item.relatedPlacementIndex != null && samePlacement(candidatePlacements[placementIndex], baselinePlacements[placementIndex]) &&
+      !samePlacement(candidatePlacements[item.relatedPlacementIndex], baselinePlacements[item.relatedPlacementIndex])) {
+      placementIndex = item.relatedPlacementIndex;
+    }
+    return {
+      ...item,
+      placementIndex,
+      canRestore: placementIndex != null && baselinePlacements.length === candidatePlacements.length &&
+        !samePlacement(candidatePlacements[placementIndex], baselinePlacements[placementIndex])
+    };
+  });
+  return { findings: recoverable, truncated: diagnostics.length > diagnosticLimit };
 }

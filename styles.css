@@ -613,6 +613,7 @@ footer { padding:22px 3vw; display:flex; justify-content:space-between; backgrou
 #workshop-findings button { width:100%; min-height:44px; padding:9px 10px; border:1px solid var(--line); border-radius:8px; background:var(--paper); color:inherit; text-align:left; cursor:pointer; }
 #workshop-findings button:hover { border-color:var(--ink); }
 #workshop-findings button small { display:block; margin-top:4px; color:var(--accent); font:700 9px "DM Mono"; text-transform:uppercase; }
+#workshop-findings .workshop-finding-restore { margin-top:6px; border-color:var(--accent); color:var(--accent); font:700 9px "DM Mono"; text-transform:uppercase; }
 .workshop-handoff { grid-column:1/-1; display:grid; grid-template-columns:minmax(240px,.7fr) minmax(300px,1fr); gap:18px 28px; }
 .workshop-save-actions { margin:0; }
 .workshop-save-actions label { display:flex; min-height:44px; padding:9px 12px; align-items:center; justify-content:center; border:1px solid var(--ink); background:var(--panel); color:var(--ink); cursor:pointer; text-align:center; }

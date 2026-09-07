@@ -42,6 +42,7 @@ import {
   formatWorkshopHash,
   parseWorkshopHash,
   removeWorkshopPiece,
+  restoreWorkshopPlacement,
   restoreWorkshopBundle,
   updateWorkshopPlacement,
   updateWorkshopProvenance,
@@ -234,10 +235,12 @@ function renderWorkshopValidation() {
   $('#workshop-fill-delta').textContent = validation.geometryValid
     ? `${validation.comparison.delta >= 0 ? '+' : '−'}${percent(Math.abs(validation.comparison.delta))}`
     : '—';
-  const report = buildWorkshopFindings(validation, workshopCandidate);
+  const report = buildWorkshopFindings(validation, workshopCandidate, selectedWorkshopBaseline());
   const findingItems = report.findings.length ? report.findings.map(item => {
     const content = `<b>${escapeHtml(item.label)}</b><span>${escapeHtml(item.detail)}</span>`;
-    return item.placementIndex === null ? `<li>${content}</li>` : `<li><button type="button" data-workshop-finding-placement="${item.placementIndex}">${content}<small>Focus triangle ${item.placementIndex + 1}</small></button></li>`;
+    if (item.placementIndex === null) return `<li>${content}</li>`;
+    const restore = item.canRestore ? `<button type="button" class="workshop-finding-restore" data-workshop-restore-placement="${item.placementIndex}">Restore triangle ${item.placementIndex + 1} from verified baseline</button>` : '';
+    return `<li><button type="button" data-workshop-finding-placement="${item.placementIndex}">${content}<small>Focus triangle ${item.placementIndex + 1}</small></button>${restore}</li>`;
   }).join('') : '<li>No local geometry or readiness failures were found. Independent verification and review are still required.</li>';
   $('#workshop-findings').innerHTML = `<summary>Validation findings · ${report.findings.length}${report.truncated ? '+' : ''}</summary><ul>${findingItems}</ul>`;
   if (!validation.geometryValid) $('#workshop-findings').open = true;
@@ -1706,6 +1709,18 @@ $('#workshop-placement').addEventListener('change', event => {
   renderWorkshopCandidate();
 });
 $('#workshop-findings').addEventListener('click', event => {
+  const restore = event.target.closest('[data-workshop-restore-placement]');
+  if (restore && workshopCandidate) {
+    const index = Number(restore.dataset.workshopRestorePlacement);
+    try {
+      const candidate = restoreWorkshopPlacement(workshopCandidate, selectedWorkshopBaseline(), index);
+      workshopPlacementIndex = index;
+      commitWorkshopState(candidate, `Triangle ${index + 1} was restored from the verified baseline. Other draft edits were preserved; local validation is being refreshed.`);
+    } catch (error) {
+      $('#workshop-editor-status').textContent = error.message;
+    }
+    return;
+  }
   const control = event.target.closest('[data-workshop-finding-placement]');
   if (!control || !workshopCandidate) return;
   const index = Number(control.dataset.workshopFindingPlacement);

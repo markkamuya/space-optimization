@@ -109,6 +109,17 @@ export function updateWorkshopPlacement(candidate, index, patch) {
   return next;
 }
 
+export function restoreWorkshopPlacement(candidate, baseline, index) {
+  if (!sameProblem(candidate, baseline) || !Array.isArray(baseline?.solution?.placements) ||
+    baseline.solution.placements.length !== candidate?.solution?.placements?.length) {
+    throw new TypeError('The verified baseline does not match this candidate. No coordinates were changed.');
+  }
+  if (!Number.isInteger(index) || index < 0 || index >= candidate.solution.placements.length) {
+    throw new RangeError('Placement index is outside this candidate.');
+  }
+  return updateWorkshopPlacement(candidate, index, clone(baseline.solution.placements[index]));
+}
+
 export function addWorkshopPiece(candidate) {
   const next = normalizedCandidate(candidate, candidate.id.replace(/-candidate$/, ''));
   const triangle = homogeneousTriangle(next.problem);

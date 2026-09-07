@@ -8,6 +8,7 @@ import {
   formatWorkshopHash,
   parseWorkshopHash,
   removeWorkshopPiece,
+  restoreWorkshopPlacement,
   restoreWorkshopBundle,
   updateWorkshopPlacement,
   validateWorkshopCandidate
@@ -53,6 +54,16 @@ test('validation fails closed for invalid geometry and strips inflated evidence'
   assert.equal(validation.geometryValid, false);
   assert.equal(validation.eligibleForContribution, false);
   assert.match(validation.headline, /geometry check failed/i);
+});
+
+test('restoring one placement uses the exact baseline and preserves other draft edits', () => {
+  let candidate = createWorkshopCandidate(baseline);
+  candidate = updateWorkshopPlacement(candidate, 0, { x: -100 });
+  candidate = updateWorkshopPlacement(candidate, 1, { y: 123 });
+  const restored = restoreWorkshopPlacement(candidate, baseline, 0);
+  assert.deepEqual(restored.solution.placements[0], baseline.solution.placements[0]);
+  assert.deepEqual(restored.solution.placements[1], candidate.solution.placements[1]);
+  assert.throws(() => restoreWorkshopPlacement(candidate, { ...baseline, problem: { ...baseline.problem, width: 999 } }, 0), /does not match/i);
 });
 
 test('checksummed workshop bundles recover only against the exact release and baseline', async () => {
