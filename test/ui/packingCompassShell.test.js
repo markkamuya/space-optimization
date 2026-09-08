@@ -19,9 +19,11 @@ test('packing compass goal links are bounded and backward safe', () => {
 });
 
 test('production page exposes one task-first guided shell and an advanced escape hatch', async () => {
-  const [html, styles] = await Promise.all([
+  const [html, styles, shell, main] = await Promise.all([
     readFile(new URL('../../index.html', import.meta.url), 'utf8'),
-    readFile(new URL('../../styles.css', import.meta.url), 'utf8')
+    readFile(new URL('../../styles.css', import.meta.url), 'utf8'),
+    readFile(new URL('../../src/ui/packingCompassShell.js', import.meta.url), 'utf8'),
+    readFile(new URL('../../src/main.js', import.meta.url), 'utf8')
   ]);
   assert.match(html, /<section id="compass" class="packing-compass" aria-labelledby="compass-title">/);
   assert.match(html, /What are you trying to discover\?/);
@@ -30,4 +32,7 @@ test('production page exposes one task-first guided shell and an advanced escape
   assert.match(styles, /\.guided-mode main>:not\(#top\):not\(#browser-compatibility\):not\(#compass\)/);
   assert.match(styles, /\.guided-mode \.topbar nav,\.guided-mode \.contribute-link,\.guided-mode \.nav-toggle/);
   assert.match(styles, /@media\(max-width:720px\).*\.compass-goals\{grid-template-columns:1fr/s);
+  assert.match(shell, /advancedLink\.hidden = goal === 'improve'/);
+  assert.match(main, /continuation\.href = formatWorkshopHash\(record\.id\)/);
+  assert.match(main, /Continue with \$\{record\.id\} in Packing Workshop/);
 });

@@ -345,13 +345,21 @@ function syncPackingWorkshopFromLocation() {
 function renderPackingCompassAnswer(question) {
   const answer = matchCompassQuestion(canonicalRelease?.records, question);
   const answerRegion = $('#compass-answer');
+  const continuation = $('#compass-advanced-link');
   if (!answer.records.length) {
     answerRegion.innerHTML = '<div class="compass-answer-empty" role="alert"><h3>No verified answer is available.</h3><p>Change one choice or open Advanced mode. The Atlas will not substitute modeled or unverified data.</p></div>';
+    if (question.goal === 'improve') continuation.hidden = true;
   } else {
     const pairAction = answer.records.length === 2
       ? `<a class="compass-pair-action" href="${escapeHtml(formatComparisonHash({ left: answer.records[0].id, right: answer.records[1].id }))}">Compare these two verified results</a>`
       : '';
     answerRegion.innerHTML = `<p class="kicker">${answer.records.length === 2 ? 'TWO VERIFIED RESULTS' : 'MATCHING VERIFIED ANSWER'}</p><p class="compass-answer-scope">Your plain-language choices identify a nearby sampled Atlas problem. Evidence statements apply only to each exact triangle and rectangle shown below.</p>${answer.records.map(compassRecordMarkup).join('')}${pairAction}`;
+    if (question.goal === 'improve') {
+      const record = answer.records[0];
+      continuation.href = formatWorkshopHash(record.id);
+      continuation.textContent = `Continue with ${record.id} in Packing Workshop`;
+      continuation.hidden = false;
+    }
   }
   answerRegion.hidden = false;
   answerRegion.focus({ preventScroll: true });

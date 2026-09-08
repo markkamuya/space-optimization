@@ -68,6 +68,7 @@ export function setupPackingCompassShell({ document, location, history }) {
     guidance.textContent = selected.guidance;
     advancedLink.href = selected.destination;
     advancedLink.textContent = `Open ${selected.label.toLowerCase()} tools`;
+    advancedLink.hidden = goal === 'improve';
     if (focus) {
       workspace.scrollIntoView({ block: 'start' });
       title.focus({ preventScroll: true });

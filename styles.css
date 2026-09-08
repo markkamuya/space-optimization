@@ -546,7 +546,7 @@ footer { padding:22px 3vw; display:flex; justify-content:space-between; backgrou
 .compass-answer-card nav a:hover,.compass-answer-card nav a:focus-visible { background:var(--acid); }
 .compass-pair-action { display:flex; min-height:48px; margin-top:12px; padding:10px 14px; align-items:center; justify-content:center; border:1px solid var(--ink); background:var(--acid); font:700 9px "DM Mono"; text-align:center; text-transform:uppercase; }
 .compass-answer-empty { padding:18px; border-left:4px solid var(--orange); background:#fff0e8; }
-.compass-workspace>.secondary-action { grid-column:2; justify-self:start; display:inline-flex; align-items:center; text-decoration:none; font:600 9px "DM Mono"; text-transform:uppercase; }
+.compass-workspace>.secondary-action { grid-column:2; justify-self:start; display:inline-flex; min-height:44px; align-items:center; text-decoration:none; font:600 9px "DM Mono"; text-transform:uppercase; }
 .packing-workshop { padding:72px 6vw 96px; background:#111a17; color:#f7f3e8; }
 .workshop-heading { display:grid; grid-template-columns:minmax(0,1.25fr) minmax(280px,.75fr); gap:32px 8vw; align-items:end; }
 .workshop-heading h1 { max-width:850px; margin:6px 0 0; font-size:clamp(46px,6vw,88px); line-height:.92; letter-spacing:-.055em; }
