@@ -79,6 +79,8 @@
         </nav>
         <div class="workshop-layout" aria-busy="true">
           <section class="workshop-visual" aria-labelledby="workshop-baseline-title">
+            <label for="workshop-baseline-search">Find a verified baseline<input id="workshop-baseline-search" type="search" placeholder="Try 110, scalene, or 1.8" autocomplete="off" aria-describedby="workshop-baseline-status" disabled></label>
+            <p id="workshop-baseline-status" role="status" aria-live="polite">Verified baseline search is waiting for release data.</p>
             <label for="workshop-baseline">Verified baseline</label>
             <select id="workshop-baseline" disabled></select>
             <h2 id="workshop-baseline-title" tabindex="-1">No verified baseline loaded</h2>
@@ -163,6 +165,12 @@
             </ol>
           </section>
         </div>
+        <dialog id="workshop-baseline-dialog" aria-labelledby="workshop-baseline-dialog-title" aria-describedby="workshop-baseline-dialog-copy">
+          <h2 id="workshop-baseline-dialog-title">Protect this local draft before switching?</h2>
+          <p id="workshop-baseline-dialog-copy">The editor contains changes. Save a recovery copy for the current verified baseline before opening another one.</p>
+          <div><button id="workshop-baseline-cancel" type="button">Keep editing this draft</button><button id="workshop-baseline-confirm" type="button">Save recovery copy and switch</button></div>
+          <p id="workshop-baseline-dialog-status" role="status" aria-live="polite"></p>
+        </dialog>
       </section>
       <section class="hero">
         <div>

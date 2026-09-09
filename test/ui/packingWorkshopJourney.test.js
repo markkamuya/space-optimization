@@ -19,6 +19,11 @@ test('production exposes an evidence-safe browser Packing Workshop', async () =>
   for (const control of ['workshop-placement', 'workshop-x', 'workshop-y', 'workshop-angle', 'workshop-validate', 'workshop-save', 'workshop-recover', 'workshop-export', 'workshop-github']) {
     assert.match(html, new RegExp(`id="${control}"`));
   }
+  for (const control of ['workshop-baseline-search', 'workshop-baseline-status', 'workshop-baseline-dialog', 'workshop-baseline-confirm', 'workshop-baseline-cancel']) {
+    assert.match(html, new RegExp(`id="${control}"`));
+  }
+  assert.match(script, /findWorkshopBaselines/);
+  assert.match(script, /persistWorkshopRecovery/);
   for (const control of ['workshop-undo', 'workshop-redo']) assert.match(html, new RegExp(`id="${control}"`));
   for (const control of ['workshop-candidate-export', 'workshop-review-export']) assert.match(html, new RegExp(`id="${control}"`));
   assert.match(html, /id="workshop-github-copy"/);

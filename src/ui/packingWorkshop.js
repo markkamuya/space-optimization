@@ -120,6 +120,16 @@ export function restoreWorkshopPlacement(candidate, baseline, index) {
   return updateWorkshopPlacement(candidate, index, clone(baseline.solution.placements[index]));
 }
 
+export function persistWorkshopRecovery(storage, key, bundle) {
+  if (!storage || typeof key !== 'string' || !key || !bundle) return false;
+  try {
+    storage.setItem(`${key}:autosave`, JSON.stringify(bundle));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function addWorkshopPiece(candidate) {
   const next = normalizedCandidate(candidate, candidate.id.replace(/-candidate$/, ''));
   const triangle = homogeneousTriangle(next.problem);

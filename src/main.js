@@ -6,6 +6,7 @@ import { createWorkshopTimeline, recordWorkshopState, redoWorkshopState, undoWor
 import { createWorkshopReviewPacket, resolveWorkshopChallenge, workshopGitHubSummary, workshopReviewMarkdown } from './ui/workshopHandoff.js';
 import { WORKSHOP_JOURNEY_STEPS, workshopJourneyState } from './ui/workshopJourney.js';
 import { buildWorkshopFindings } from './ui/workshopFindings.js';
+import { findWorkshopBaselines } from './ui/workshopBaselineFinder.js';
 import { escapeHtml, safeExternalUrl } from './ui/safeText.js';
 import { validatePublicRelease } from './ui/releaseValidation.js';
 import { loadIntegrityCheckedRelease } from './ui/shardedReleaseLoader.js';
@@ -41,6 +42,7 @@ import {
   createWorkshopCandidate,
   formatWorkshopHash,
   parseWorkshopHash,
+  persistWorkshopRecovery,
   removeWorkshopPiece,
   restoreWorkshopPlacement,
   restoreWorkshopBundle,
@@ -81,6 +83,8 @@ let workshopTimeline = null;
 let workshopValidationTimer = null;
 let workshopAutosaveTimer = null;
 let workshopPreservation = 'none';
+let workshopDirty = false;
+let pendingWorkshopBaselineId = null;
 let communityChallenges = null;
 let comparisonWorkspaceIds = [];
 let comparisonWorkspaceStorage = 'available';
@@ -149,7 +153,7 @@ renderWorkshopJourney();
 function setWorkshopControls(enabled) {
   for (const selector of [
     '#workshop-baseline', '#workshop-placement', '#workshop-x', '#workshop-y', '#workshop-angle', '#workshop-reflect',
-    '#workshop-apply', '#workshop-remove-piece', '#workshop-add-piece', '#workshop-contributor',
+    '#workshop-baseline-search', '#workshop-apply', '#workshop-remove-piece', '#workshop-add-piece', '#workshop-contributor',
     '#workshop-method', '#workshop-version', '#workshop-seed', '#workshop-validate', '#workshop-save',
     '#workshop-recover', '#workshop-reset', '#workshop-file', '#workshop-export', '#workshop-copy-command'
   ]) $(selector).disabled = !enabled;
@@ -298,6 +302,7 @@ function renderWorkshopCandidate({ resetMetadata = false } = {}) {
 }
 
 function markWorkshopDirty(message) {
+  workshopDirty = true;
   workshopValidation = null;
   workshopPreservation = 'none';
   const claim = $('#workshop-claim-status');
@@ -305,6 +310,16 @@ function markWorkshopDirty(message) {
   claim.innerHTML = '<b>Unvalidated candidate</b><span>Coordinates changed. Run local validation before drawing any conclusion.</span>';
   $('#workshop-editor-status').textContent = message;
   renderWorkshopCandidate();
+}
+
+function renderWorkshopBaselineOptions(query = '') {
+  if (!canonicalRelease) return;
+  const result = findWorkshopBaselines(canonicalRelease.records, { query, currentId: workshopBaselineId });
+  const select = $('#workshop-baseline');
+  select.replaceChildren(...result.records.map(record => new Option(comparisonOptionLabel(record), record.id)));
+  select.value = workshopBaselineId;
+  const retained = result.currentIncludedOutsideQuery ? ' The current baseline remains available and no substitute was selected.' : '';
+  $('#workshop-baseline-status').textContent = `${result.matchCount} verified match${result.matchCount === 1 ? '' : 'es'}; showing ${result.records.length}${result.truncated ? ' bounded results' : ' result'}.${retained}`;
 }
 
 function startWorkshop(baselineId, { updateHash = false } = {}) {
@@ -316,6 +331,7 @@ function startWorkshop(baselineId, { updateHash = false } = {}) {
   workshopTimeline = createWorkshopTimeline(workshopCandidate);
   workshopValidation = null;
   workshopPreservation = 'none';
+  workshopDirty = false;
   $('#workshop-baseline').value = baseline.id;
   $('.workshop-layout').setAttribute('aria-busy', 'false');
   setWorkshopControls(true);
@@ -329,11 +345,10 @@ function startWorkshop(baselineId, { updateHash = false } = {}) {
 }
 
 function setupPackingWorkshop() {
-  const select = $('#workshop-baseline');
-  select.replaceChildren(...canonicalRelease.records.map(record => new Option(comparisonOptionLabel(record), record.id)));
   const linked = parseWorkshopHash(location.hash).record;
   const fallback = canonicalRelease.records.find(record => record.evidence.state !== 'proven_optimal' && record.bounds.optimalityGap > 0) ?? canonicalRelease.records[0];
   startWorkshop(canonicalRelease.records.some(record => record.id === linked) ? linked : fallback.id);
+  renderWorkshopBaselineOptions();
 }
 
 function syncPackingWorkshopFromLocation() {
@@ -1699,7 +1714,49 @@ async function loadV1Context() {
   }
 }
 
-$('#workshop-baseline').addEventListener('change', event => startWorkshop(event.currentTarget.value, { updateHash: true }));
+$('#workshop-baseline-search').addEventListener('input', event => renderWorkshopBaselineOptions(event.currentTarget.value));
+$('#workshop-baseline').addEventListener('change', event => {
+  const nextId = event.currentTarget.value;
+  if (!workshopDirty) {
+    startWorkshop(nextId, { updateHash: true });
+    renderWorkshopBaselineOptions($('#workshop-baseline-search').value);
+    return;
+  }
+  pendingWorkshopBaselineId = nextId;
+  event.currentTarget.value = workshopBaselineId;
+  $('#workshop-baseline-dialog-status').textContent = '';
+  $('#workshop-baseline-dialog').showModal();
+  $('#workshop-baseline-cancel').focus({ preventScroll: true });
+});
+$('#workshop-baseline-cancel').addEventListener('click', () => {
+  pendingWorkshopBaselineId = null;
+  $('#workshop-baseline-dialog').close();
+  $('#workshop-baseline').focus({ preventScroll: true });
+});
+$('#workshop-baseline-dialog').addEventListener('cancel', event => {
+  event.preventDefault();
+  pendingWorkshopBaselineId = null;
+  event.currentTarget.close();
+  $('#workshop-baseline').focus({ preventScroll: true });
+});
+$('#workshop-baseline-confirm').addEventListener('click', async () => {
+  const nextId = pendingWorkshopBaselineId;
+  if (!nextId) return;
+  const status = $('#workshop-baseline-dialog-status');
+  try {
+    applyWorkshopMetadata();
+    const bundle = await createWorkshopBundle({ candidate: workshopCandidate, baseline: selectedWorkshopBaseline(), validation: workshopValidation, release: canonicalRelease, integrity: releaseIntegrity, source: releaseSource });
+    if (!persistWorkshopRecovery(localStorage, workshopStorageKey(), bundle)) throw new Error('recovery_unavailable');
+    pendingWorkshopBaselineId = null;
+    $('#workshop-baseline-dialog').close();
+    startWorkshop(nextId, { updateHash: true });
+    $('#workshop-baseline-search').value = '';
+    renderWorkshopBaselineOptions();
+    $('#workshop-release-status').focus({ preventScroll: true });
+  } catch {
+    status.textContent = 'Recovery storage is unavailable, so the baseline was not changed. Export this draft before trying again.';
+  }
+});
 $('#workshop-journey').addEventListener('click', event => {
   const control = event.target.closest('[data-workshop-step]');
   if (!control) return;
@@ -1869,6 +1926,7 @@ $('#workshop-add-piece').addEventListener('click', () => {
 });
 for (const selector of ['#workshop-contributor', '#workshop-method', '#workshop-version', '#workshop-seed']) {
   $(selector).addEventListener('input', () => {
+    workshopDirty = true;
     workshopValidation = null;
     workshopPreservation = 'none';
     renderWorkshopValidation();

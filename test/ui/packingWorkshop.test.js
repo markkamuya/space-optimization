@@ -7,6 +7,7 @@ import {
   createWorkshopCandidate,
   formatWorkshopHash,
   parseWorkshopHash,
+  persistWorkshopRecovery,
   removeWorkshopPiece,
   restoreWorkshopPlacement,
   restoreWorkshopBundle,
@@ -64,6 +65,14 @@ test('restoring one placement uses the exact baseline and preserves other draft 
   assert.deepEqual(restored.solution.placements[0], baseline.solution.placements[0]);
   assert.deepEqual(restored.solution.placements[1], candidate.solution.placements[1]);
   assert.throws(() => restoreWorkshopPlacement(candidate, { ...baseline, problem: { ...baseline.problem, width: 999 } }, 0), /does not match/i);
+});
+
+test('baseline switching recovery fails closed when browser storage is unavailable', () => {
+  const writes = [];
+  assert.equal(persistWorkshopRecovery({ setItem: (...args) => writes.push(args) }, 'draft:key', { id: 'candidate' }), true);
+  assert.deepEqual(writes, [['draft:key:autosave', '{"id":"candidate"}']]);
+  assert.equal(persistWorkshopRecovery({ setItem: () => { throw new Error('quota'); } }, 'draft:key', { id: 'candidate' }), false);
+  assert.equal(persistWorkshopRecovery(null, 'draft:key', { id: 'candidate' }), false);
 });
 
 test('checksummed workshop bundles recover only against the exact release and baseline', async () => {
