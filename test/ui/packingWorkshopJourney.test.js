@@ -24,6 +24,7 @@ test('production exposes an evidence-safe browser Packing Workshop', async () =>
   }
   assert.match(script, /findWorkshopBaselines/);
   assert.match(script, /persistWorkshopRecovery/);
+  assert.match(script, /startWorkshop\(linked\);\s+renderWorkshopBaselineOptions\(\$\('#workshop-baseline-search'\)\.value\);/);
   for (const control of ['workshop-undo', 'workshop-redo']) assert.match(html, new RegExp(`id="${control}"`));
   for (const control of ['workshop-candidate-export', 'workshop-review-export']) assert.match(html, new RegExp(`id="${control}"`));
   assert.match(html, /id="workshop-github-copy"/);

@@ -354,7 +354,10 @@ function setupPackingWorkshop() {
 function syncPackingWorkshopFromLocation() {
   if (!canonicalRelease || !location.hash.startsWith('#workshop')) return;
   const linked = parseWorkshopHash(location.hash).record;
-  if (linked && linked !== workshopBaselineId && canonicalRelease.records.some(record => record.id === linked)) startWorkshop(linked);
+  if (linked && linked !== workshopBaselineId && canonicalRelease.records.some(record => record.id === linked)) {
+    startWorkshop(linked);
+    renderWorkshopBaselineOptions($('#workshop-baseline-search').value);
+  }
 }
 
 function renderPackingCompassAnswer(question) {
