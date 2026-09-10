@@ -18,6 +18,7 @@
     "atlas:release-ui-benchmark": "node benchmarks/releaseLoader.js",
     "atlas:large-release-ui-benchmark": "node benchmarks/largeReleaseUi.js",
     "atlas:workshop-ui-benchmark": "node benchmarks/workshopBaselineFinder.js",
+    "atlas:workshop-placement-benchmark": "node benchmarks/workshopPlacementNavigator.js",
     "atlas:browser-certify": "node scripts/certify-browser-ui.js",
     "atlas:accessibility-certify": "node scripts/certify-accessibility-ui.js",
     "atlas:visual-certify": "node scripts/certify-visual-ui.js",
