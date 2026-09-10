@@ -8,6 +8,7 @@ import { WORKSHOP_JOURNEY_STEPS, workshopJourneyState } from './ui/workshopJourn
 import { buildWorkshopFindings } from './ui/workshopFindings.js';
 import { findWorkshopBaselines } from './ui/workshopBaselineFinder.js';
 import { findWorkshopPlacements, workshopPlacementLabel } from './ui/workshopPlacementFinder.js';
+import { renderWorkshopFocusLens } from './ui/workshopFocusLens.js';
 import { escapeHtml, safeExternalUrl } from './ui/safeText.js';
 import { validatePublicRelease } from './ui/releaseValidation.js';
 import { loadIntegrityCheckedRelease } from './ui/shardedReleaseLoader.js';
@@ -294,6 +295,14 @@ function renderWorkshopCandidate({ resetMetadata = false } = {}) {
     normalizeProblem(workshopCandidate.problem),
     { state: workshopCandidate.solution.placements, showLabels: false, selectedIndex: workshopPlacementIndex }
   ));
+  requestAnimationFrame(() => {
+    const focus = renderWorkshopFocusLens($('#workshop-focus-canvas'), normalizeProblem(workshopCandidate.problem), workshopCandidate.solution.placements, workshopPlacementIndex);
+    if (!focus) return;
+    const angle = Number(placement.angle ?? 0);
+    const summary = `Triangle ${workshopPlacementIndex + 1} of ${workshopCandidate.solution.placements.length}: x ${Number(placement.x).toFixed(4)}, y ${Number(placement.y).toFixed(4)}, angle ${angle.toFixed(4)} radians${placement.reflect ? ', reflected' : ', not reflected'}. Enlarged local view includes ${focus.nearbyCount} visible triangle${focus.nearbyCount === 1 ? '' : 's'}; coordinates are unchanged.`;
+    $('#workshop-focus-canvas').setAttribute('aria-label', summary);
+    $('#workshop-focus-status').textContent = summary;
+  });
   renderWorkshopValidation();
   renderWorkshopHistory();
 }

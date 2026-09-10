@@ -93,6 +93,11 @@
             <p id="workshop-canvas-instructions">Select or drag a triangle. Arrow keys move the selected triangle by 0.01; hold Shift for 0.1. Press R to rotate.</p>
             <p id="workshop-canvas-summary" class="sr-only">No candidate packing is available.</p>
             <canvas id="workshop-canvas" width="920" height="560" role="img" tabindex="0" aria-label="Interactive Packing Workshop candidate" aria-describedby="workshop-canvas-instructions workshop-canvas-summary"></canvas>
+            <figure class="workshop-focus-lens" aria-labelledby="workshop-focus-title">
+              <figcaption><b id="workshop-focus-title">Selected triangle focus</b><span>Enlarged local view only; exact coordinates and container boundaries are unchanged.</span></figcaption>
+              <canvas id="workshop-focus-canvas" width="600" height="260" role="img" aria-describedby="workshop-focus-status"></canvas>
+              <p id="workshop-focus-status" role="status" aria-live="polite">Choose a verified baseline to inspect one triangle.</p>
+            </figure>
             <div id="workshop-claim-status" class="workshop-claim-status untested"><b>Unvalidated candidate</b><span>Run local validation before drawing any conclusion.</span></div>
           </section>
           <section class="workshop-editor" aria-labelledby="workshop-editor-title">
