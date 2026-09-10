@@ -97,7 +97,13 @@
           </section>
           <section class="workshop-editor" aria-labelledby="workshop-editor-title">
             <div><p class="kicker">COORDINATE EDITOR</p><h2 id="workshop-editor-title" tabindex="-1">Move one triangle precisely.</h2><p>Select a placement, enter finite coordinates and angle, then apply. Reflection stays locked when the verified problem forbids it.</p></div>
-            <label>Triangle placement<select id="workshop-placement" disabled></select></label>
+            <label for="workshop-placement-search">Find a triangle<input id="workshop-placement-search" type="search" inputmode="search" placeholder="Try 208, x 4.2, or y 3" autocomplete="off" aria-describedby="workshop-placement-status" disabled></label>
+            <p id="workshop-placement-status" role="status" aria-live="polite">Triangle navigation is waiting for a verified baseline.</p>
+            <label for="workshop-placement">Selected triangle<select id="workshop-placement" disabled></select></label>
+            <div class="workshop-placement-actions" role="group" aria-label="Step through triangles">
+              <button id="workshop-placement-previous" type="button" disabled>← Previous triangle</button>
+              <button id="workshop-placement-next" type="button" disabled>Next triangle →</button>
+            </div>
             <div class="workshop-coordinate-grid">
               <label>X coordinate<input id="workshop-x" type="number" step="0.01" inputmode="decimal" disabled></label>
               <label>Y coordinate<input id="workshop-y" type="number" step="0.01" inputmode="decimal" disabled></label>

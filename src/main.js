@@ -7,6 +7,7 @@ import { createWorkshopReviewPacket, resolveWorkshopChallenge, workshopGitHubSum
 import { WORKSHOP_JOURNEY_STEPS, workshopJourneyState } from './ui/workshopJourney.js';
 import { buildWorkshopFindings } from './ui/workshopFindings.js';
 import { findWorkshopBaselines } from './ui/workshopBaselineFinder.js';
+import { findWorkshopPlacements, workshopPlacementLabel } from './ui/workshopPlacementFinder.js';
 import { escapeHtml, safeExternalUrl } from './ui/safeText.js';
 import { validatePublicRelease } from './ui/releaseValidation.js';
 import { loadIntegrityCheckedRelease } from './ui/shardedReleaseLoader.js';
@@ -152,7 +153,7 @@ renderWorkshopJourney();
 
 function setWorkshopControls(enabled) {
   for (const selector of [
-    '#workshop-baseline', '#workshop-placement', '#workshop-x', '#workshop-y', '#workshop-angle', '#workshop-reflect',
+    '#workshop-baseline', '#workshop-placement', '#workshop-placement-search', '#workshop-placement-previous', '#workshop-placement-next', '#workshop-x', '#workshop-y', '#workshop-angle', '#workshop-reflect',
     '#workshop-baseline-search', '#workshop-apply', '#workshop-remove-piece', '#workshop-add-piece', '#workshop-contributor',
     '#workshop-method', '#workshop-version', '#workshop-seed', '#workshop-validate', '#workshop-save',
     '#workshop-recover', '#workshop-reset', '#workshop-file', '#workshop-export', '#workshop-copy-command'
@@ -266,11 +267,7 @@ function renderWorkshopCandidate({ resetMetadata = false } = {}) {
   const baseline = selectedWorkshopBaseline();
   if (!baseline || !workshopCandidate) return;
   workshopPlacementIndex = Math.min(workshopPlacementIndex, workshopCandidate.solution.placements.length - 1);
-  const placementSelect = $('#workshop-placement');
-  if (placementSelect.options.length !== workshopCandidate.solution.placements.length) {
-    placementSelect.replaceChildren(...workshopCandidate.solution.placements.map((_, index) => new Option(`Triangle ${index + 1}`, String(index))));
-  }
-  placementSelect.value = String(workshopPlacementIndex);
+  renderWorkshopPlacementOptions($('#workshop-placement-search').value);
   const placement = workshopCandidate.solution.placements[workshopPlacementIndex];
   $('#workshop-x').value = String(placement.x);
   $('#workshop-y').value = String(placement.y);
@@ -299,6 +296,19 @@ function renderWorkshopCandidate({ resetMetadata = false } = {}) {
   ));
   renderWorkshopValidation();
   renderWorkshopHistory();
+}
+
+function renderWorkshopPlacementOptions(query = '') {
+  if (!workshopCandidate) return;
+  const result = findWorkshopPlacements(workshopCandidate.solution.placements, { query, currentIndex: workshopPlacementIndex });
+  const select = $('#workshop-placement');
+  select.replaceChildren(...result.placements.map(({ placement, index }) => new Option(workshopPlacementLabel(placement, index), String(index))));
+  select.value = String(workshopPlacementIndex);
+  const retained = result.currentIncludedOutsideQuery ? ' The selected triangle remains available and was not changed.' : '';
+  const shownLabel = result.truncated ? 'bounded results' : result.placements.length === 1 ? 'result' : 'results';
+  $('#workshop-placement-status').textContent = `${result.matchCount} match${result.matchCount === 1 ? '' : 'es'} across ${result.total} triangles; showing ${result.placements.length} ${shownLabel}.${retained}`;
+  $('#workshop-placement-previous').disabled = workshopPlacementIndex <= 0;
+  $('#workshop-placement-next').disabled = workshopPlacementIndex >= result.total - 1;
 }
 
 function markWorkshopDirty(message) {
@@ -332,6 +342,7 @@ function startWorkshop(baselineId, { updateHash = false } = {}) {
   workshopValidation = null;
   workshopPreservation = 'none';
   workshopDirty = false;
+  $('#workshop-placement-search').value = '';
   $('#workshop-baseline').value = baseline.id;
   $('.workshop-layout').setAttribute('aria-busy', 'false');
   setWorkshopControls(true);
@@ -1718,6 +1729,7 @@ async function loadV1Context() {
 }
 
 $('#workshop-baseline-search').addEventListener('input', event => renderWorkshopBaselineOptions(event.currentTarget.value));
+$('#workshop-placement-search').addEventListener('input', event => renderWorkshopPlacementOptions(event.currentTarget.value));
 $('#workshop-baseline').addEventListener('change', event => {
   const nextId = event.currentTarget.value;
   if (!workshopDirty) {
@@ -1776,6 +1788,14 @@ $('#workshop-placement').addEventListener('change', event => {
   workshopPlacementIndex = Number(event.currentTarget.value);
   renderWorkshopCandidate();
 });
+for (const [selector, direction] of [['#workshop-placement-previous', -1], ['#workshop-placement-next', 1]]) {
+  $(selector).addEventListener('click', () => {
+    if (!workshopCandidate) return;
+    workshopPlacementIndex = Math.max(0, Math.min(workshopCandidate.solution.placements.length - 1, workshopPlacementIndex + direction));
+    renderWorkshopCandidate();
+    $('#workshop-placement').focus({ preventScroll: true });
+  });
+}
 $('#workshop-findings').addEventListener('click', event => {
   const restore = event.target.closest('[data-workshop-restore-placement]');
   if (restore && workshopCandidate) {
