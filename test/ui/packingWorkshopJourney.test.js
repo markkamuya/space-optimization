@@ -25,6 +25,7 @@ test('production exposes an evidence-safe browser Packing Workshop', async () =>
   assert.match(script, /findWorkshopBaselines/);
   assert.match(script, /findWorkshopPlacements/);
   assert.match(script, /renderWorkshopFocusLens/);
+  assert.match(script, /validateWorkshopCoordinateInput/);
   assert.match(script, /persistWorkshopRecovery/);
   assert.match(script, /startWorkshop\(linked\);\s+renderWorkshopBaselineOptions\(\$\('#workshop-baseline-search'\)\.value\);/);
   for (const control of ['workshop-undo', 'workshop-redo']) assert.match(html, new RegExp(`id="${control}"`));
@@ -37,6 +38,8 @@ test('production exposes an evidence-safe browser Packing Workshop', async () =>
   }
   assert.match(html, /data-workshop-step="workshop-baseline-title" aria-current="step"/);
   assert.match(html, /Angle \(radians\)/);
+  assert.match(html, /id="workshop-coordinate-error"[^>]+role="alert"[^>]+aria-live="assertive"/);
+  assert.equal((html.match(/aria-describedby="workshop-coordinate-error"/g) ?? []).length, 3);
   assert.match(html, /tabindex="0" aria-label="Interactive Packing Workshop candidate"/);
   assert.match(html, /id="workshop-focus-canvas"[^>]+role="img"[^>]+aria-describedby="workshop-focus-status"/);
   assert.match(html, /Enlarged local view only; exact coordinates and container boundaries are unchanged/);

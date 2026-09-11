@@ -604,6 +604,9 @@ footer { padding:22px 3vw; display:flex; justify-content:space-between; backgrou
 .workshop-reflect input { width:22px; min-height:22px; margin:0; }
 .workshop-nudges,.workshop-placement-actions,.workshop-piece-actions,.workshop-history-actions,.workshop-save-actions,.workshop-export-actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:16px; }
 #workshop-placement-status { min-height:32px; margin:6px 0 10px; color:var(--muted); font:9px/1.5 "DM Mono"; }
+.workshop-coordinate-error { margin:10px 0 0; padding:10px 12px; border-left:4px solid #b33a2b; background:#ffe8e2; color:#79251c; font:9px/1.5 "DM Mono"; }
+.workshop-coordinate-error[hidden] { display:none; }
+.workshop-coordinate-grid input[aria-invalid="true"] { border:2px solid #b33a2b; outline:2px solid transparent; }
 .workshop-piece-actions { grid-template-columns:1fr; }
 #workshop-editor-status,#workshop-save-status { min-height:38px; margin:14px 0 0; color:var(--muted); font:9px/1.55 "DM Mono"; }
 .workshop-validation>.workshop-primary { width:100%; margin-top:18px; }

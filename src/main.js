@@ -9,6 +9,7 @@ import { buildWorkshopFindings } from './ui/workshopFindings.js';
 import { findWorkshopBaselines } from './ui/workshopBaselineFinder.js';
 import { findWorkshopPlacements, workshopPlacementLabel } from './ui/workshopPlacementFinder.js';
 import { renderWorkshopFocusLens } from './ui/workshopFocusLens.js';
+import { validateWorkshopCoordinateInput } from './ui/workshopCoordinateInput.js';
 import { escapeHtml, safeExternalUrl } from './ui/safeText.js';
 import { validatePublicRelease } from './ui/releaseValidation.js';
 import { loadIntegrityCheckedRelease } from './ui/shardedReleaseLoader.js';
@@ -274,6 +275,9 @@ function renderWorkshopCandidate({ resetMetadata = false } = {}) {
   $('#workshop-y').value = String(placement.y);
   $('#workshop-angle').value = String(placement.angle ?? 0);
   $('#workshop-reflect').checked = placement.reflect ?? false;
+  for (const field of ['#workshop-x', '#workshop-y', '#workshop-angle']) $(field).removeAttribute('aria-invalid');
+  $('#workshop-coordinate-error').hidden = true;
+  $('#workshop-coordinate-error').textContent = '';
   $('#workshop-reflect').disabled = !baseline.problem.allowReflection;
   $('#workshop-remove-piece').disabled = workshopCandidate.solution.placements.length <= 1;
   $('#workshop-add-piece').disabled = workshopCandidate.solution.placements.length >= workshopCandidate.problem.maxPieces;
@@ -1911,13 +1915,23 @@ $('#workshop-redo').addEventListener('click', () => {
   scheduleWorkshopValidation();
 });
 $('#workshop-apply').addEventListener('click', () => {
+  const input = validateWorkshopCoordinateInput({
+    x: $('#workshop-x').value,
+    y: $('#workshop-y').value,
+    angle: $('#workshop-angle').value,
+    reflect: $('#workshop-reflect').checked
+  });
+  for (const field of ['x', 'y', 'angle']) $(`#workshop-${field}`).removeAttribute('aria-invalid');
+  if (!input.valid) {
+    for (const issue of input.issues) $(`#workshop-${issue.field}`).setAttribute('aria-invalid', 'true');
+    const error = $('#workshop-coordinate-error');
+    error.textContent = `${input.issues.map(issue => issue.message).join(' ')} The candidate was not changed.`;
+    error.hidden = false;
+    $(`#workshop-${input.issues[0].field}`).focus({ preventScroll: true });
+    return;
+  }
   try {
-    const nextCandidate = updateWorkshopPlacement(workshopCandidate, workshopPlacementIndex, {
-      x: Number($('#workshop-x').value),
-      y: Number($('#workshop-y').value),
-      angle: Number($('#workshop-angle').value),
-      reflect: $('#workshop-reflect').checked
-    });
+    const nextCandidate = updateWorkshopPlacement(workshopCandidate, workshopPlacementIndex, input.values);
     commitWorkshopState(nextCandidate, `Triangle ${workshopPlacementIndex + 1} coordinates were applied locally.`);
   } catch (error) {
     $('#workshop-editor-status').textContent = `${error.message} The candidate was not changed.`;

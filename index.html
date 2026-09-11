@@ -110,11 +110,12 @@
               <button id="workshop-placement-next" type="button" disabled>Next triangle →</button>
             </div>
             <div class="workshop-coordinate-grid">
-              <label>X coordinate<input id="workshop-x" type="number" step="0.01" inputmode="decimal" disabled></label>
-              <label>Y coordinate<input id="workshop-y" type="number" step="0.01" inputmode="decimal" disabled></label>
-              <label>Angle (radians)<input id="workshop-angle" type="number" step="0.01" inputmode="decimal" disabled></label>
+              <label>X coordinate<input id="workshop-x" type="number" step="0.01" inputmode="decimal" aria-describedby="workshop-coordinate-error" disabled></label>
+              <label>Y coordinate<input id="workshop-y" type="number" step="0.01" inputmode="decimal" aria-describedby="workshop-coordinate-error" disabled></label>
+              <label>Angle (radians)<input id="workshop-angle" type="number" step="0.01" inputmode="decimal" aria-describedby="workshop-coordinate-error" disabled></label>
               <label class="workshop-reflect"><input id="workshop-reflect" type="checkbox" disabled> Reflect triangle</label>
             </div>
+            <p id="workshop-coordinate-error" class="workshop-coordinate-error" role="alert" aria-live="assertive" hidden></p>
             <div class="workshop-nudges" role="group" aria-label="Nudge selected triangle">
               <button type="button" data-workshop-nudge="x:-0.1" disabled>← X −0.1</button>
               <button type="button" data-workshop-nudge="x:0.1" disabled>X +0.1 →</button>
