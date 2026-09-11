@@ -19,13 +19,15 @@ test('production exposes an evidence-safe browser Packing Workshop', async () =>
   for (const control of ['workshop-placement', 'workshop-x', 'workshop-y', 'workshop-angle', 'workshop-validate', 'workshop-save', 'workshop-recover', 'workshop-export', 'workshop-github']) {
     assert.match(html, new RegExp(`id="${control}"`));
   }
-  for (const control of ['workshop-baseline-search', 'workshop-baseline-status', 'workshop-baseline-dialog', 'workshop-baseline-confirm', 'workshop-baseline-cancel', 'workshop-placement-search', 'workshop-placement-status', 'workshop-placement-previous', 'workshop-placement-next']) {
+  for (const control of ['workshop-baseline-search', 'workshop-baseline-status', 'workshop-baseline-dialog', 'workshop-baseline-confirm', 'workshop-baseline-cancel', 'workshop-placement-search', 'workshop-placement-status', 'workshop-placement-previous', 'workshop-placement-next', 'workshop-destructive-dialog', 'workshop-destructive-confirm', 'workshop-destructive-cancel']) {
     assert.match(html, new RegExp(`id="${control}"`));
   }
   assert.match(script, /findWorkshopBaselines/);
   assert.match(script, /findWorkshopPlacements/);
   assert.match(script, /renderWorkshopFocusLens/);
   assert.match(script, /validateWorkshopCoordinateInput/);
+  assert.match(script, /workshopDestructivePrompt/);
+  assert.match(script, /persistWorkshopRecovery\(localStorage, workshopStorageKey\(\), bundle\)/);
   assert.match(script, /persistWorkshopRecovery/);
   assert.match(script, /startWorkshop\(linked\);\s+renderWorkshopBaselineOptions\(\$\('#workshop-baseline-search'\)\.value\);/);
   for (const control of ['workshop-undo', 'workshop-redo']) assert.match(html, new RegExp(`id="${control}"`));

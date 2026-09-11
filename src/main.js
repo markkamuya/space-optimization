@@ -10,6 +10,7 @@ import { findWorkshopBaselines } from './ui/workshopBaselineFinder.js';
 import { findWorkshopPlacements, workshopPlacementLabel } from './ui/workshopPlacementFinder.js';
 import { renderWorkshopFocusLens } from './ui/workshopFocusLens.js';
 import { validateWorkshopCoordinateInput } from './ui/workshopCoordinateInput.js';
+import { requiresWorkshopResetConfirmation, workshopDestructivePrompt } from './ui/workshopEditSafety.js';
 import { escapeHtml, safeExternalUrl } from './ui/safeText.js';
 import { validatePublicRelease } from './ui/releaseValidation.js';
 import { loadIntegrityCheckedRelease } from './ui/shardedReleaseLoader.js';
@@ -88,6 +89,8 @@ let workshopAutosaveTimer = null;
 let workshopPreservation = 'none';
 let workshopDirty = false;
 let pendingWorkshopBaselineId = null;
+let pendingWorkshopDestructiveAction = null;
+let workshopDestructiveReturnFocus = null;
 let communityChallenges = null;
 let comparisonWorkspaceIds = [];
 let comparisonWorkspaceStorage = 'available';
@@ -322,6 +325,29 @@ function renderWorkshopPlacementOptions(query = '') {
   $('#workshop-placement-status').textContent = `${result.matchCount} match${result.matchCount === 1 ? '' : 'es'} across ${result.total} triangles; showing ${result.placements.length} ${shownLabel}.${retained}`;
   $('#workshop-placement-previous').disabled = workshopPlacementIndex <= 0;
   $('#workshop-placement-next').disabled = workshopPlacementIndex >= result.total - 1;
+}
+
+function openWorkshopDestructiveDialog(action, returnFocus) {
+  const prompt = workshopDestructivePrompt(action, {
+    placementIndex: workshopPlacementIndex,
+    placementCount: workshopCandidate?.solution.placements.length ?? 0
+  });
+  if (!prompt) return;
+  pendingWorkshopDestructiveAction = action;
+  workshopDestructiveReturnFocus = returnFocus;
+  $('#workshop-destructive-dialog-title').textContent = prompt.title;
+  $('#workshop-destructive-dialog-copy').textContent = prompt.copy;
+  $('#workshop-destructive-confirm').textContent = prompt.confirmLabel;
+  $('#workshop-destructive-dialog-status').textContent = '';
+  $('#workshop-destructive-dialog').showModal();
+  $('#workshop-destructive-cancel').focus({ preventScroll: true });
+}
+
+function closeWorkshopDestructiveDialog() {
+  pendingWorkshopDestructiveAction = null;
+  $('#workshop-destructive-dialog').close();
+  workshopDestructiveReturnFocus?.focus({ preventScroll: true });
+  workshopDestructiveReturnFocus = null;
 }
 
 function markWorkshopDirty(message) {
@@ -1951,7 +1977,7 @@ $('.workshop-nudges').addEventListener('click', event => {
     $('#workshop-editor-status').textContent = `${error.message} The candidate was not changed.`;
   }
 });
-$('#workshop-remove-piece').addEventListener('click', () => {
+function removeSelectedWorkshopPiece() {
   try {
     const nextCandidate = removeWorkshopPiece(workshopCandidate, workshopPlacementIndex);
     workshopCandidate = nextCandidate;
@@ -1960,6 +1986,9 @@ $('#workshop-remove-piece').addEventListener('click', () => {
   } catch (error) {
     $('#workshop-editor-status').textContent = `${error.message} The candidate was not changed.`;
   }
+}
+$('#workshop-remove-piece').addEventListener('click', event => {
+  openWorkshopDestructiveDialog('remove', event.currentTarget);
 });
 $('#workshop-add-piece').addEventListener('click', () => {
   try {
@@ -2021,9 +2050,43 @@ $('#workshop-recover').addEventListener('click', async () => {
   renderWorkshopCandidate({ resetMetadata: true });
   status.textContent = `Saved work recovered for ${workshopBaselineId}. Run local validation again before using its conclusions.`;
 });
-$('#workshop-reset').addEventListener('click', () => {
-  startWorkshop(workshopBaselineId);
-  $('#workshop-save-status').textContent = 'Candidate reset to the verified baseline. Saved browser work was not deleted.';
+$('#workshop-reset').addEventListener('click', event => {
+  if (!requiresWorkshopResetConfirmation(workshopDirty)) {
+    $('#workshop-save-status').textContent = 'This candidate already matches the verified baseline. Nothing was reset.';
+    return;
+  }
+  openWorkshopDestructiveDialog('reset', event.currentTarget);
+});
+$('#workshop-destructive-cancel').addEventListener('click', closeWorkshopDestructiveDialog);
+$('#workshop-destructive-dialog').addEventListener('cancel', event => {
+  event.preventDefault();
+  closeWorkshopDestructiveDialog();
+});
+$('#workshop-destructive-confirm').addEventListener('click', async () => {
+  const action = pendingWorkshopDestructiveAction;
+  const status = $('#workshop-destructive-dialog-status');
+  if (action === 'remove') {
+    pendingWorkshopDestructiveAction = null;
+    $('#workshop-destructive-dialog').close();
+    workshopDestructiveReturnFocus = null;
+    removeSelectedWorkshopPiece();
+    $('#workshop-placement').focus({ preventScroll: true });
+    return;
+  }
+  if (action !== 'reset') return;
+  try {
+    applyWorkshopMetadata();
+    const bundle = await createWorkshopBundle({ candidate: workshopCandidate, baseline: selectedWorkshopBaseline(), validation: workshopValidation, release: canonicalRelease, integrity: releaseIntegrity, source: releaseSource });
+    if (!persistWorkshopRecovery(localStorage, workshopStorageKey(), bundle)) throw new Error('recovery_unavailable');
+    pendingWorkshopDestructiveAction = null;
+    $('#workshop-destructive-dialog').close();
+    workshopDestructiveReturnFocus = null;
+    startWorkshop(workshopBaselineId);
+    $('#workshop-save-status').textContent = 'Candidate reset to the verified baseline. The previous local candidate was saved as a checksummed browser recovery copy.';
+    $('#workshop-release-status').focus({ preventScroll: true });
+  } catch {
+    status.textContent = 'Recovery storage is unavailable, so the candidate was not reset. Export this draft before trying again.';
+  }
 });
 $('#workshop-file').addEventListener('change', async event => {
   const input = event.currentTarget;
