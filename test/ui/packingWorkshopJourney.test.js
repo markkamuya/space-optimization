@@ -32,6 +32,7 @@ test('production exposes an evidence-safe browser Packing Workshop', async () =>
   assert.match(script, /startWorkshop\(linked\);\s+renderWorkshopBaselineOptions\(\$\('#workshop-baseline-search'\)\.value\);/);
   for (const control of ['workshop-undo', 'workshop-redo']) assert.match(html, new RegExp(`id="${control}"`));
   for (const control of ['workshop-candidate-export', 'workshop-review-export']) assert.match(html, new RegExp(`id="${control}"`));
+  for (const control of ['workshop-contribution-plan', 'workshop-contribution-plan-status', 'workshop-contribution-plan-steps', 'workshop-contribution-copy']) assert.match(html, new RegExp(`id="${control}"`));
   assert.match(html, /id="workshop-github-copy"/);
   assert.match(html, /id="workshop-journey" class="workshop-journey" aria-label="Packing Workshop steps"/);
   for (const step of ['workshop-baseline-title', 'workshop-editor-title', 'workshop-validation-title', 'workshop-handoff-title']) {
@@ -59,6 +60,9 @@ test('production exposes an evidence-safe browser Packing Workshop', async () =>
   assert.match(script, /workshopReviewMarkdown/);
   assert.match(script, /resolveWorkshopChallenge/);
   assert.match(script, /workshopGitHubSummary/);
+  assert.match(script, /createWorkshopContributionPlan/);
+  assert.match(script, /workshopContributionMarkdown/);
+  assert.match(script, /Nothing was uploaded or submitted/);
   assert.match(script, /workshopJourneyState/);
   assert.match(script, /workshopPreservation/);
   assert.match(script, /#workshop-journey.*addEventListener\('click'/);

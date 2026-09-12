@@ -3,7 +3,7 @@ import { normalizeProblem } from './core/problem.js';
 import { renderPacking } from './rendering/canvas.js';
 import { workshopKeyboardPatch, workshopPlacementAtPoint, workshopProblemPoint } from './ui/workshopInteraction.js';
 import { createWorkshopTimeline, recordWorkshopState, redoWorkshopState, undoWorkshopState } from './ui/workshopTimeline.js';
-import { createWorkshopReviewPacket, resolveWorkshopChallenge, workshopGitHubSummary, workshopReviewMarkdown } from './ui/workshopHandoff.js';
+import { WORKSHOP_REVIEW_PACKET_FORMAT, createWorkshopContributionPlan, createWorkshopReviewPacket, resolveWorkshopChallenge, workshopContributionMarkdown, workshopGitHubSummary, workshopReviewMarkdown } from './ui/workshopHandoff.js';
 import { WORKSHOP_JOURNEY_STEPS, workshopJourneyState } from './ui/workshopJourney.js';
 import { buildWorkshopFindings } from './ui/workshopFindings.js';
 import { findWorkshopBaselines } from './ui/workshopBaselineFinder.js';
@@ -235,6 +235,7 @@ function renderWorkshopValidation() {
     $('#workshop-candidate-export').disabled = true;
     $('#workshop-review-export').disabled = true;
     $('#workshop-github-copy').disabled = true;
+    renderWorkshopContributionPlan(null, null);
     renderWorkshopJourney();
     return;
   }
@@ -262,10 +263,36 @@ function renderWorkshopValidation() {
   $('#workshop-candidate-export').disabled = !validation.eligibleForContribution;
   $('#workshop-review-export').disabled = !validation.eligibleForContribution;
   $('#workshop-github-copy').disabled = !reviewReady;
+  renderWorkshopContributionPlan(validation, challenge);
   const claim = $('#workshop-claim-status');
   claim.className = `workshop-claim-status ${validation.eligibleForContribution ? 'candidate-improvement' : validation.geometryValid ? 'locally-valid' : 'invalid'}`;
   claim.innerHTML = `<b>${escapeHtml(validation.headline)}</b><span>${escapeHtml(validation.boundary)}</span>`;
   renderWorkshopJourney();
+}
+
+function renderWorkshopContributionPlan(validation, challenge) {
+  const status = $('#workshop-contribution-plan-status');
+  const steps = $('#workshop-contribution-plan-steps');
+  const copy = $('#workshop-contribution-copy');
+  copy.disabled = true;
+  if (!validation?.eligibleForContribution) {
+    status.textContent = 'The handoff stays locked until local geometry, provenance, and incumbent checks support an improvement candidate.';
+    steps.innerHTML = '<li>Nothing has been submitted from this browser.</li><li>Published evidence remains unchanged.</li>';
+    return;
+  }
+  if (!challenge) {
+    status.textContent = 'Local checks support a candidate, but no exact open challenge is bound to this baseline. Export the reviewer packet and request maintainer guidance.';
+    steps.innerHTML = '<li>Export the candidate and reviewer packet.</li><li>Do not choose a repository destination by guesswork.</li>';
+    return;
+  }
+  const preview = createWorkshopContributionPlan({
+    format: WORKSHOP_REVIEW_PACKET_FORMAT,
+    candidateFile: `${workshopCandidate.id}.json`,
+    boundary: validation.boundary
+  }, challenge);
+  status.textContent = `Plan ready for ${challenge.challengeId}. Copying it does not create a branch, upload files, or open a pull request.`;
+  steps.innerHTML = preview.steps.map(step => `<li>${escapeHtml(step)}</li>`).join('');
+  copy.disabled = false;
 }
 
 function renderWorkshopCandidate({ resetMetadata = false } = {}) {
@@ -2185,6 +2212,19 @@ $('#workshop-github-copy').addEventListener('click', async () => {
     status.textContent = `Review summary copied for ${challenge.challengeId}. Attach candidate files and verifier output separately; nothing was posted.`;
   } catch {
     status.textContent = 'GitHub review handoff requires an eligible candidate and an exact open challenge for this baseline.';
+  }
+});
+$('#workshop-contribution-copy').addEventListener('click', async () => {
+  const status = $('#workshop-save-status');
+  try {
+    const { packet } = await currentWorkshopReview();
+    const challenge = resolveWorkshopChallenge(communityChallenges?.challenges, selectedWorkshopBaseline());
+    if (!challenge) throw new Error('No exact challenge');
+    const plan = createWorkshopContributionPlan(packet, challenge);
+    await navigator.clipboard.writeText(workshopContributionMarkdown(plan));
+    status.textContent = `Complete Git workflow copied for ${challenge.challengeId}. Nothing was uploaded or submitted; follow each review step in the repository.`;
+  } catch {
+    status.textContent = 'The Git workflow remains locked until local checks support an eligible candidate bound to an exact open challenge.';
   }
 });
 $('#workshop-copy-command').addEventListener('click', async () => {
