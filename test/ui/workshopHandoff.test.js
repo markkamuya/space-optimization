@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createWorkshopReviewPacket, resolveWorkshopChallenge, workshopGitHubSummary, workshopReviewMarkdown } from '../../src/ui/workshopHandoff.js';
+import { createWorkshopContributionPlan, createWorkshopReviewPacket, resolveWorkshopChallenge, workshopContributionMarkdown, workshopGitHubSummary, workshopReviewMarkdown } from '../../src/ui/workshopHandoff.js';
 
 const bundle = {
   checksum: 'sha256:abc',
@@ -56,4 +56,24 @@ test('GitHub summary is bounded to review identity and never embeds candidate pa
   assert.match(summary, /Workshop checksum: sha256:abc/);
   assert.doesNotMatch(summary, /placements|contributor|coordinates/i);
   assert.ok(summary.length < 1200);
+});
+
+test('contribution plan provides deterministic repository paths and reproducible commands', () => {
+  const packet = createWorkshopReviewPacket(bundle, validation);
+  const challenge = { challengeId: 'TPA-C01', issueUrl: 'https://github.com/markkamuya/space-optimization/issues/1' };
+  const plan = createWorkshopContributionPlan(packet, challenge);
+  assert.equal(plan.candidatePath, 'atlas/submissions/candidate-1.json');
+  assert.deepEqual(plan.commands, [
+    'npm run atlas:submission -- atlas/submissions/candidate-1.json',
+    'npm run atlas:report -- atlas/submissions/candidate-1.json candidate-1-report.svg'
+  ]);
+  assert.match(workshopContributionMarkdown(plan), /nothing has been submitted from the browser/i);
+  assert.match(workshopContributionMarkdown(plan), /independent verification and maintainer review/i);
+});
+
+test('contribution plan fails closed without an exact challenge or supported packet', () => {
+  const packet = createWorkshopReviewPacket(bundle, validation);
+  assert.throws(() => createWorkshopContributionPlan(packet, null), /exact open challenge/);
+  assert.throws(() => createWorkshopContributionPlan({ format: 'unknown' }, { challengeId: 'TPA-C01', issueUrl: 'https://github.com/example' }), /review packet/);
+  assert.throws(() => workshopContributionMarkdown({ format: 'unknown' }), /supported contribution plan/);
 });

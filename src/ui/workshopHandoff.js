@@ -1,4 +1,5 @@
 export const WORKSHOP_REVIEW_PACKET_FORMAT = 'triangle-packing-workshop-review/v1';
+export const WORKSHOP_CONTRIBUTION_PLAN_FORMAT = 'triangle-packing-workshop-contribution-plan/v1';
 
 export function createWorkshopReviewPacket(bundle, validation) {
   if (!bundle?.checksum || !bundle?.candidate?.id || !validation?.eligibleForContribution) {
@@ -86,5 +87,61 @@ export function workshopGitHubSummary(packet, challenge) {
     `Verifier: ${packet.verifierCommand}`,
     'Candidate JSON, unedited verifier output, and reviewer packet will be attached separately.',
     packet.boundary
+  ].join('\n');
+}
+
+export function createWorkshopContributionPlan(packet, challenge) {
+  if (packet?.format !== WORKSHOP_REVIEW_PACKET_FORMAT || !challenge?.challengeId || !challenge?.issueUrl) {
+    throw new TypeError('A review packet and exact open challenge are required.');
+  }
+  const candidatePath = `atlas/submissions/${packet.candidateFile}`;
+  const reviewFile = packet.candidateFile.replace(/\.json$/, '-review.md');
+  const reportFile = packet.candidateFile.replace(/\.json$/, '-report.svg');
+  return {
+    format: WORKSHOP_CONTRIBUTION_PLAN_FORMAT,
+    repository: 'markkamuya/space-optimization',
+    challenge: { id: challenge.challengeId, url: challenge.issueUrl },
+    candidatePath,
+    files: [
+      { kind: 'candidate', filename: packet.candidateFile, destination: candidatePath, required: true },
+      { kind: 'review', filename: reviewFile, destination: reviewFile, required: true },
+      { kind: 'visual-report', filename: reportFile, destination: reportFile, required: true }
+    ],
+    commands: [
+      `npm run atlas:submission -- ${candidatePath}`,
+      `npm run atlas:report -- ${candidatePath} ${reportFile}`
+    ],
+    steps: [
+      `Create a focused branch for ${challenge.challengeId}; nothing has been submitted from the browser.`,
+      `Place ${packet.candidateFile} at ${candidatePath} and keep ${reviewFile} with the review materials.`,
+      'Run both commands below and keep their unedited output and generated SVG report.',
+      `Open a pull request that links ${challenge.challengeId} and requests independent verification and maintainer review.`
+    ],
+    boundary: packet.boundary
+  };
+}
+
+export function workshopContributionMarkdown(plan) {
+  if (plan?.format !== WORKSHOP_CONTRIBUTION_PLAN_FORMAT) throw new TypeError('A supported contribution plan is required.');
+  return [
+    `# Web-to-Git handoff for ${plan.challenge.id}`,
+    '',
+    `Repository: \`${plan.repository}\``,
+    `Suggested candidate path: \`${plan.candidatePath}\``,
+    '',
+    '## Files',
+    '',
+    ...plan.files.map(file => `- [ ] \`${file.filename}\`${file.destination !== file.filename ? ` → \`${file.destination}\`` : ''}`),
+    '',
+    '## Commands',
+    '',
+    ...plan.commands.map(command => `- [ ] \`${command}\``),
+    '',
+    '## Steps',
+    '',
+    ...plan.steps.map(step => `- [ ] ${step}`),
+    '',
+    `> ${plan.boundary}`,
+    ''
   ].join('\n');
 }
