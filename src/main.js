@@ -4,6 +4,7 @@ import { renderPacking } from './rendering/canvas.js';
 import { workshopKeyboardPatch, workshopPlacementAtPoint, workshopProblemPoint } from './ui/workshopInteraction.js';
 import { createWorkshopTimeline, recordWorkshopState, redoWorkshopState, undoWorkshopState } from './ui/workshopTimeline.js';
 import { WORKSHOP_REVIEW_PACKET_FORMAT, createWorkshopContributionPlan, createWorkshopReviewPacket, resolveWorkshopChallenge, workshopContributionMarkdown, workshopGitHubSummary, workshopReviewMarkdown } from './ui/workshopHandoff.js';
+import { workshopContributionState } from './ui/workshopContributionState.js';
 import { WORKSHOP_JOURNEY_STEPS, workshopJourneyState } from './ui/workshopJourney.js';
 import { buildWorkshopFindings } from './ui/workshopFindings.js';
 import { findWorkshopBaselines } from './ui/workshopBaselineFinder.js';
@@ -152,6 +153,7 @@ function renderWorkshopJourney() {
     control.querySelector('small').textContent = stage.detail;
     control.setAttribute('aria-label', `${index + 1}. ${step.name}: ${stage.detail}`);
   }
+  renderWorkshopContributionPlan(workshopValidation, challenge);
 }
 
 renderWorkshopJourney();
@@ -224,17 +226,12 @@ function applyWorkshopMetadata() {
 
 function renderWorkshopValidation() {
   const result = $('#workshop-validation-result');
-  const github = $('#workshop-github');
   if (!workshopValidation) {
     result.className = 'workshop-validation-result';
     result.innerHTML = '<b>No local validation yet</b><p>Published evidence remains authoritative.</p>';
     $('#workshop-candidate-fill').textContent = '—';
     $('#workshop-fill-delta').textContent = '—';
     $('#workshop-findings').innerHTML = '<summary>Validation findings</summary><ul><li>Run local validation to inspect geometry and submission-readiness findings.</li></ul>';
-    github.setAttribute('aria-disabled', 'true');
-    $('#workshop-candidate-export').disabled = true;
-    $('#workshop-review-export').disabled = true;
-    $('#workshop-github-copy').disabled = true;
     renderWorkshopContributionPlan(null, null);
     renderWorkshopJourney();
     return;
@@ -256,13 +253,6 @@ function renderWorkshopValidation() {
   $('#workshop-findings').innerHTML = `<summary>Validation findings · ${report.findings.length}${report.truncated ? '+' : ''}</summary><ul>${findingItems}</ul>`;
   if (!validation.geometryValid) $('#workshop-findings').open = true;
   const challenge = resolveWorkshopChallenge(communityChallenges?.challenges, selectedWorkshopBaseline());
-  const reviewReady = validation.eligibleForContribution && challenge !== null;
-  github.setAttribute('aria-disabled', String(!reviewReady));
-  github.href = challenge?.issueUrl ?? 'https://github.com/markkamuya/space-optimization/blob/main/docs/CONTRIBUTING.md';
-  github.textContent = challenge ? `Open challenge ${challenge.challengeId} on GitHub ↗` : 'Read contribution guidance ↗';
-  $('#workshop-candidate-export').disabled = !validation.eligibleForContribution;
-  $('#workshop-review-export').disabled = !validation.eligibleForContribution;
-  $('#workshop-github-copy').disabled = !reviewReady;
   renderWorkshopContributionPlan(validation, challenge);
   const claim = $('#workshop-claim-status');
   claim.className = `workshop-claim-status ${validation.eligibleForContribution ? 'candidate-improvement' : validation.geometryValid ? 'locally-valid' : 'invalid'}`;
@@ -271,28 +261,33 @@ function renderWorkshopValidation() {
 }
 
 function renderWorkshopContributionPlan(validation, challenge) {
+  const state = workshopContributionState({ validation, challenge, preservation: workshopPreservation });
   const status = $('#workshop-contribution-plan-status');
   const steps = $('#workshop-contribution-plan-steps');
   const copy = $('#workshop-contribution-copy');
-  copy.disabled = true;
-  if (!validation?.eligibleForContribution) {
-    status.textContent = 'The handoff stays locked until local geometry, provenance, and incumbent checks support an improvement candidate.';
-    steps.innerHTML = '<li>Nothing has been submitted from this browser.</li><li>Published evidence remains unchanged.</li>';
-    return;
+  const github = $('#workshop-github');
+  status.textContent = state.status;
+  $('#workshop-contribution-plan').dataset.state = state.state;
+  steps.innerHTML = state.stages.map(stage => `<li data-state="${stage.state}"><b>${escapeHtml(stage.label)}</b><span>${stage.state === 'complete' ? 'Complete locally' : stage.state === 'current' ? 'Current step' : stage.state === 'available' ? 'Available; not submitted' : 'Blocked'}</span></li>`).join('');
+  if (state.state === 'ready') {
+    const preview = createWorkshopContributionPlan({ format: WORKSHOP_REVIEW_PACKET_FORMAT, candidateFile: `${workshopCandidate.id}.json`, boundary: validation.boundary }, challenge);
+    steps.insertAdjacentHTML('beforeend', `<li class="workshop-contribution-exact"><details><summary>Exact Git steps</summary><ol>${preview.steps.map(step => `<li>${escapeHtml(step)}</li>`).join('')}</ol></details></li>`);
   }
-  if (!challenge) {
-    status.textContent = 'Local checks support a candidate, but no exact open challenge is bound to this baseline. Export the reviewer packet and request maintainer guidance.';
-    steps.innerHTML = '<li>Export the candidate and reviewer packet.</li><li>Do not choose a repository destination by guesswork.</li>';
-    return;
+  $('#workshop-candidate-export').disabled = !state.actions.exportCandidate;
+  $('#workshop-review-export').disabled = !state.actions.exportReview;
+  $('#workshop-github-copy').disabled = !state.actions.copySummary;
+  copy.disabled = !state.actions.copyWorkflow;
+  github.setAttribute('aria-disabled', String(!state.actions.openGitHub));
+  github.textContent = state.actions.openGitHub ? `Open challenge ${challenge.challengeId} on GitHub ↗` : 'Prepare GitHub contribution ↗';
+  if (state.githubHref) {
+    github.href = state.githubHref;
+    github.target = '_blank';
+    github.removeAttribute('tabindex');
+  } else {
+    github.removeAttribute('href');
+    github.removeAttribute('target');
+    github.tabIndex = -1;
   }
-  const preview = createWorkshopContributionPlan({
-    format: WORKSHOP_REVIEW_PACKET_FORMAT,
-    candidateFile: `${workshopCandidate.id}.json`,
-    boundary: validation.boundary
-  }, challenge);
-  status.textContent = `Plan ready for ${challenge.challengeId}. Copying it does not create a branch, upload files, or open a pull request.`;
-  steps.innerHTML = preview.steps.map(step => `<li>${escapeHtml(step)}</li>`).join('');
-  copy.disabled = false;
 }
 
 function renderWorkshopCandidate({ resetMetadata = false } = {}) {

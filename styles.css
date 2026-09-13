@@ -630,6 +630,13 @@ footer { padding:22px 3vw; display:flex; justify-content:space-between; backgrou
 .workshop-contribution-plan p { margin:7px 0 0; max-width:72ch; }
 .workshop-contribution-plan ol { margin:12px 0; padding-left:22px; }
 .workshop-contribution-plan li { margin-top:7px; font-size:10px; line-height:1.55; }
+.workshop-contribution-plan li > b,.workshop-contribution-plan li > span { display:block; }
+.workshop-contribution-plan li > span { color:var(--muted); font:700 9px "DM Mono"; text-transform:uppercase; }
+.workshop-contribution-plan li[data-state="complete"] > span { color:#2b7a46; }
+.workshop-contribution-plan li[data-state="current"] > span,.workshop-contribution-plan li[data-state="available"] > span { color:var(--accent); }
+.workshop-contribution-exact { list-style:none; margin-left:-22px; }
+.workshop-contribution-exact summary { min-height:44px; padding:13px 0; cursor:pointer; font:700 9px "DM Mono"; text-transform:uppercase; }
+.workshop-contribution-exact ol { margin:0; }
 .workshop-contribution-plan button { width:100%; min-height:44px; }
 #workshop-baseline-status { margin:6px 0 10px; color:var(--muted); font:9px/1.5 "DM Mono"; }
 #workshop-baseline-dialog,#workshop-destructive-dialog { width:min(560px,calc(100% - 32px)); padding:24px; border:1px solid var(--ink); background:var(--paper); color:var(--ink); }
