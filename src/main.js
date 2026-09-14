@@ -2,6 +2,8 @@ import { ATLAS_RECORDS, OPEN_PROBLEMS, phaseAt } from './atlas/catalog.js';
 import { normalizeProblem } from './core/problem.js';
 import { renderPacking } from './rendering/canvas.js';
 import { workshopKeyboardPatch, workshopPlacementAtPoint, workshopProblemPoint } from './ui/workshopInteraction.js';
+import { beginWorkshopDrag, finishWorkshopDrag, markWorkshopDragChanged } from './ui/workshopDragSession.js';
+import { createWorkshopFrameCoalescer } from './ui/workshopFrameCoalescer.js';
 import { createWorkshopTimeline, recordWorkshopState, redoWorkshopState, undoWorkshopState } from './ui/workshopTimeline.js';
 import { WORKSHOP_REVIEW_PACKET_FORMAT, createWorkshopContributionPlan, createWorkshopReviewPacket, resolveWorkshopChallenge, workshopContributionMarkdown, workshopGitHubSummary, workshopReviewMarkdown } from './ui/workshopHandoff.js';
 import { workshopContributionState } from './ui/workshopContributionState.js';
@@ -84,6 +86,7 @@ let workshopValidation = null;
 let workshopBaselineId = null;
 let workshopPlacementIndex = 0;
 let workshopDrag = null;
+const workshopDragRender = createWorkshopFrameCoalescer(requestAnimationFrame, cancelAnimationFrame);
 let workshopTimeline = null;
 let workshopValidationTimer = null;
 let workshopAutosaveTimer = null;
@@ -1905,7 +1908,7 @@ $('#workshop-canvas').addEventListener('pointerdown', event => {
   }
   workshopPlacementIndex = index;
   const placement = workshopCandidate.solution.placements[index];
-  workshopDrag = { pointerId: event.pointerId, offsetX: point.x - placement.x, offsetY: point.y - placement.y, before: structuredClone(workshopCandidate), changed: false };
+  workshopDrag = beginWorkshopDrag(workshopCandidate, { pointerId: event.pointerId, placementIndex: index, offsetX: point.x - placement.x, offsetY: point.y - placement.y });
   event.currentTarget.setPointerCapture(event.pointerId);
   event.currentTarget.focus();
   renderWorkshopCandidate();
@@ -1916,25 +1919,34 @@ $('#workshop-canvas').addEventListener('pointermove', event => {
   if (!workshopDrag || workshopDrag.pointerId !== event.pointerId || !workshopCandidate) return;
   const point = workshopPointForEvent(event);
   workshopCandidate = updateWorkshopPlacement(workshopCandidate, workshopPlacementIndex, { x: point.x - workshopDrag.offsetX, y: point.y - workshopDrag.offsetY });
-  workshopDrag.changed = true;
+  workshopDrag = markWorkshopDragChanged(workshopDrag);
   workshopValidation = null;
-  renderWorkshopCandidate();
+  workshopDragRender.request(() => renderWorkshopCandidate());
 });
 
-for (const type of ['pointerup', 'pointercancel']) {
-  $('#workshop-canvas').addEventListener(type, event => {
-    if (workshopDrag?.pointerId !== event.pointerId) return;
-    if (workshopDrag.changed) {
-      workshopTimeline = recordWorkshopState({ ...workshopTimeline, present: workshopDrag.before }, workshopCandidate);
-      workshopCandidate = workshopTimeline.present;
-      markWorkshopDirty(`Triangle ${workshopPlacementIndex + 1} moved by direct manipulation. Run local validation before drawing any conclusion.`);
-      renderWorkshopHistory();
-      scheduleWorkshopRecovery();
-      scheduleWorkshopValidation();
-    }
-    workshopDrag = null;
-  });
+function finishWorkshopPointerDrag(event, cancelled) {
+  if (workshopDrag?.pointerId !== event.pointerId) return;
+  const session = workshopDrag;
+  workshopDrag = null;
+  const result = finishWorkshopDrag(session, workshopCandidate, { cancelled });
+  workshopCandidate = result.candidate;
+  if (cancelled) workshopDragRender.cancel();
+  else workshopDragRender.flush();
+  if (result.commit) {
+    workshopTimeline = recordWorkshopState({ ...workshopTimeline, present: session.before }, workshopCandidate);
+    workshopCandidate = workshopTimeline.present;
+    markWorkshopDirty(`Triangle ${workshopPlacementIndex + 1} moved by direct manipulation. Run local validation before drawing any conclusion.`);
+    renderWorkshopHistory();
+    scheduleWorkshopRecovery();
+    scheduleWorkshopValidation();
+  } else if (result.restored) {
+    renderWorkshopCandidate();
+    $('#workshop-editor-status').textContent = `The interrupted drag was cancelled. Triangle ${workshopPlacementIndex + 1} returned to its exact pre-drag coordinates; no edit was kept.`;
+  }
 }
+$('#workshop-canvas').addEventListener('pointerup', event => finishWorkshopPointerDrag(event, false));
+$('#workshop-canvas').addEventListener('pointercancel', event => finishWorkshopPointerDrag(event, true));
+$('#workshop-canvas').addEventListener('lostpointercapture', event => finishWorkshopPointerDrag(event, true));
 
 $('#workshop-canvas').addEventListener('keydown', event => {
   if (!workshopCandidate || event.currentTarget.getAttribute('aria-disabled') === 'true') return;

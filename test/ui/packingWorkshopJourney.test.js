@@ -63,6 +63,10 @@ test('production exposes an evidence-safe browser Packing Workshop', async () =>
   assert.match(script, /createWorkshopContributionPlan/);
   assert.match(script, /workshopContributionMarkdown/);
   assert.match(script, /workshopContributionState/);
+  assert.match(script, /createWorkshopFrameCoalescer/);
+  assert.match(script, /finishWorkshopDrag\(session, workshopCandidate, \{ cancelled \}\)/);
+  assert.match(script, /lostpointercapture/);
+  assert.match(script, /no edit was kept/);
   assert.match(script, /github\.removeAttribute\('href'\)/);
   assert.match(script, /Nothing was uploaded or submitted/);
   assert.match(html, /id="workshop-github"[^>]+aria-disabled="true"[^>]+tabindex="-1"/);
