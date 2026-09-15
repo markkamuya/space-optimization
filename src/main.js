@@ -4,6 +4,7 @@ import { renderPacking } from './rendering/canvas.js';
 import { workshopKeyboardPatch, workshopPlacementAtPoint, workshopProblemPoint } from './ui/workshopInteraction.js';
 import { beginWorkshopDrag, finishWorkshopDrag, markWorkshopDragChanged } from './ui/workshopDragSession.js';
 import { createWorkshopFrameCoalescer } from './ui/workshopFrameCoalescer.js';
+import { setLiveRegionHtml, setLiveRegionMode, setLiveRegionText } from './ui/liveRegion.js';
 import { createWorkshopTimeline, recordWorkshopState, redoWorkshopState, undoWorkshopState } from './ui/workshopTimeline.js';
 import { WORKSHOP_REVIEW_PACKET_FORMAT, createWorkshopContributionPlan, createWorkshopReviewPacket, resolveWorkshopChallenge, workshopContributionMarkdown, workshopGitHubSummary, workshopReviewMarkdown } from './ui/workshopHandoff.js';
 import { workshopContributionState } from './ui/workshopContributionState.js';
@@ -147,7 +148,7 @@ function renderWorkshopJourney() {
     recoveryAvailable: workshopRecoveryAvailable(),
     challengeReady: Boolean(challenge)
   });
-  $('#workshop-journey-summary').textContent = journey.summary;
+  setLiveRegionText($('#workshop-journey-summary'), journey.summary);
   for (const [index, step] of WORKSHOP_JOURNEY_STEPS.entries()) {
     const control = document.querySelector(`[data-workshop-step="${step.id}"]`);
     if (!control) continue;
@@ -231,7 +232,7 @@ function renderWorkshopValidation() {
   const result = $('#workshop-validation-result');
   if (!workshopValidation) {
     result.className = 'workshop-validation-result';
-    result.innerHTML = '<b>No local validation yet</b><p>Published evidence remains authoritative.</p>';
+    setLiveRegionHtml(result, '<b>No local validation yet</b><p>Published evidence remains authoritative.</p>');
     $('#workshop-candidate-fill').textContent = '—';
     $('#workshop-fill-delta').textContent = '—';
     $('#workshop-findings').innerHTML = '<summary>Validation findings</summary><ul><li>Run local validation to inspect geometry and submission-readiness findings.</li></ul>';
@@ -241,7 +242,7 @@ function renderWorkshopValidation() {
   }
   const validation = workshopValidation;
   result.className = `workshop-validation-result ${validation.eligibleForContribution ? 'ready' : validation.geometryValid ? 'valid' : 'failed'}`;
-  result.innerHTML = `<b>${escapeHtml(validation.headline)}</b><p>${escapeHtml(validation.boundary)}</p>`;
+  setLiveRegionHtml(result, `<b>${escapeHtml(validation.headline)}</b><p>${escapeHtml(validation.boundary)}</p>`);
   $('#workshop-candidate-fill').textContent = validation.geometryValid ? percent(validation.comparison.candidateUtilization) : 'Withheld — invalid geometry';
   $('#workshop-fill-delta').textContent = validation.geometryValid
     ? `${validation.comparison.delta >= 0 ? '+' : '−'}${percent(Math.abs(validation.comparison.delta))}`
@@ -269,7 +270,7 @@ function renderWorkshopContributionPlan(validation, challenge) {
   const steps = $('#workshop-contribution-plan-steps');
   const copy = $('#workshop-contribution-copy');
   const github = $('#workshop-github');
-  status.textContent = state.status;
+  setLiveRegionText(status, state.status);
   $('#workshop-contribution-plan').dataset.state = state.state;
   steps.innerHTML = state.stages.map(stage => `<li data-state="${stage.state}"><b>${escapeHtml(stage.label)}</b><span>${stage.state === 'complete' ? 'Complete locally' : stage.state === 'current' ? 'Current step' : stage.state === 'available' ? 'Available; not submitted' : 'Blocked'}</span></li>`).join('');
   if (state.state === 'ready') {
@@ -333,7 +334,7 @@ function renderWorkshopCandidate({ resetMetadata = false } = {}) {
     const angle = Number(placement.angle ?? 0);
     const summary = `Triangle ${workshopPlacementIndex + 1} of ${workshopCandidate.solution.placements.length}: x ${Number(placement.x).toFixed(4)}, y ${Number(placement.y).toFixed(4)}, angle ${angle.toFixed(4)} radians${placement.reflect ? ', reflected' : ', not reflected'}. Enlarged local view includes ${focus.nearbyCount} visible triangle${focus.nearbyCount === 1 ? '' : 's'}; coordinates are unchanged.`;
     $('#workshop-focus-canvas').setAttribute('aria-label', summary);
-    $('#workshop-focus-status').textContent = summary;
+    setLiveRegionText($('#workshop-focus-status'), summary);
   });
   renderWorkshopValidation();
   renderWorkshopHistory();
@@ -1898,6 +1899,16 @@ function updateWorkshopFromCanvas(patch, message) {
   commitWorkshopState(updateWorkshopPlacement(workshopCandidate, workshopPlacementIndex, patch), message);
 }
 
+function setWorkshopDragAnnouncements(active) {
+  setLiveRegionMode([
+    $('#workshop-focus-status'),
+    $('#workshop-validation-result'),
+    $('#workshop-contribution-plan-status'),
+    $('#workshop-journey-summary')
+  ], !active);
+  $('#workshop-canvas').dataset.dragging = String(active);
+}
+
 $('#workshop-canvas').addEventListener('pointerdown', event => {
   if (!workshopCandidate || event.currentTarget.getAttribute('aria-disabled') === 'true') return;
   const point = workshopPointForEvent(event);
@@ -1911,6 +1922,7 @@ $('#workshop-canvas').addEventListener('pointerdown', event => {
   workshopDrag = beginWorkshopDrag(workshopCandidate, { pointerId: event.pointerId, placementIndex: index, offsetX: point.x - placement.x, offsetY: point.y - placement.y });
   event.currentTarget.setPointerCapture(event.pointerId);
   event.currentTarget.focus();
+  setWorkshopDragAnnouncements(true);
   renderWorkshopCandidate();
   $('#workshop-editor-status').textContent = `Triangle ${index + 1} selected. Drag to move it, or use arrow keys for precise adjustment.`;
 });
@@ -1932,6 +1944,7 @@ function finishWorkshopPointerDrag(event, cancelled) {
   workshopCandidate = result.candidate;
   if (cancelled) workshopDragRender.cancel();
   else workshopDragRender.flush();
+  setWorkshopDragAnnouncements(false);
   if (result.commit) {
     workshopTimeline = recordWorkshopState({ ...workshopTimeline, present: session.before }, workshopCandidate);
     workshopCandidate = workshopTimeline.present;
