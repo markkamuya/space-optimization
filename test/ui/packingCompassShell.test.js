@@ -34,6 +34,7 @@ test('production page exposes one task-first guided shell and an advanced escape
   assert.match(styles, /@media\(max-width:720px\).*\.compass-goals\{grid-template-columns:1fr/s);
   assert.match(styles, /\.compass-workspace>\.secondary-action\[hidden\] \{ display:none; \}/);
   assert.match(shell, /advancedLink\.hidden = goal === 'improve'/);
-  assert.match(main, /continuation\.href = formatWorkshopHash\(record\.id\)/);
-  assert.match(main, /Continue with \$\{record\.id\} in Packing Workshop/);
+  assert.match(main, /Start with this baseline in Packing Workshop/);
+  assert.match(main, /formatWorkshopHash\(record\.id, \{ source: 'compass' \}\)/);
+  assert.match(main, /if \(question\.goal === 'improve'\) continuation\.hidden = true/);
 });

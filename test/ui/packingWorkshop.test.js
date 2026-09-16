@@ -94,7 +94,8 @@ test('checksummed workshop bundles recover only against the exact release and ba
 });
 
 test('workshop deep links are bounded and round-trip safely', () => {
-  assert.deepEqual(parseWorkshopHash(formatWorkshopHash('iso-a35-r2p55')), { record: 'iso-a35-r2p55' });
-  assert.deepEqual(parseWorkshopHash('#workshop?record=%3Cscript%3E'), { record: null });
-  assert.deepEqual(parseWorkshopHash('#research?record=iso-a35-r2p55'), { record: null });
+  assert.deepEqual(parseWorkshopHash(formatWorkshopHash('iso-a35-r2p55')), { record: 'iso-a35-r2p55', source: null });
+  assert.deepEqual(parseWorkshopHash(formatWorkshopHash('iso-a35-r2p55', { source: 'compass' })), { record: 'iso-a35-r2p55', source: 'compass' });
+  assert.deepEqual(parseWorkshopHash('#workshop?record=%3Cscript%3E&source=unknown'), { record: null, source: null });
+  assert.deepEqual(parseWorkshopHash('#research?record=iso-a35-r2p55'), { record: null, source: null });
 });

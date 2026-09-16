@@ -46,7 +46,10 @@ test('guided answer UI is fail-closed and progressively exposes technical eviden
   assert.match(script, /Guided answers are withheld until integrity checks recover/);
   assert.match(script, /The Atlas will not substitute modeled or unverified data/);
   assert.match(script, /Inspect why we trust this answer/);
+  assert.match(script, /Review its evidence first/);
+  assert.match(script, /Start with this baseline in Packing Workshop/);
   assert.match(script, /Evidence statements apply only to each exact triangle and rectangle/);
   assert.match(script, /matchCompassQuestion\(canonicalRelease\?\.records/);
   assert.match(styles, /\.compass-answer-card nav a \{ display:flex; min-height:44px/);
+  assert.match(styles, /\.compass-answer-card \.compass-answer-actions \{ grid-template-columns:minmax\(0,1\.6fr\) minmax\(0,1fr\)/);
 });

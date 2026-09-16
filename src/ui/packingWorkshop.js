@@ -53,14 +53,22 @@ function homogeneousTriangle(problem) {
 }
 
 export function parseWorkshopHash(hash = '') {
-  if (!hash.startsWith('#workshop')) return { record: null };
+  if (!hash.startsWith('#workshop')) return { record: null, source: null };
   const query = hash.includes('?') ? hash.slice(hash.indexOf('?') + 1) : '';
-  const record = new URLSearchParams(query).get('record');
-  return { record: typeof record === 'string' && /^[a-z0-9._-]{1,160}$/i.test(record) ? record : null };
+  const params = new URLSearchParams(query);
+  const record = params.get('record');
+  const source = params.get('source');
+  return {
+    record: typeof record === 'string' && /^[a-z0-9._-]{1,160}$/i.test(record) ? record : null,
+    source: source === 'compass' ? source : null
+  };
 }
 
-export function formatWorkshopHash(record) {
-  return record ? `#workshop?record=${encodeURIComponent(record)}` : '#workshop';
+export function formatWorkshopHash(record, { source = null } = {}) {
+  if (!record) return '#workshop';
+  const params = new URLSearchParams({ record });
+  if (source === 'compass') params.set('source', source);
+  return `#workshop?${params}`;
 }
 
 export function createWorkshopCandidate(baseline, { createdAt = new Date().toISOString() } = {}) {

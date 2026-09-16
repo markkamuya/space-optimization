@@ -113,13 +113,16 @@ function compassOptionMarkup(options) {
   return options.map(([value, label]) => `<option value="${escapeHtml(value)}">${escapeHtml(label)}</option>`).join('');
 }
 
-function compassRecordMarkup(record) {
+function compassRecordMarkup(record, goal) {
   const evidence = compassEvidence(record);
+  const continuation = goal === 'improve' && record.evidence.state !== 'proven_optimal'
+    ? `<nav class="compass-answer-actions" aria-label="Continue with this answer"><a class="compass-workshop-action" href="${escapeHtml(formatWorkshopHash(record.id, { source: 'compass' }))}">Start with this baseline in Packing Workshop</a><a href="#research?record=${escapeHtml(record.id)}">Review its evidence first</a></nav>`
+    : `<nav aria-label="Continue with this answer"><a href="#research?record=${escapeHtml(record.id)}">Inspect why we trust this answer</a><a href="${escapeHtml(researchComparisonHref(record))}">Compare this result</a><a href="${record.evidence.state === 'proven_optimal' ? '#challenges' : escapeHtml(formatWorkshopHash(record.id))}">${record.evidence.state === 'proven_optimal' ? 'Explore open challenges' : 'Open in Packing Workshop'}</a></nav>`;
   return `<article class="compass-answer-card">
     <div class="compass-answer-heading"><span>${escapeHtml(evidence.label)}</span><h3>${escapeHtml(record.problem.name)}</h3><p>${escapeHtml(evidence.explanation)}</p></div>
     <dl><div><dt>Rectangle filled</dt><dd>${percent(record.verification.utilization)}</dd></div><div><dt>Triangles fitted</dt><dd>${record.verification.pieceCount}</dd></div><div><dt>Room for improvement</dt><dd>${percent(record.bounds.optimalityGap)}</dd></div></dl>
     <p class="compass-answer-pattern">Best verified method: <b>${escapeHtml(record.pattern)}</b></p>
-    <nav aria-label="Continue with this answer"><a href="#research?record=${escapeHtml(record.id)}">Inspect why we trust this answer</a><a href="${escapeHtml(researchComparisonHref(record))}">Compare this result</a><a href="${record.evidence.state === 'proven_optimal' ? '#challenges' : escapeHtml(formatWorkshopHash(record.id))}">${record.evidence.state === 'proven_optimal' ? 'Explore open challenges' : 'Open in Packing Workshop'}</a></nav>
+    ${continuation}
   </article>`;
 }
 
@@ -447,13 +450,8 @@ function renderPackingCompassAnswer(question) {
     const pairAction = answer.records.length === 2
       ? `<a class="compass-pair-action" href="${escapeHtml(formatComparisonHash({ left: answer.records[0].id, right: answer.records[1].id }))}">Compare these two verified results</a>`
       : '';
-    answerRegion.innerHTML = `<p class="kicker">${answer.records.length === 2 ? 'TWO VERIFIED RESULTS' : 'MATCHING VERIFIED ANSWER'}</p><p class="compass-answer-scope">Your plain-language choices identify a nearby sampled Atlas problem. Evidence statements apply only to each exact triangle and rectangle shown below.</p>${answer.records.map(compassRecordMarkup).join('')}${pairAction}`;
-    if (question.goal === 'improve') {
-      const record = answer.records[0];
-      continuation.href = formatWorkshopHash(record.id);
-      continuation.textContent = `Continue with ${record.id} in Packing Workshop`;
-      continuation.hidden = false;
-    }
+    answerRegion.innerHTML = `<p class="kicker">${answer.records.length === 2 ? 'TWO VERIFIED RESULTS' : 'MATCHING VERIFIED ANSWER'}</p><p class="compass-answer-scope">Your plain-language choices identify a nearby sampled Atlas problem. Evidence statements apply only to each exact triangle and rectangle shown below.</p>${answer.records.map(record => compassRecordMarkup(record, question.goal)).join('')}${pairAction}`;
+    if (question.goal === 'improve') continuation.hidden = true;
   }
   answerRegion.hidden = false;
   answerRegion.focus({ preventScroll: true });

@@ -542,6 +542,8 @@ footer { padding:22px 3vw; display:flex; justify-content:space-between; backgrou
 .compass-answer-pattern { margin:12px 0!important; }
 .compass-answer-card nav { display:grid; grid-template-columns:repeat(3,1fr); border:1px solid var(--line); }
 .compass-answer-card nav a { display:flex; min-height:44px; padding:9px; align-items:center; justify-content:center; border-right:1px solid var(--line); font:600 8px/1.4 "DM Mono"; text-align:center; }
+.compass-answer-card .compass-answer-actions { grid-template-columns:minmax(0,1.6fr) minmax(0,1fr); }
+.compass-answer-card .compass-workshop-action { background:var(--dark); color:white; box-shadow:inset 0 -4px 0 var(--orange); }
 .compass-answer-card nav a:last-child { border-right:0; }
 .compass-answer-card nav a:hover,.compass-answer-card nav a:focus-visible { background:var(--acid); }
 .compass-pair-action { display:flex; min-height:48px; margin-top:12px; padding:10px 14px; align-items:center; justify-content:center; border:1px solid var(--ink); background:var(--acid); font:700 9px "DM Mono"; text-align:center; text-transform:uppercase; }
