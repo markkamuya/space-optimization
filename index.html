@@ -68,6 +68,15 @@
         <aside id="workshop-release-status" class="workshop-release-status" role="status" aria-live="polite" aria-atomic="true" tabindex="-1">
           Waiting for a verified Atlas release. Editing stays locked until the baseline passes integrity checks.
         </aside>
+        <aside id="workshop-entry" class="workshop-entry" aria-labelledby="workshop-entry-title" hidden>
+          <div><p class="kicker">GUIDED START</p><h2 id="workshop-entry-title"></h2><p id="workshop-entry-summary"></p></div>
+          <dl aria-label="Verified starting point">
+            <div><dt>Baseline</dt><dd id="workshop-entry-record"></dd></div>
+            <div><dt>Published fill</dt><dd id="workshop-entry-fill"></dd></div>
+            <div><dt>Rigorous gap</dt><dd id="workshop-entry-gap"></dd></div>
+          </dl>
+          <div class="workshop-entry-actions"><button id="workshop-entry-begin" type="button">Begin adjusting triangle 1</button><a id="workshop-entry-evidence">Review the verified evidence</a></div>
+        </aside>
         <nav id="workshop-journey" class="workshop-journey" aria-label="Packing Workshop steps">
           <p id="workshop-journey-summary" role="status" aria-live="polite" aria-atomic="true">Step 1 of 4 · Waiting for an integrity-checked baseline.</p>
           <ol>

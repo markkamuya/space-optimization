@@ -5,6 +5,7 @@ import { workshopKeyboardPatch, workshopPlacementAtPoint, workshopProblemPoint }
 import { beginWorkshopDrag, finishWorkshopDrag, markWorkshopDragChanged } from './ui/workshopDragSession.js';
 import { createWorkshopFrameCoalescer } from './ui/workshopFrameCoalescer.js';
 import { setLiveRegionHtml, setLiveRegionMode, setLiveRegionText } from './ui/liveRegion.js';
+import { workshopEntryState } from './ui/workshopEntry.js';
 import { createWorkshopTimeline, recordWorkshopState, redoWorkshopState, undoWorkshopState } from './ui/workshopTimeline.js';
 import { WORKSHOP_REVIEW_PACKET_FORMAT, createWorkshopContributionPlan, createWorkshopReviewPacket, resolveWorkshopChallenge, workshopContributionMarkdown, workshopGitHubSummary, workshopReviewMarkdown } from './ui/workshopHandoff.js';
 import { workshopContributionState } from './ui/workshopContributionState.js';
@@ -400,6 +401,20 @@ function renderWorkshopBaselineOptions(query = '') {
   $('#workshop-baseline-status').textContent = `${result.matchCount} verified match${result.matchCount === 1 ? '' : 'es'}; showing ${result.records.length}${result.truncated ? ' bounded results' : ' result'}.${retained}`;
 }
 
+function renderWorkshopEntry(baseline) {
+  const route = parseWorkshopHash(location.hash);
+  const entry = workshopEntryState({ source: route.source, linkedRecord: route.record, baseline, releaseVersion: canonicalRelease?.version });
+  const panel = $('#workshop-entry');
+  panel.hidden = !entry.visible;
+  if (!entry.visible) return;
+  $('#workshop-entry-title').textContent = entry.title;
+  $('#workshop-entry-summary').textContent = entry.summary;
+  $('#workshop-entry-record').textContent = `${entry.recordId} · ${entry.release}`;
+  $('#workshop-entry-fill').textContent = entry.fill == null ? 'Unavailable' : percent(entry.fill);
+  $('#workshop-entry-gap').textContent = entry.gap == null ? 'Unavailable' : percent(entry.gap);
+  $('#workshop-entry-evidence').href = `#research?record=${encodeURIComponent(entry.recordId)}`;
+}
+
 function startWorkshop(baselineId, { updateHash = false } = {}) {
   const baseline = canonicalRelease?.records.find(record => record.id === baselineId);
   if (!baseline) return;
@@ -421,6 +436,7 @@ function startWorkshop(baselineId, { updateHash = false } = {}) {
     : 'Select a triangle and adjust its coordinates.';
   renderWorkshopCandidate({ resetMetadata: true });
   if (updateHash) history.pushState(null, '', formatWorkshopHash(baseline.id));
+  renderWorkshopEntry(baseline);
 }
 
 function setupPackingWorkshop() {
@@ -437,6 +453,7 @@ function syncPackingWorkshopFromLocation() {
     startWorkshop(linked);
     renderWorkshopBaselineOptions($('#workshop-baseline-search').value);
   }
+  renderWorkshopEntry(selectedWorkshopBaseline());
 }
 
 function renderPackingCompassAnswer(question) {
@@ -1792,6 +1809,11 @@ async function loadV1Context() {
 }
 
 $('#workshop-baseline-search').addEventListener('input', event => renderWorkshopBaselineOptions(event.currentTarget.value));
+$('#workshop-entry-begin').addEventListener('click', () => {
+  $('#workshop-canvas').scrollIntoView({ block: 'center' });
+  $('#workshop-canvas').focus({ preventScroll: true });
+  $('#workshop-editor-status').textContent = 'Triangle 1 is selected. Drag it on the canvas, use arrow keys for precise movement, or enter exact coordinates.';
+});
 $('#workshop-placement-search').addEventListener('input', event => renderWorkshopPlacementOptions(event.currentTarget.value));
 $('#workshop-baseline').addEventListener('change', event => {
   const nextId = event.currentTarget.value;

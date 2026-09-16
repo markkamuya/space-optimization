@@ -67,6 +67,9 @@ test('production exposes an evidence-safe browser Packing Workshop', async () =>
   assert.match(script, /setLiveRegionMode/);
   assert.match(script, /setWorkshopDragAnnouncements\(true\)/);
   assert.match(script, /setWorkshopDragAnnouncements\(false\)/);
+  assert.match(script, /workshopEntryState/);
+  assert.match(script, /workshop-entry-begin/);
+  assert.match(script, /Triangle 1 is selected/);
   assert.match(script, /finishWorkshopDrag\(session, workshopCandidate, \{ cancelled \}\)/);
   assert.match(script, /lostpointercapture/);
   assert.match(script, /no edit was kept/);
@@ -87,6 +90,8 @@ test('production exposes an evidence-safe browser Packing Workshop', async () =>
   assert.match(styles, /#workshop-canvas:focus-visible/);
   assert.match(styles, /touch-action:none/);
   assert.match(styles, /#workshop-canvas\[data-dragging="true"\]/);
+  assert.match(styles, /\.workshop-entry\[hidden\] \{ display:none; \}/);
+  assert.match(styles, /@media\(max-width:720px\)\{\.workshop-entry\{grid-template-columns:1fr\}/);
   assert.match(styles, /\.workshop-journey button\[aria-current="step"\]/);
   assert.match(styles, /\.workshop-journey button\[data-state="needs-attention"\]/);
   assert.match(styles, /@media\(max-width:720px\).*\.workshop-journey ol\{grid-template-columns:1fr 1fr\}/s);
