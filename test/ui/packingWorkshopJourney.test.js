@@ -73,6 +73,9 @@ test('production exposes an evidence-safe browser Packing Workshop', async () =>
   assert.match(script, /workshop-quick-coordinates/);
   assert.match(script, /workshop-quick-undo/);
   assert.match(script, /\.workshop-quick-nudges.*handleWorkshopNudge/);
+  assert.match(script, /workshop-quick-validate.*validateWorkshopDraft\(\{ focusResult: false \}\)/);
+  assert.match(script, /workshop-findings summary.*focus/);
+  assert.match(script, /still not verified, proven, or published/);
   assert.match(script, /finishWorkshopDrag\(session, workshopCandidate, \{ cancelled \}\)/);
   assert.match(script, /lostpointercapture/);
   assert.match(script, /no edit was kept/);
@@ -96,6 +99,7 @@ test('production exposes an evidence-safe browser Packing Workshop', async () =>
   assert.match(styles, /\.workshop-entry\[hidden\] \{ display:none; \}/);
   assert.match(styles, /@media\(max-width:720px\)\{\.workshop-entry\{grid-template-columns:1fr\}/);
   assert.match(styles, /@media\(max-width:720px\)\{\.workshop-quick-edit\{display:grid/);
+  assert.match(styles, /\.workshop-quick-flow\{grid-template-columns:1\.3fr 1fr 1fr\}/);
   assert.match(styles, /\.workshop-journey button\[aria-current="step"\]/);
   assert.match(styles, /\.workshop-journey button\[data-state="needs-attention"\]/);
   assert.match(styles, /@media\(max-width:720px\).*\.workshop-journey ol\{grid-template-columns:1fr 1fr\}/s);

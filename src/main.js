@@ -170,7 +170,7 @@ function setWorkshopControls(enabled) {
   for (const selector of [
     '#workshop-baseline', '#workshop-placement', '#workshop-placement-search', '#workshop-placement-previous', '#workshop-placement-next', '#workshop-x', '#workshop-y', '#workshop-angle', '#workshop-reflect',
     '#workshop-baseline-search', '#workshop-apply', '#workshop-remove-piece', '#workshop-add-piece', '#workshop-contributor',
-    '#workshop-method', '#workshop-version', '#workshop-seed', '#workshop-validate', '#workshop-save',
+    '#workshop-method', '#workshop-version', '#workshop-seed', '#workshop-validate', '#workshop-quick-validate', '#workshop-quick-exact', '#workshop-save',
     '#workshop-recover', '#workshop-reset', '#workshop-file', '#workshop-export', '#workshop-copy-command'
   ]) $(selector).disabled = !enabled;
   $('#workshop-candidate-export').disabled = true;
@@ -243,12 +243,18 @@ function renderWorkshopValidation() {
     setLiveRegionHtml(result, '<b>No local validation yet</b><p>Published evidence remains authoritative.</p>');
     $('#workshop-candidate-fill').textContent = '—';
     $('#workshop-fill-delta').textContent = '—';
+    $('#workshop-quick-findings').disabled = true;
+    setLiveRegionText($('#workshop-quick-check-status'), 'No local validation yet. Published evidence remains authoritative.');
     $('#workshop-findings').innerHTML = '<summary>Validation findings</summary><ul><li>Run local validation to inspect geometry and submission-readiness findings.</li></ul>';
     renderWorkshopContributionPlan(null, null);
     renderWorkshopJourney();
     return;
   }
   const validation = workshopValidation;
+  $('#workshop-quick-findings').disabled = false;
+  setLiveRegionText($('#workshop-quick-check-status'), validation.geometryValid
+    ? 'Local geometry checks finished. This draft is still not verified, proven, or published.'
+    : 'Local geometry checks found problems. Adjust the draft before drawing any conclusion.');
   result.className = `workshop-validation-result ${validation.eligibleForContribution ? 'ready' : validation.geometryValid ? 'valid' : 'failed'}`;
   setLiveRegionHtml(result, `<b>${escapeHtml(validation.headline)}</b><p>${escapeHtml(validation.boundary)}</p>`);
   $('#workshop-candidate-fill').textContent = validation.geometryValid ? percent(validation.comparison.candidateUtilization) : 'Withheld — invalid geometry';
@@ -2087,14 +2093,25 @@ for (const selector of ['#workshop-contributor', '#workshop-method', '#workshop-
     $('#workshop-save-status').textContent = 'Metadata changed. Run local validation again before preparing a contribution.';
   });
 }
-$('#workshop-validate').addEventListener('click', () => {
+function validateWorkshopDraft({ focusResult = true } = {}) {
   const baseline = selectedWorkshopBaseline();
   if (!baseline || !workshopCandidate || !canonicalRelease) return;
   applyWorkshopMetadata();
   workshopValidation = validateWorkshopCandidate(workshopCandidate, baseline, canonicalRelease.records);
   workshopCandidate = workshopValidation.candidate;
   renderWorkshopValidation();
-  $('#workshop-validation-result').focus({ preventScroll: true });
+  (focusResult ? $('#workshop-validation-result') : $('#workshop-quick-check-status')).focus({ preventScroll: true });
+}
+$('#workshop-validate').addEventListener('click', () => validateWorkshopDraft());
+$('#workshop-quick-validate').addEventListener('click', () => validateWorkshopDraft({ focusResult: false }));
+$('#workshop-quick-exact').addEventListener('click', () => {
+  $('#workshop-x').scrollIntoView({ block: 'center' });
+  $('#workshop-x').focus({ preventScroll: true });
+});
+$('#workshop-quick-findings').addEventListener('click', () => {
+  $('#workshop-findings').open = true;
+  $('#workshop-findings').scrollIntoView({ block: 'center' });
+  $('#workshop-findings summary').focus({ preventScroll: true });
 });
 $('#workshop-save').addEventListener('click', async () => {
   const status = $('#workshop-save-status');
