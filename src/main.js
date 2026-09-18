@@ -181,8 +181,12 @@ function setWorkshopControls(enabled) {
 }
 
 function renderWorkshopHistory() {
-  $('#workshop-undo').disabled = !workshopTimeline?.past.length;
-  $('#workshop-redo').disabled = !workshopTimeline?.future.length;
+  const undoDisabled = !workshopTimeline?.past.length;
+  const redoDisabled = !workshopTimeline?.future.length;
+  $('#workshop-undo').disabled = undoDisabled;
+  $('#workshop-redo').disabled = redoDisabled;
+  $('#workshop-quick-undo').disabled = undoDisabled;
+  $('#workshop-quick-redo').disabled = redoDisabled;
 }
 
 function scheduleWorkshopRecovery() {
@@ -304,6 +308,8 @@ function renderWorkshopCandidate({ resetMetadata = false } = {}) {
   workshopPlacementIndex = Math.min(workshopPlacementIndex, workshopCandidate.solution.placements.length - 1);
   renderWorkshopPlacementOptions($('#workshop-placement-search').value);
   const placement = workshopCandidate.solution.placements[workshopPlacementIndex];
+  $('#workshop-quick-edit-title').textContent = `Triangle ${workshopPlacementIndex + 1} of ${workshopCandidate.solution.placements.length}`;
+  $('#workshop-quick-coordinates').textContent = `x ${Number(placement.x).toFixed(4)} · y ${Number(placement.y).toFixed(4)} · angle ${Number(placement.angle ?? 0).toFixed(4)}`;
   $('#workshop-x').value = String(placement.x);
   $('#workshop-y').value = String(placement.y);
   $('#workshop-angle').value = String(placement.angle ?? 0);
@@ -1989,7 +1995,7 @@ $('#workshop-canvas').addEventListener('keydown', event => {
   event.preventDefault();
   updateWorkshopFromCanvas(patch, `Triangle ${workshopPlacementIndex + 1} adjusted with the keyboard. Run local validation before drawing any conclusion.`);
 });
-$('#workshop-undo').addEventListener('click', () => {
+function undoWorkshopEdit() {
   workshopTimeline = undoWorkshopState(workshopTimeline);
   workshopCandidate = workshopTimeline.present;
   workshopPlacementIndex = Math.min(workshopPlacementIndex, workshopCandidate.solution.placements.length - 1);
@@ -1997,8 +2003,8 @@ $('#workshop-undo').addEventListener('click', () => {
   renderWorkshopHistory();
   scheduleWorkshopRecovery();
   scheduleWorkshopValidation();
-});
-$('#workshop-redo').addEventListener('click', () => {
+}
+function redoWorkshopEdit() {
   workshopTimeline = redoWorkshopState(workshopTimeline);
   workshopCandidate = workshopTimeline.present;
   workshopPlacementIndex = Math.min(workshopPlacementIndex, workshopCandidate.solution.placements.length - 1);
@@ -2006,7 +2012,11 @@ $('#workshop-redo').addEventListener('click', () => {
   renderWorkshopHistory();
   scheduleWorkshopRecovery();
   scheduleWorkshopValidation();
-});
+}
+$('#workshop-undo').addEventListener('click', undoWorkshopEdit);
+$('#workshop-quick-undo').addEventListener('click', undoWorkshopEdit);
+$('#workshop-redo').addEventListener('click', redoWorkshopEdit);
+$('#workshop-quick-redo').addEventListener('click', redoWorkshopEdit);
 $('#workshop-apply').addEventListener('click', () => {
   const input = validateWorkshopCoordinateInput({
     x: $('#workshop-x').value,
@@ -2030,7 +2040,7 @@ $('#workshop-apply').addEventListener('click', () => {
     $('#workshop-editor-status').textContent = `${error.message} The candidate was not changed.`;
   }
 });
-$('.workshop-nudges').addEventListener('click', event => {
+function handleWorkshopNudge(event) {
   const button = event.target.closest('[data-workshop-nudge]');
   if (!button || !workshopCandidate) return;
   const [axis, amount] = button.dataset.workshopNudge.split(':');
@@ -2043,7 +2053,9 @@ $('.workshop-nudges').addEventListener('click', event => {
   } catch (error) {
     $('#workshop-editor-status').textContent = `${error.message} The candidate was not changed.`;
   }
-});
+}
+$('.workshop-nudges').addEventListener('click', handleWorkshopNudge);
+$('.workshop-quick-nudges').addEventListener('click', handleWorkshopNudge);
 function removeSelectedWorkshopPiece() {
   try {
     const nextCandidate = removeWorkshopPiece(workshopCandidate, workshopPlacementIndex);

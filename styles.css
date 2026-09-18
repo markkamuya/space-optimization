@@ -603,6 +603,7 @@ footer { padding:22px 3vw; display:flex; justify-content:space-between; backgrou
 #workshop-canvas[data-dragging="true"] { cursor:grabbing; }
 #workshop-canvas:active { cursor:grabbing; }
 #workshop-canvas:focus-visible { outline:4px solid var(--focus); outline-offset:3px; }
+.workshop-quick-edit { display:none; }
 .workshop-focus-lens { margin:14px 0 0; padding:12px; border:1px solid var(--line); background:var(--panel); }
 .workshop-focus-lens figcaption { display:flex; justify-content:space-between; gap:12px; align-items:baseline; }
 .workshop-focus-lens figcaption b { font-size:12px; }
@@ -676,6 +677,7 @@ footer { padding:22px 3vw; display:flex; justify-content:space-between; backgrou
 .guided-mode .topbar nav,.guided-mode .contribute-link,.guided-mode .nav-toggle { display:none; }
 .guided-mode .topbar { grid-template-columns:1fr auto; }
 .advanced-mode #compass { display:none; }
+@media(max-width:720px){.workshop-quick-edit{display:grid; gap:12px; padding:14px; border:1px solid #9bab8f; border-top:0; background:#f7f3e8; color:var(--ink)}.workshop-quick-edit h3{margin:3px 0 5px;font-size:18px}.workshop-quick-edit p{margin:0;font:9px/1.55 "DM Mono"}.workshop-quick-nudges,.workshop-quick-history{display:grid; grid-template-columns:repeat(4,1fr); gap:8px}.workshop-quick-history{grid-template-columns:1fr 1fr}.workshop-quick-edit button{min-height:48px;padding:8px;border:1px solid var(--ink);background:var(--panel);font:700 9px "DM Mono"}.workshop-quick-edit button:disabled{opacity:.5}}
 @media(max-width:720px){.workshop-entry{grid-template-columns:1fr}.workshop-entry dl{grid-column:1;grid-row:auto}.workshop-entry-actions{grid-column:1;flex-direction:column}.workshop-entry-actions button,.workshop-entry-actions a{width:100%}}
 @media(max-width:900px){.compass-goals{grid-template-columns:1fr 1fr}.compass-goals button:nth-child(2){border-right:0}.compass-goals button:nth-child(-n+2){border-bottom:1px solid var(--ink)}}
 @media(max-width:900px){.workshop-layout{grid-template-columns:1fr}.workshop-handoff{grid-column:auto}.workshop-handoff,.workshop-heading{grid-template-columns:1fr}.workshop-export-actions,.workshop-handoff>#workshop-save-status,.workshop-review-steps{grid-column:auto}}

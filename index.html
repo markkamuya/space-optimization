@@ -102,6 +102,19 @@
             <p id="workshop-canvas-instructions">Select or drag a triangle. Arrow keys move the selected triangle by 0.01; hold Shift for 0.1. Press R to rotate.</p>
             <p id="workshop-canvas-summary" class="sr-only">No candidate packing is available.</p>
             <canvas id="workshop-canvas" width="920" height="560" role="img" tabindex="0" aria-label="Interactive Packing Workshop candidate" aria-describedby="workshop-canvas-instructions workshop-canvas-summary"></canvas>
+            <section id="workshop-quick-edit" class="workshop-quick-edit" aria-labelledby="workshop-quick-edit-title">
+              <div><p class="kicker">QUICK EDIT</p><h3 id="workshop-quick-edit-title">Selected triangle</h3><p id="workshop-quick-coordinates">Choose a verified baseline to begin.</p></div>
+              <div class="workshop-quick-nudges" role="group" aria-label="Quickly nudge selected triangle">
+                <button type="button" data-workshop-nudge="x:-0.1" disabled aria-label="Quick nudge selected triangle left by 0.1">← X</button>
+                <button type="button" data-workshop-nudge="x:0.1" disabled aria-label="Quick nudge selected triangle right by 0.1">X →</button>
+                <button type="button" data-workshop-nudge="y:-0.1" disabled aria-label="Quick nudge selected triangle up by 0.1">↑ Y</button>
+                <button type="button" data-workshop-nudge="y:0.1" disabled aria-label="Quick nudge selected triangle down by 0.1">Y ↓</button>
+              </div>
+              <div class="workshop-quick-history" role="group" aria-label="Quick edit history">
+                <button id="workshop-quick-undo" type="button" disabled>Undo edit</button>
+                <button id="workshop-quick-redo" type="button" disabled>Redo edit</button>
+              </div>
+            </section>
             <figure class="workshop-focus-lens" aria-labelledby="workshop-focus-title">
               <figcaption><b id="workshop-focus-title">Selected triangle focus</b><span>Enlarged local view only; exact coordinates and container boundaries are unchanged.</span></figcaption>
               <canvas id="workshop-focus-canvas" width="600" height="260" role="img" aria-describedby="workshop-focus-status"></canvas>
