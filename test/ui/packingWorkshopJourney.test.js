@@ -74,6 +74,9 @@ test('production exposes an evidence-safe browser Packing Workshop', async () =>
   assert.match(script, /workshop-quick-undo/);
   assert.match(script, /\.workshop-quick-nudges.*handleWorkshopNudge/);
   assert.match(script, /workshop-quick-validate.*validateWorkshopDraft\(\{ focusResult: false \}\)/);
+  for (const control of ['workshop-continuity', 'workshop-continuity-title', 'workshop-continuity-status', 'workshop-continuity-action']) assert.match(html, new RegExp(`id="${control}"`));
+  assert.match(script, /workshopContinuityState/);
+  assert.match(script, /workshop-continuity-action.*addEventListener\('click'/);
   assert.match(script, /workshop-findings summary.*focus/);
   assert.match(script, /still not verified, proven, or published/);
   assert.match(script, /finishWorkshopDrag\(session, workshopCandidate, \{ cancelled \}\)/);

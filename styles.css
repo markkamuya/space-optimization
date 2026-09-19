@@ -604,6 +604,11 @@ footer { padding:22px 3vw; display:flex; justify-content:space-between; backgrou
 #workshop-canvas:active { cursor:grabbing; }
 #workshop-canvas:focus-visible { outline:4px solid var(--focus); outline-offset:3px; }
 .workshop-quick-edit { display:none; }
+.workshop-continuity { padding-top:12px; border-top:1px solid #9bab8f; }
+.workshop-continuity h3 { margin:3px 0 5px; }
+.workshop-continuity>button { width:100%; margin-top:10px; background:var(--dark)!important; color:white; }
+.workshop-continuity[data-state="repair"]>button { background:#7d271c!important; }
+.workshop-continuity[data-state="preserve"]>button { background:#315f42!important; }
 .workshop-focus-lens { margin:14px 0 0; padding:12px; border:1px solid var(--line); background:var(--panel); }
 .workshop-focus-lens figcaption { display:flex; justify-content:space-between; gap:12px; align-items:baseline; }
 .workshop-focus-lens figcaption b { font-size:12px; }

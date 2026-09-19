@@ -16,6 +16,7 @@ import { findWorkshopPlacements, workshopPlacementLabel } from './ui/workshopPla
 import { renderWorkshopFocusLens } from './ui/workshopFocusLens.js';
 import { validateWorkshopCoordinateInput } from './ui/workshopCoordinateInput.js';
 import { requiresWorkshopResetConfirmation, workshopDestructivePrompt } from './ui/workshopEditSafety.js';
+import { workshopContinuityState } from './ui/workshopContinuity.js';
 import { escapeHtml, safeExternalUrl } from './ui/safeText.js';
 import { validatePublicRelease } from './ui/releaseValidation.js';
 import { loadIntegrityCheckedRelease } from './ui/shardedReleaseLoader.js';
@@ -143,6 +144,23 @@ function workshopRecoveryAvailable() {
   }
 }
 
+function renderWorkshopContinuity() {
+  const state = workshopContinuityState({
+    baselineReady: Boolean(selectedWorkshopBaseline() && canonicalRelease && releaseIntegrity),
+    dirty: workshopDirty,
+    validation: workshopValidation,
+    preservation: workshopPreservation
+  });
+  const panel = $('#workshop-continuity');
+  const action = $('#workshop-continuity-action');
+  panel.dataset.state = state.state;
+  $('#workshop-continuity-title').textContent = state.label;
+  setLiveRegionText($('#workshop-continuity-status'), state.status);
+  action.textContent = state.label;
+  action.dataset.action = state.action;
+  action.disabled = state.action === 'none';
+}
+
 function renderWorkshopJourney() {
   const challenge = resolveWorkshopChallenge(communityChallenges?.challenges, selectedWorkshopBaseline());
   const journey = workshopJourneyState({
@@ -162,6 +180,7 @@ function renderWorkshopJourney() {
     control.setAttribute('aria-label', `${index + 1}. ${step.name}: ${stage.detail}`);
   }
   renderWorkshopContributionPlan(workshopValidation, challenge);
+  renderWorkshopContinuity();
 }
 
 renderWorkshopJourney();
@@ -2112,6 +2131,17 @@ $('#workshop-quick-findings').addEventListener('click', () => {
   $('#workshop-findings').open = true;
   $('#workshop-findings').scrollIntoView({ block: 'center' });
   $('#workshop-findings summary').focus({ preventScroll: true });
+});
+$('#workshop-continuity-action').addEventListener('click', event => {
+  const targets = {
+    exact: '#workshop-quick-exact',
+    validate: '#workshop-quick-validate',
+    findings: '#workshop-quick-findings',
+    save: '#workshop-quick-save',
+    review: '#workshop-quick-review'
+  };
+  const selector = targets[event.currentTarget.dataset.action];
+  if (selector) $(selector).click();
 });
 $('#workshop-save').addEventListener('click', async () => {
   const status = $('#workshop-save-status');
