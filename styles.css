@@ -609,6 +609,7 @@ footer { padding:22px 3vw; display:flex; justify-content:space-between; backgrou
 .workshop-continuity>button { width:100%; margin-top:10px; background:var(--dark)!important; color:white; }
 .workshop-continuity[data-state="repair"]>button { background:#7d271c!important; }
 .workshop-continuity[data-state="preserve"]>button { background:#315f42!important; }
+.workshop-quick-preserve { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
 .workshop-focus-lens { margin:14px 0 0; padding:12px; border:1px solid var(--line); background:var(--panel); }
 .workshop-focus-lens figcaption { display:flex; justify-content:space-between; gap:12px; align-items:baseline; }
 .workshop-focus-lens figcaption b { font-size:12px; }

@@ -121,9 +121,14 @@
               </div>
               <p id="workshop-quick-check-status" role="status" aria-live="polite" tabindex="-1">No local validation yet. Published evidence remains authoritative.</p>
               <section id="workshop-continuity" class="workshop-continuity" aria-labelledby="workshop-continuity-title" data-state="blocked">
-                <div><p class="kicker">NEXT SAFE STEP</p><h3 id="workshop-continuity-title">Waiting for verified baseline</h3><p id="workshop-continuity-status" role="status" aria-live="polite">A verified baseline must load before the Workshop can suggest a next step.</p></div>
+                <div><p class="kicker">NEXT SAFE STEP</p><h3 id="workshop-continuity-title">Waiting for verified baseline</h3><p id="workshop-continuity-status" role="status" aria-live="polite" tabindex="-1">A verified baseline must load before the Workshop can suggest a next step.</p></div>
                 <button id="workshop-continuity-action" type="button" disabled>Waiting for verified baseline</button>
               </section>
+              <div class="workshop-quick-preserve" role="group" aria-label="Preserve and review this local draft">
+                <button id="workshop-quick-save" type="button" disabled>Save locally</button>
+                <button id="workshop-quick-export" type="button" disabled>Export bundle</button>
+                <button id="workshop-quick-review" type="button" disabled>Review handoff</button>
+              </div>
             </section>
             <figure class="workshop-focus-lens" aria-labelledby="workshop-focus-title">
               <figcaption><b id="workshop-focus-title">Selected triangle focus</b><span>Enlarged local view only; exact coordinates and container boundaries are unchanged.</span></figcaption>
@@ -201,7 +206,7 @@
               <a id="workshop-github" rel="noreferrer" aria-disabled="true" tabindex="-1">Prepare GitHub contribution ↗</a>
             </div>
             <section id="workshop-contribution-plan" class="workshop-contribution-plan" aria-labelledby="workshop-contribution-plan-title">
-              <h3 id="workshop-contribution-plan-title">Web-to-Git handoff</h3>
+              <h3 id="workshop-contribution-plan-title" tabindex="-1">Web-to-Git handoff</h3>
               <p id="workshop-contribution-plan-status" role="status" aria-live="polite">Run local validation to unlock an exact, reviewable contribution plan.</p>
               <ol id="workshop-contribution-plan-steps" aria-label="Contribution readiness"><li>Nothing has been submitted from this browser.</li></ol>
               <button id="workshop-contribution-copy" type="button" disabled>Copy complete Git workflow</button>

@@ -189,9 +189,10 @@ function setWorkshopControls(enabled) {
   for (const selector of [
     '#workshop-baseline', '#workshop-placement', '#workshop-placement-search', '#workshop-placement-previous', '#workshop-placement-next', '#workshop-x', '#workshop-y', '#workshop-angle', '#workshop-reflect',
     '#workshop-baseline-search', '#workshop-apply', '#workshop-remove-piece', '#workshop-add-piece', '#workshop-contributor',
-    '#workshop-method', '#workshop-version', '#workshop-seed', '#workshop-validate', '#workshop-quick-validate', '#workshop-quick-exact', '#workshop-save',
-    '#workshop-recover', '#workshop-reset', '#workshop-file', '#workshop-export', '#workshop-copy-command'
+    '#workshop-method', '#workshop-version', '#workshop-seed', '#workshop-validate', '#workshop-quick-validate', '#workshop-quick-exact', '#workshop-save', '#workshop-quick-save',
+    '#workshop-recover', '#workshop-reset', '#workshop-file', '#workshop-export', '#workshop-quick-export', '#workshop-copy-command'
   ]) $(selector).disabled = !enabled;
+  $('#workshop-quick-review').disabled = true;
   $('#workshop-candidate-export').disabled = true;
   $('#workshop-review-export').disabled = true;
   $('#workshop-github-copy').disabled = true;
@@ -263,6 +264,7 @@ function renderWorkshopValidation() {
     $('#workshop-candidate-fill').textContent = '—';
     $('#workshop-fill-delta').textContent = '—';
     $('#workshop-quick-findings').disabled = true;
+    $('#workshop-quick-review').disabled = true;
     setLiveRegionText($('#workshop-quick-check-status'), 'No local validation yet. Published evidence remains authoritative.');
     $('#workshop-findings').innerHTML = '<summary>Validation findings</summary><ul><li>Run local validation to inspect geometry and submission-readiness findings.</li></ul>';
     renderWorkshopContributionPlan(null, null);
@@ -271,6 +273,7 @@ function renderWorkshopValidation() {
   }
   const validation = workshopValidation;
   $('#workshop-quick-findings').disabled = false;
+  $('#workshop-quick-review').disabled = false;
   setLiveRegionText($('#workshop-quick-check-status'), validation.geometryValid
     ? 'Local geometry checks finished. This draft is still not verified, proven, or published.'
     : 'Local geometry checks found problems. Adjust the draft before drawing any conclusion.');
@@ -2143,7 +2146,7 @@ $('#workshop-continuity-action').addEventListener('click', event => {
   const selector = targets[event.currentTarget.dataset.action];
   if (selector) $(selector).click();
 });
-$('#workshop-save').addEventListener('click', async () => {
+async function saveWorkshopDraft({ focusStatus = false } = {}) {
   const status = $('#workshop-save-status');
   try {
     applyWorkshopMetadata();
@@ -2152,10 +2155,20 @@ $('#workshop-save').addEventListener('click', async () => {
     workshopPreservation = 'saved';
     renderWorkshopJourney();
     status.textContent = `Draft saved in this browser for ${workshopBaselineId}. Its checksum detects accidental changes but is not scientific verification.`;
+    if (focusStatus) {
+      setLiveRegionText($('#workshop-continuity-status'), 'Draft saved locally. It remains unverified and has not been uploaded or published.');
+      $('#workshop-continuity-status').focus({ preventScroll: true });
+    }
   } catch {
     status.textContent = 'The draft could not be saved in this browser. Export a bundle instead.';
+    if (focusStatus) {
+      setLiveRegionText($('#workshop-continuity-status'), 'Browser storage is unavailable. Export a bundle to preserve this local draft.');
+      $('#workshop-continuity-status').focus({ preventScroll: true });
+    }
   }
-});
+}
+$('#workshop-save').addEventListener('click', () => saveWorkshopDraft());
+$('#workshop-quick-save').addEventListener('click', () => saveWorkshopDraft({ focusStatus: true }));
 $('#workshop-recover').addEventListener('click', async () => {
   const status = $('#workshop-save-status');
   const raw = localStorage.getItem(workshopStorageKey()) ?? localStorage.getItem(`${workshopStorageKey()}:autosave`);
@@ -2243,7 +2256,7 @@ $('#workshop-file').addEventListener('change', async event => {
     input.value = '';
   }
 });
-$('#workshop-export').addEventListener('click', async () => {
+async function exportWorkshopBundle({ focusStatus = false } = {}) {
   const status = $('#workshop-save-status');
   try {
     applyWorkshopMetadata();
@@ -2257,9 +2270,23 @@ $('#workshop-export').addEventListener('click', async () => {
     renderWorkshopJourney();
     setTimeout(() => URL.revokeObjectURL(url), 0);
     status.textContent = `Reproducible workshop bundle exported for ${workshopBaselineId}. It remains candidate evidence.`;
+    if (focusStatus) {
+      setLiveRegionText($('#workshop-continuity-status'), 'Reproducible bundle downloaded. It remains local candidate evidence, not proof or publication.');
+      $('#workshop-continuity-status').focus({ preventScroll: true });
+    }
   } catch {
     status.textContent = 'The workshop bundle could not be exported because verified release identity is unavailable.';
+    if (focusStatus) {
+      setLiveRegionText($('#workshop-continuity-status'), 'The bundle could not be exported because verified release identity is unavailable.');
+      $('#workshop-continuity-status').focus({ preventScroll: true });
+    }
   }
+}
+$('#workshop-export').addEventListener('click', () => exportWorkshopBundle());
+$('#workshop-quick-export').addEventListener('click', () => exportWorkshopBundle({ focusStatus: true }));
+$('#workshop-quick-review').addEventListener('click', () => {
+  $('#workshop-contribution-plan').scrollIntoView({ block: 'center' });
+  $('#workshop-contribution-plan-title').focus({ preventScroll: true });
 });
 function downloadWorkshopFile(contents, filename, type) {
   const url = URL.createObjectURL(new Blob([contents], { type }));
