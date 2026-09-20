@@ -78,11 +78,14 @@ test('production exposes an evidence-safe browser Packing Workshop', async () =>
   assert.match(html, /id="workshop-continuity-status"[^>]+role="status"[^>]+tabindex="-1"/);
   assert.match(script, /workshopContinuityState/);
   assert.match(script, /workshop-continuity-action.*addEventListener\('click'/);
-  for (const control of ['workshop-quick-save', 'workshop-quick-export', 'workshop-quick-review']) assert.match(html, new RegExp(`id="${control}"`));
+  for (const control of ['workshop-quick-save', 'workshop-quick-recover', 'workshop-quick-export', 'workshop-quick-review', 'workshop-quick-recovery-status']) assert.match(html, new RegExp(`id="${control}"`));
   assert.match(script, /saveWorkshopDraft\(\{ focusStatus: true \}\)/);
   assert.match(script, /exportWorkshopBundle\(\{ focusStatus: true \}\)/);
   assert.match(script, /workshop-contribution-plan-title.*focus/);
   assert.match(html, /id="workshop-contribution-plan-title" tabindex="-1"/);
+  assert.match(script, /workshopRecoveryState/);
+  assert.match(script, /renderWorkshopRecoveryState/);
+  assert.match(script, /workshop-quick-recover.*workshop-recover.*click/);
   assert.match(script, /workshop-findings summary.*focus/);
   assert.match(script, /still not verified, proven, or published/);
   assert.match(script, /finishWorkshopDrag\(session, workshopCandidate, \{ cancelled \}\)/);

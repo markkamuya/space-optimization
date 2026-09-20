@@ -17,6 +17,7 @@ import { renderWorkshopFocusLens } from './ui/workshopFocusLens.js';
 import { validateWorkshopCoordinateInput } from './ui/workshopCoordinateInput.js';
 import { requiresWorkshopResetConfirmation, workshopDestructivePrompt } from './ui/workshopEditSafety.js';
 import { workshopContinuityState } from './ui/workshopContinuity.js';
+import { workshopRecoveryState } from './ui/workshopRecoveryState.js';
 import { escapeHtml, safeExternalUrl } from './ui/safeText.js';
 import { validatePublicRelease } from './ui/releaseValidation.js';
 import { loadIntegrityCheckedRelease } from './ui/shardedReleaseLoader.js';
@@ -144,6 +145,20 @@ function workshopRecoveryAvailable() {
   }
 }
 
+function renderWorkshopRecoveryState() {
+  const state = workshopRecoveryState({
+    baselineReady: Boolean(selectedWorkshopBaseline() && canonicalRelease && releaseIntegrity),
+    available: workshopRecoveryAvailable(),
+    dirty: workshopDirty
+  });
+  for (const selector of ['#workshop-recover', '#workshop-quick-recover']) {
+    const control = $(selector);
+    control.disabled = !state.available;
+    control.textContent = state.label;
+  }
+  setLiveRegionText($('#workshop-quick-recovery-status'), state.status);
+}
+
 function renderWorkshopContinuity() {
   const state = workshopContinuityState({
     baselineReady: Boolean(selectedWorkshopBaseline() && canonicalRelease && releaseIntegrity),
@@ -181,6 +196,7 @@ function renderWorkshopJourney() {
   }
   renderWorkshopContributionPlan(workshopValidation, challenge);
   renderWorkshopContinuity();
+  renderWorkshopRecoveryState();
 }
 
 renderWorkshopJourney();
@@ -190,7 +206,7 @@ function setWorkshopControls(enabled) {
     '#workshop-baseline', '#workshop-placement', '#workshop-placement-search', '#workshop-placement-previous', '#workshop-placement-next', '#workshop-x', '#workshop-y', '#workshop-angle', '#workshop-reflect',
     '#workshop-baseline-search', '#workshop-apply', '#workshop-remove-piece', '#workshop-add-piece', '#workshop-contributor',
     '#workshop-method', '#workshop-version', '#workshop-seed', '#workshop-validate', '#workshop-quick-validate', '#workshop-quick-exact', '#workshop-save', '#workshop-quick-save',
-    '#workshop-recover', '#workshop-reset', '#workshop-file', '#workshop-export', '#workshop-quick-export', '#workshop-copy-command'
+    '#workshop-reset', '#workshop-file', '#workshop-export', '#workshop-quick-export', '#workshop-copy-command'
   ]) $(selector).disabled = !enabled;
   $('#workshop-quick-review').disabled = true;
   $('#workshop-candidate-export').disabled = true;
@@ -2189,6 +2205,7 @@ $('#workshop-recover').addEventListener('click', async () => {
   renderWorkshopCandidate({ resetMetadata: true });
   status.textContent = `Saved work recovered for ${workshopBaselineId}. Run local validation again before using its conclusions.`;
 });
+$('#workshop-quick-recover').addEventListener('click', () => $('#workshop-recover').click());
 $('#workshop-reset').addEventListener('click', event => {
   if (!requiresWorkshopResetConfirmation(workshopDirty)) {
     $('#workshop-save-status').textContent = 'This candidate already matches the verified baseline. Nothing was reset.';
