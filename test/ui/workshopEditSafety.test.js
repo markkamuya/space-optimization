@@ -21,3 +21,10 @@ test('reset confirmation requires a checksummed recovery copy', () => {
   assert.equal(prompt.confirmLabel, 'Save recovery copy and reset');
   assert.equal(workshopDestructivePrompt('unknown'), null);
 });
+
+test('recovery confirmation explains replacement without implying publication', () => {
+  const prompt = workshopDestructivePrompt('recover');
+  assert.match(prompt.copy, /replace every current local coordinate/);
+  assert.match(prompt.copy, /Nothing is uploaded or published/);
+  assert.equal(prompt.confirmLabel, 'Recover saved work');
+});

@@ -2185,27 +2185,52 @@ async function saveWorkshopDraft({ focusStatus = false } = {}) {
 }
 $('#workshop-save').addEventListener('click', () => saveWorkshopDraft());
 $('#workshop-quick-save').addEventListener('click', () => saveWorkshopDraft({ focusStatus: true }));
-$('#workshop-recover').addEventListener('click', async () => {
+async function recoverWorkshopDraft({ compact = false } = {}) {
   const status = $('#workshop-save-status');
-  const raw = localStorage.getItem(workshopStorageKey()) ?? localStorage.getItem(`${workshopStorageKey()}:autosave`);
-  if (!raw) {
-    status.textContent = `No saved browser draft exists for ${workshopBaselineId}.`;
+  const focusTarget = compact ? $('#workshop-quick-recovery-status') : status;
+  try {
+    const raw = localStorage.getItem(workshopStorageKey()) ?? localStorage.getItem(`${workshopStorageKey()}:autosave`);
+    if (!raw) {
+      status.textContent = `No saved browser draft exists for ${workshopBaselineId}.`;
+      setLiveRegionText($('#workshop-quick-recovery-status'), 'No checksummed recovery copy is available. The current candidate was not changed.');
+      focusTarget.focus({ preventScroll: true });
+      renderWorkshopRecoveryState();
+      return false;
+    }
+    const restored = await restoreWorkshopBundle(raw, selectedWorkshopBaseline(), canonicalRelease, releaseIntegrity, releaseSource);
+    if (!restored.valid) {
+      status.textContent = `${restored.issues[0]} The current candidate was not changed.`;
+      setLiveRegionText($('#workshop-quick-recovery-status'), `${restored.issues[0]} The current candidate was not changed.`);
+      focusTarget.focus({ preventScroll: true });
+      return false;
+    }
+    workshopCandidate = restored.candidate;
+    workshopTimeline = createWorkshopTimeline(workshopCandidate);
+    workshopValidation = null;
+    workshopPreservation = 'none';
+    workshopPlacementIndex = 0;
+    workshopDirty = true;
+    renderWorkshopCandidate({ resetMetadata: true });
+    status.textContent = `Saved work recovered for ${workshopBaselineId}. Run local validation again before using its conclusions.`;
+    setLiveRegionText($('#workshop-quick-recovery-status'), 'Saved local work recovered. Run local validation again; this draft is not verified or published.');
+    focusTarget.focus({ preventScroll: true });
+    return true;
+  } catch {
+    status.textContent = 'Saved work could not be read safely. The current candidate was not changed.';
+    setLiveRegionText($('#workshop-quick-recovery-status'), 'Saved work could not be read safely. The current candidate was not changed.');
+    focusTarget.focus({ preventScroll: true });
+    return false;
+  }
+}
+function requestWorkshopRecovery(returnFocus) {
+  if (!workshopDirty) {
+    recoverWorkshopDraft({ compact: returnFocus.id === 'workshop-quick-recover' });
     return;
   }
-  const restored = await restoreWorkshopBundle(raw, selectedWorkshopBaseline(), canonicalRelease, releaseIntegrity, releaseSource);
-  if (!restored.valid) {
-    status.textContent = `${restored.issues[0]} The current candidate was not changed.`;
-    return;
-  }
-  workshopCandidate = restored.candidate;
-  workshopTimeline = createWorkshopTimeline(workshopCandidate);
-  workshopValidation = null;
-  workshopPreservation = 'none';
-  workshopPlacementIndex = 0;
-  renderWorkshopCandidate({ resetMetadata: true });
-  status.textContent = `Saved work recovered for ${workshopBaselineId}. Run local validation again before using its conclusions.`;
-});
-$('#workshop-quick-recover').addEventListener('click', () => $('#workshop-recover').click());
+  openWorkshopDestructiveDialog('recover', returnFocus);
+}
+$('#workshop-recover').addEventListener('click', event => requestWorkshopRecovery(event.currentTarget));
+$('#workshop-quick-recover').addEventListener('click', event => requestWorkshopRecovery(event.currentTarget));
 $('#workshop-reset').addEventListener('click', event => {
   if (!requiresWorkshopResetConfirmation(workshopDirty)) {
     $('#workshop-save-status').textContent = 'This candidate already matches the verified baseline. Nothing was reset.';
@@ -2227,6 +2252,14 @@ $('#workshop-destructive-confirm').addEventListener('click', async () => {
     workshopDestructiveReturnFocus = null;
     removeSelectedWorkshopPiece();
     $('#workshop-placement').focus({ preventScroll: true });
+    return;
+  }
+  if (action === 'recover') {
+    const compact = workshopDestructiveReturnFocus?.id === 'workshop-quick-recover';
+    pendingWorkshopDestructiveAction = null;
+    $('#workshop-destructive-dialog').close();
+    workshopDestructiveReturnFocus = null;
+    await recoverWorkshopDraft({ compact });
     return;
   }
   if (action !== 'reset') return;

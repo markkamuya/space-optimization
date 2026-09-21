@@ -85,7 +85,12 @@ test('production exposes an evidence-safe browser Packing Workshop', async () =>
   assert.match(html, /id="workshop-contribution-plan-title" tabindex="-1"/);
   assert.match(script, /workshopRecoveryState/);
   assert.match(script, /renderWorkshopRecoveryState/);
-  assert.match(script, /workshop-quick-recover.*workshop-recover.*click/);
+  assert.match(script, /workshop-quick-recover.*requestWorkshopRecovery/);
+  assert.match(script, /recoverWorkshopDraft/);
+  assert.match(script, /openWorkshopDestructiveDialog\('recover'/);
+  assert.match(script, /workshopDirty = true/);
+  assert.match(html, /id="workshop-save-status"[^>]+tabindex="-1"/);
+  assert.match(html, /id="workshop-quick-recovery-status"[^>]+tabindex="-1"/);
   assert.match(script, /workshop-findings summary.*focus/);
   assert.match(script, /still not verified, proven, or published/);
   assert.match(script, /finishWorkshopDrag\(session, workshopCandidate, \{ cancelled \}\)/);
