@@ -206,7 +206,7 @@ function setWorkshopControls(enabled) {
     '#workshop-baseline', '#workshop-placement', '#workshop-placement-search', '#workshop-placement-previous', '#workshop-placement-next', '#workshop-x', '#workshop-y', '#workshop-angle', '#workshop-reflect',
     '#workshop-baseline-search', '#workshop-apply', '#workshop-remove-piece', '#workshop-add-piece', '#workshop-contributor',
     '#workshop-method', '#workshop-version', '#workshop-seed', '#workshop-validate', '#workshop-quick-validate', '#workshop-quick-exact', '#workshop-save', '#workshop-quick-save',
-    '#workshop-reset', '#workshop-file', '#workshop-export', '#workshop-quick-export', '#workshop-copy-command'
+    '#workshop-reset', '#workshop-file', '#workshop-quick-file', '#workshop-export', '#workshop-quick-export', '#workshop-copy-command'
   ]) $(selector).disabled = !enabled;
   $('#workshop-quick-review').disabled = true;
   $('#workshop-candidate-export').disabled = true;
@@ -2277,35 +2277,49 @@ $('#workshop-destructive-confirm').addEventListener('click', async () => {
     status.textContent = 'Recovery storage is unavailable, so the candidate was not reset. Export this draft before trying again.';
   }
 });
-$('#workshop-file').addEventListener('change', async event => {
-  const input = event.currentTarget;
+async function openWorkshopBundleFile(input, { compact = false } = {}) {
   const status = $('#workshop-save-status');
+  const quickStatus = $('#workshop-quick-import-status');
+  const focusTarget = compact ? quickStatus : status;
   const file = input.files[0];
   if (!file) return;
   if (file.size > 5 * 1024 * 1024) {
     status.textContent = 'That workshop bundle is larger than 5 MB and was not opened.';
+    setLiveRegionText(quickStatus, 'That workshop bundle is larger than 5 MB and was not opened. The current candidate is unchanged.');
     input.value = '';
-    return;
+    focusTarget.focus({ preventScroll: true });
+    return false;
   }
   try {
     const restored = await restoreWorkshopBundle(await file.text(), selectedWorkshopBaseline(), canonicalRelease, releaseIntegrity, releaseSource);
     if (!restored.valid) {
       status.textContent = `${restored.issues[0]} The current candidate was not changed.`;
-      return;
+      setLiveRegionText(quickStatus, `${restored.issues[0]} The current candidate was not changed.`);
+      focusTarget.focus({ preventScroll: true });
+      return false;
     }
     workshopCandidate = restored.candidate;
     workshopTimeline = createWorkshopTimeline(workshopCandidate);
     workshopValidation = null;
     workshopPreservation = 'none';
     workshopPlacementIndex = 0;
+    workshopDirty = true;
     renderWorkshopCandidate({ resetMetadata: true });
     status.textContent = `Workshop bundle recovered for ${workshopBaselineId}. Local validation must be rerun.`;
+    setLiveRegionText(quickStatus, 'Workshop bundle opened locally. Run validation again; this draft is not verified or published.');
+    focusTarget.focus({ preventScroll: true });
+    return true;
   } catch {
     status.textContent = 'The workshop bundle could not be read safely. The current candidate was not changed.';
+    setLiveRegionText(quickStatus, 'The workshop bundle could not be read safely. The current candidate was not changed.');
+    focusTarget.focus({ preventScroll: true });
+    return false;
   } finally {
     input.value = '';
   }
-});
+}
+$('#workshop-file').addEventListener('change', event => openWorkshopBundleFile(event.currentTarget));
+$('#workshop-quick-file').addEventListener('change', event => openWorkshopBundleFile(event.currentTarget, { compact: true }));
 async function exportWorkshopBundle({ focusStatus = false } = {}) {
   const status = $('#workshop-save-status');
   try {

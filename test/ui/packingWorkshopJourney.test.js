@@ -91,6 +91,10 @@ test('production exposes an evidence-safe browser Packing Workshop', async () =>
   assert.match(script, /workshopDirty = true/);
   assert.match(html, /id="workshop-save-status"[^>]+tabindex="-1"/);
   assert.match(html, /id="workshop-quick-recovery-status"[^>]+tabindex="-1"/);
+  for (const control of ['workshop-quick-file', 'workshop-quick-import-status']) assert.match(html, new RegExp(`id="${control}"`));
+  assert.match(script, /openWorkshopBundleFile/);
+  assert.match(script, /workshop-quick-file.*openWorkshopBundleFile/);
+  assert.match(styles, /\.workshop-quick-import:has\(input:focus-visible\)/);
   assert.match(script, /workshop-findings summary.*focus/);
   assert.match(script, /still not verified, proven, or published/);
   assert.match(script, /finishWorkshopDrag\(session, workshopCandidate, \{ cancelled \}\)/);

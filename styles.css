@@ -610,6 +610,10 @@ footer { padding:22px 3vw; display:flex; justify-content:space-between; backgrou
 .workshop-continuity[data-state="repair"]>button { background:#7d271c!important; }
 .workshop-continuity[data-state="preserve"]>button { background:#315f42!important; }
 .workshop-quick-preserve { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.workshop-quick-import { display:flex; min-height:48px; padding:8px; align-items:center; justify-content:center; border:1px solid var(--ink); background:var(--panel); color:var(--ink); cursor:pointer; font:700 9px "DM Mono"; text-align:center; text-transform:uppercase; }
+.workshop-quick-import input { position:absolute; width:1px; block-size:1px; min-height:0; margin:0; padding:0; opacity:0; }
+.workshop-quick-import:has(input:focus-visible) { outline:4px solid var(--focus); outline-offset:3px; }
+.workshop-quick-import:has(input:disabled) { cursor:not-allowed; opacity:.5; }
 .workshop-focus-lens { margin:14px 0 0; padding:12px; border:1px solid var(--line); background:var(--panel); }
 .workshop-focus-lens figcaption { display:flex; justify-content:space-between; gap:12px; align-items:baseline; }
 .workshop-focus-lens figcaption b { font-size:12px; }
