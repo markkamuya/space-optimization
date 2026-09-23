@@ -99,6 +99,7 @@ let workshopDirty = false;
 let pendingWorkshopBaselineId = null;
 let pendingWorkshopDestructiveAction = null;
 let workshopDestructiveReturnFocus = null;
+let pendingWorkshopImport = null;
 let communityChallenges = null;
 let comparisonWorkspaceIds = [];
 let comparisonWorkspaceStorage = 'available';
@@ -424,8 +425,14 @@ function openWorkshopDestructiveDialog(action, returnFocus) {
 }
 
 function closeWorkshopDestructiveDialog() {
+  const cancelledImport = pendingWorkshopDestructiveAction === 'import';
   pendingWorkshopDestructiveAction = null;
+  pendingWorkshopImport = null;
   $('#workshop-destructive-dialog').close();
+  if (cancelledImport) {
+    $('#workshop-save-status').textContent = 'Bundle import cancelled. The current local candidate was not changed.';
+    setLiveRegionText($('#workshop-quick-import-status'), 'Bundle import cancelled. The current local candidate was not changed.');
+  }
   workshopDestructiveReturnFocus?.focus({ preventScroll: true });
   workshopDestructiveReturnFocus = null;
 }
@@ -2262,6 +2269,15 @@ $('#workshop-destructive-confirm').addEventListener('click', async () => {
     await recoverWorkshopDraft({ compact });
     return;
   }
+  if (action === 'import') {
+    const pending = pendingWorkshopImport;
+    pendingWorkshopDestructiveAction = null;
+    pendingWorkshopImport = null;
+    $('#workshop-destructive-dialog').close();
+    workshopDestructiveReturnFocus = null;
+    if (pending) applyWorkshopBundle(pending.restored, { compact: pending.compact });
+    return;
+  }
   if (action !== 'reset') return;
   try {
     applyWorkshopMetadata();
@@ -2277,6 +2293,22 @@ $('#workshop-destructive-confirm').addEventListener('click', async () => {
     status.textContent = 'Recovery storage is unavailable, so the candidate was not reset. Export this draft before trying again.';
   }
 });
+function applyWorkshopBundle(restored, { compact = false } = {}) {
+  const status = $('#workshop-save-status');
+  const quickStatus = $('#workshop-quick-import-status');
+  const focusTarget = compact ? quickStatus : status;
+  workshopCandidate = restored.candidate;
+  workshopTimeline = createWorkshopTimeline(workshopCandidate);
+  workshopValidation = null;
+  workshopPreservation = 'none';
+  workshopPlacementIndex = 0;
+  workshopDirty = true;
+  renderWorkshopCandidate({ resetMetadata: true });
+  status.textContent = `Workshop bundle recovered for ${workshopBaselineId}. Local validation must be rerun.`;
+  setLiveRegionText(quickStatus, 'Workshop bundle opened locally. Run validation again; this draft is not verified or published.');
+  focusTarget.focus({ preventScroll: true });
+}
+
 async function openWorkshopBundleFile(input, { compact = false } = {}) {
   const status = $('#workshop-save-status');
   const quickStatus = $('#workshop-quick-import-status');
@@ -2298,16 +2330,13 @@ async function openWorkshopBundleFile(input, { compact = false } = {}) {
       focusTarget.focus({ preventScroll: true });
       return false;
     }
-    workshopCandidate = restored.candidate;
-    workshopTimeline = createWorkshopTimeline(workshopCandidate);
-    workshopValidation = null;
-    workshopPreservation = 'none';
-    workshopPlacementIndex = 0;
-    workshopDirty = true;
-    renderWorkshopCandidate({ resetMetadata: true });
-    status.textContent = `Workshop bundle recovered for ${workshopBaselineId}. Local validation must be rerun.`;
-    setLiveRegionText(quickStatus, 'Workshop bundle opened locally. Run validation again; this draft is not verified or published.');
-    focusTarget.focus({ preventScroll: true });
+    if (workshopDirty) {
+      pendingWorkshopImport = { restored, compact };
+      setLiveRegionText(quickStatus, 'Bundle validated locally. Confirm before replacing the current unpreserved edits.');
+      openWorkshopDestructiveDialog('import', input);
+      return true;
+    }
+    applyWorkshopBundle(restored, { compact });
     return true;
   } catch {
     status.textContent = 'The workshop bundle could not be read safely. The current candidate was not changed.';

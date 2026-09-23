@@ -14,6 +14,11 @@ export function workshopDestructivePrompt(action, { placementIndex = 0, placemen
     copy: 'The checksummed recovery copy will replace every current local coordinate, inventory, and metadata edit. Nothing is uploaded or published. Cancel and export the current draft first if you need both versions.',
     confirmLabel: 'Recover saved work'
   };
+  if (action === 'import') return {
+    title: 'Replace the current local draft with this bundle?',
+    copy: 'The bundle passed local checksum and release checks. Opening it will replace every current local coordinate, inventory, and metadata edit. Nothing is uploaded or published. Cancel and export the current draft first if you need both versions.',
+    confirmLabel: 'Open validated bundle'
+  };
   return null;
 }
 

@@ -28,3 +28,11 @@ test('recovery confirmation explains replacement without implying publication', 
   assert.match(prompt.copy, /Nothing is uploaded or published/);
   assert.equal(prompt.confirmLabel, 'Recover saved work');
 });
+
+test('bundle confirmation occurs only after local validation and names replacement', () => {
+  const prompt = workshopDestructivePrompt('import');
+  assert.match(prompt.copy, /passed local checksum and release checks/);
+  assert.match(prompt.copy, /replace every current local coordinate/);
+  assert.match(prompt.copy, /Nothing is uploaded or published/);
+  assert.equal(prompt.confirmLabel, 'Open validated bundle');
+});
