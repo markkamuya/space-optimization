@@ -1,17 +1,67 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
-import { spawnSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { createSubmissionAttestation, verifySubmissionAttestation } from '../../src/atlas/attestation.js';
+
+function spawnWithMonotonicTimeout(command, args, {
+  cwd,
+  timeout = 120_000,
+  maxBuffer = 16 * 1024 * 1024
+} = {}) {
+  return new Promise(resolve => {
+    const child = spawn(command, args, { cwd, stdio: ['ignore', 'pipe', 'pipe'] });
+    const startedAt = process.hrtime.bigint();
+    const stdout = [];
+    const stderr = [];
+    let stdoutBytes = 0;
+    let stderrBytes = 0;
+    let error;
+
+    const stop = reason => {
+      if (error) return;
+      error = Object.assign(new Error(reason), { code: reason });
+      child.kill('SIGKILL');
+    };
+    const watchdog = setInterval(() => {
+      const elapsedMilliseconds = Number(process.hrtime.bigint() - startedAt) / 1e6;
+      if (elapsedMilliseconds >= timeout) stop('ETIMEDOUT');
+    }, 250);
+
+    child.stdout.on('data', chunk => {
+      stdoutBytes += chunk.length;
+      if (stdoutBytes > maxBuffer) stop('ENOBUFS');
+      else stdout.push(chunk);
+    });
+    child.stderr.on('data', chunk => {
+      stderrBytes += chunk.length;
+      if (stderrBytes > maxBuffer) stop('ENOBUFS');
+      else stderr.push(chunk);
+    });
+    child.on('error', childError => {
+      error = childError;
+    });
+    child.on('close', (status, signal) => {
+      clearInterval(watchdog);
+      resolve({
+        status,
+        signal,
+        error,
+        stdout: Buffer.concat(stdout).toString('utf8'),
+        stderr: Buffer.concat(stderr).toString('utf8')
+      });
+    });
+  });
+}
 
 test('submission CLI reports every malformed input in a batch', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'atlas-submission-'));
   const invalid = join(directory, 'invalid.json');
   const missing = join(directory, 'missing.json');
   await writeFile(invalid, '{');
-  const result = spawnSync(process.execPath, ['cli/submission.js', invalid, missing], {
+  const result = await spawnWithMonotonicTimeout(process.execPath, ['cli/submission.js', invalid, missing], {
     cwd: new URL('../..', import.meta.url),
     encoding: 'utf8',
     timeout: 120_000,
@@ -32,7 +82,7 @@ test('submission CLI atomically writes a portable batch bundle', async () => {
   const invalid = join(directory, 'invalid.json');
   const bundlePath = join(directory, 'bundle.json');
   await writeFile(invalid, '{');
-  const result = spawnSync(process.execPath, ['cli/submission.js', invalid, '--output', bundlePath], {
+  const result = await spawnWithMonotonicTimeout(process.execPath, ['cli/submission.js', invalid, '--output', bundlePath], {
     cwd: new URL('../..', import.meta.url), encoding: 'utf8', timeout: 120_000,
     maxBuffer: 16 * 1024 * 1024
   });
@@ -50,27 +100,27 @@ test('standalone bundle verification is independent of external candidate drift'
   const bundlePath = join(directory, 'bundle.json');
   const template = await readFile(new URL('../../atlas/submissions/template.json', import.meta.url), 'utf8');
   await writeFile(candidate, template);
-  spawnSync(process.execPath, ['cli/submission.js', candidate, '--output', bundlePath], {
+  await spawnWithMonotonicTimeout(process.execPath, ['cli/submission.js', candidate, '--output', bundlePath], {
     cwd: new URL('../..', import.meta.url), encoding: 'utf8', timeout: 120_000
   });
-  let verification = spawnSync(process.execPath, ['cli/verify-submission-bundle.js', bundlePath], {
+  let verification = await spawnWithMonotonicTimeout(process.execPath, ['cli/verify-submission-bundle.js', bundlePath], {
     cwd: new URL('../..', import.meta.url), encoding: 'utf8', timeout: 120_000
   });
   assert.equal(verification.status, 0);
-  const independent = spawnSync('python3', ['independent_verifier/verify_submission_bundle.py', bundlePath], {
+  const independent = await spawnWithMonotonicTimeout('python3', ['independent_verifier/verify_submission_bundle.py', bundlePath], {
     cwd: new URL('../..', import.meta.url), encoding: 'utf8', timeout: 120_000
   });
   assert.equal(independent.status, 0, independent.stderr || independent.stdout);
   assert.equal(JSON.parse(independent.stdout).incumbents, 311);
   await writeFile(candidate, `${template} `);
-  verification = spawnSync(process.execPath, ['cli/verify-submission-bundle.js', bundlePath], {
+  verification = await spawnWithMonotonicTimeout(process.execPath, ['cli/verify-submission-bundle.js', bundlePath], {
     cwd: new URL('../..', import.meta.url), encoding: 'utf8', timeout: 120_000
   });
   assert.equal(verification.status, 0);
   const bundle = JSON.parse(await readFile(bundlePath, 'utf8'));
   bundle.results[0].candidatePayloadBase64 = Buffer.from(`${template} `).toString('base64');
   await writeFile(bundlePath, JSON.stringify(bundle));
-  verification = spawnSync(process.execPath, ['cli/verify-submission-bundle.js', bundlePath], {
+  verification = await spawnWithMonotonicTimeout(process.execPath, ['cli/verify-submission-bundle.js', bundlePath], {
     cwd: new URL('../..', import.meta.url), encoding: 'utf8', timeout: 120_000
   });
   assert.equal(verification.status, 1);
@@ -95,7 +145,7 @@ test('standalone verification rejects stored decision tampering', async () => {
   const bundlePath = join(directory, 'bundle.json');
   const template = await readFile(new URL('../../atlas/submissions/template.json', import.meta.url), 'utf8');
   await writeFile(candidate, template);
-  spawnSync(process.execPath, ['cli/submission.js', candidate, '--output', bundlePath], {
+  await spawnWithMonotonicTimeout(process.execPath, ['cli/submission.js', candidate, '--output', bundlePath], {
     cwd: new URL('../..', import.meta.url), encoding: 'utf8', timeout: 120_000
   });
   const bundle = JSON.parse(await readFile(bundlePath, 'utf8'));
@@ -106,12 +156,12 @@ test('standalone verification rejects stored decision tampering', async () => {
     bundle.incumbentSnapshot
   );
   await writeFile(bundlePath, JSON.stringify(bundle));
-  const verification = spawnSync(process.execPath, ['cli/verify-submission-bundle.js', bundlePath], {
+  const verification = await spawnWithMonotonicTimeout(process.execPath, ['cli/verify-submission-bundle.js', bundlePath], {
     cwd: new URL('../..', import.meta.url), encoding: 'utf8', timeout: 120_000
   });
   assert.equal(verification.status, 1);
   assert.ok(JSON.parse(verification.stdout).errors.some(error => error.startsWith('DECISION_REPLAY_MISMATCH:')));
-  const independent = spawnSync('python3', ['independent_verifier/verify_submission_bundle.py', bundlePath], {
+  const independent = await spawnWithMonotonicTimeout('python3', ['independent_verifier/verify_submission_bundle.py', bundlePath], {
     cwd: new URL('../..', import.meta.url), encoding: 'utf8', timeout: 120_000
   });
   assert.equal(independent.status, 1);
