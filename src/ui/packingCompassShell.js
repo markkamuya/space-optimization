@@ -42,6 +42,13 @@ export function atlasModeForHash(hash = '') {
   return !hash || hash === '#top' || hash.startsWith('#compass') ? 'guided' : 'advanced';
 }
 
+export function focusCompassDestination(destination) {
+  if (!destination) return;
+  destination.setAttribute('tabindex', '-1');
+  destination.scrollIntoView({ block: 'start', behavior: 'instant' });
+  destination.focus({ preventScroll: true });
+}
+
 export function setupPackingCompassShell({ document, location, history }) {
   const body = document.body;
   const modeToggle = document.querySelector('#atlas-mode-toggle');
@@ -98,7 +105,8 @@ export function setupPackingCompassShell({ document, location, history }) {
     const guided = body.classList.contains('guided-mode');
     history.pushState(null, '', guided ? '#map' : formatCompassHash(parseCompassHash(location.hash).goal));
     syncFromLocation();
-    (guided ? document.querySelector('#map h2') : document.querySelector('#compass-title'))?.focus({ preventScroll: true });
+    const destination = guided ? document.querySelector('#map h2') : document.querySelector('#compass-title');
+    focusCompassDestination(destination);
   });
 
   window.addEventListener('hashchange', syncFromLocation);

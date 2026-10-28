@@ -199,3 +199,32 @@ The milestone has exactly two implementation workstreams:
 
 **Status:** implemented; publication remains conditional on the complete
 production gate and deployment process.
+
+## Predictable Compass Navigation
+
+**Value:** Keyboard and mobile users can switch research surfaces without
+losing their place or arriving at an off-screen destination.
+
+**Completion criteria:** Mode switching focuses a visible destination heading;
+return navigation retains the selected research goal; Back/Forward restores
+the intended surface without breaking legacy deep links. Verify keyboard
+interaction at 390px and 1280px, reduced-motion-safe scrolling, no horizontal
+overflow, and the complete publication gates before publishing.
+
+**Risks:** Unexpected scrolling, focus theft during passive history navigation,
+and accidental changes to existing research URL semantics.
+
+Exactly two implementation workstreams:
+
+1. **Visible destination navigation:** Make destination headings programmatically
+   focusable, scroll them into view without animation, and then move focus.
+2. **Durable research return:** Preserve Compass context across advanced-mode
+   visits and verify browser-history recovery without changing scientific data.
+
+**Status (2026-10-27):** Workstream 1 implemented and locally checked; workstream
+2 pending. Production defect reproduced: focus stayed on the mode toggle while
+the map heading was 6596px below the mobile viewport. Built fix places focus on
+the heading at 84px; desktop return and entry also pass keyboard checks.
+390px/1280px document widths equal viewport widths. Four focused tests pass;
+baseline suite passed 383/383 before edits. JS gzip grew 56.25 to 56.29 kB.
+No partial milestone publication; complete release gates remain pending.

@@ -1,7 +1,22 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFile } from 'node:fs/promises';
-import { atlasModeForHash, formatCompassHash, parseCompassHash } from '../../src/ui/packingCompassShell.js';
+import { atlasModeForHash, formatCompassHash, parseCompassHash, focusCompassDestination } from '../../src/ui/packingCompassShell.js';
+
+test('mode switch makes its destination focusable and visible before moving focus', () => {
+  const calls = [];
+  focusCompassDestination({
+    setAttribute: (...args) => calls.push(['attribute', ...args]),
+    scrollIntoView: options => calls.push(['scroll', options]),
+    focus: options => calls.push(['focus', options])
+  });
+  assert.deepEqual(calls, [
+    ['attribute', 'tabindex', '-1'],
+    ['scroll', { block: 'start', behavior: 'instant' }],
+    ['focus', { preventScroll: true }]
+  ]);
+  assert.doesNotThrow(() => focusCompassDestination(null));
+});
 
 test('guided mode is the default while legacy research links retain advanced mode', () => {
   assert.equal(atlasModeForHash(''), 'guided');
