@@ -49,7 +49,7 @@ export function focusCompassDestination(destination) {
   destination.focus({ preventScroll: true });
 }
 
-export function setupPackingCompassShell({ document, location, history }) {
+export function setupPackingCompassShell({ document, location, history, window = globalThis.window }) {
   const body = document.body;
   const modeToggle = document.querySelector('#atlas-mode-toggle');
   const workspace = document.querySelector('#compass-workspace');
@@ -57,6 +57,7 @@ export function setupPackingCompassShell({ document, location, history }) {
   const guidance = document.querySelector('#compass-workspace-guidance');
   const advancedLink = document.querySelector('#compass-advanced-link');
   const goalButtons = [...document.querySelectorAll('[data-compass-goal]')];
+  let returnGoal = parseCompassHash(location.hash).goal;
 
   function setMode(mode) {
     const guided = mode === 'guided';
@@ -68,6 +69,7 @@ export function setupPackingCompassShell({ document, location, history }) {
 
   function renderGoal(goal, { focus = false } = {}) {
     const selected = COMPASS_GOALS[goal] ?? null;
+    returnGoal = selected ? goal : null;
     goalButtons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.compassGoal === goal)));
     workspace.hidden = !selected;
     if (!selected) return;
@@ -103,7 +105,7 @@ export function setupPackingCompassShell({ document, location, history }) {
 
   modeToggle.addEventListener('click', () => {
     const guided = body.classList.contains('guided-mode');
-    history.pushState(null, '', guided ? '#map' : formatCompassHash(parseCompassHash(location.hash).goal));
+    history.pushState(null, '', guided ? '#map' : formatCompassHash(returnGoal));
     syncFromLocation();
     const destination = guided ? document.querySelector('#map h2') : document.querySelector('#compass-title');
     focusCompassDestination(destination);

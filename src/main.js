@@ -531,10 +531,13 @@ function renderPackingCompassAnswer(question) {
   answerRegion.focus({ preventScroll: true });
 }
 
+let renderedCompassQuestion = null;
+
 function renderPackingCompassQuestion(goal) {
   const slot = $('#compass-question-slot');
   const releaseStatus = $('#compass-release-status');
   if (!canonicalRelease || releasePhase !== 'ready') {
+    renderedCompassQuestion = null;
     releaseStatus.textContent = releasePhase === 'failed'
       ? 'Verified Atlas data is unavailable. Guided answers are withheld until integrity checks recover.'
       : 'Checking the verified Atlas release before answering a research question…';
@@ -543,9 +546,16 @@ function renderPackingCompassQuestion(goal) {
   }
   releaseStatus.textContent = `${canonicalRelease.coverage.records} verified records are ready. Answers are matched only against release ${canonicalRelease.version}.`;
   if (!goal) {
+    renderedCompassQuestion = null;
     slot.innerHTML = '<p>Choose one goal above. Then make two plain-language choices to receive a verified answer.</p>';
     return;
   }
+  // Keep live selections and the answer when returning to the same verified
+  // question. Never carry an answer across a release replacement or failure.
+  if (renderedCompassQuestion?.goal === goal
+      && renderedCompassQuestion.release === canonicalRelease
+      && slot.querySelector('#compass-question-form')) return;
+  renderedCompassQuestion = { goal, release: canonicalRelease };
   const defaults = goal === 'improve'
     ? { triangle: 'obtuse', container: 'wide' }
     : goal === 'verify'

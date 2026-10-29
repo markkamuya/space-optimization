@@ -228,3 +228,15 @@ the heading at 84px; desktop return and entry also pass keyboard checks.
 390px/1280px document widths equal viewport widths. Four focused tests pass;
 baseline suite passed 383/383 before edits. JS gzip grew 56.25 to 56.29 kB.
 No partial milestone publication; complete release gates remain pending.
+
+**Update (2026-10-28):** Workstream 2 now retains the active goal and reuses
+the existing question controls and answer during same-document returns and
+Back/Forward navigation. A different goal, failed/unready release, or replaced
+verified release invalidates the rendered question. No persistence or new URL
+format is introduced; reloads still use the original goal defaults.
+Five focused tests pass, including passive history focus behavior, legacy
+research links, and invalid-goal recovery. Live built checks at 390px and 1280px
+retain a nondefault scalene choice and its exact verified answer through mode
+switches; Back/Forward restores the correct surface. Both widths have zero
+horizontal overflow. Combined JS gzip is 56.37 kB (56.25 kB before milestone).
+Both workstreams are implemented; final publication gates are in progress.

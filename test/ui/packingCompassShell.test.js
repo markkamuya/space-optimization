@@ -1,7 +1,59 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFile } from 'node:fs/promises';
-import { atlasModeForHash, formatCompassHash, parseCompassHash, focusCompassDestination } from '../../src/ui/packingCompassShell.js';
+import { atlasModeForHash, formatCompassHash, parseCompassHash, focusCompassDestination, setupPackingCompassShell } from '../../src/ui/packingCompassShell.js';
+
+test('return preserves the active goal while history remains authoritative and passive', () => {
+  const elements = new Map();
+  const makeElement = () => ({
+    events: {}, dataset: {}, focusCount: 0,
+    setAttribute() {}, scrollIntoView() {},
+    focus() { this.focusCount++; },
+    addEventListener(name, fn) { this.events[name] = fn; }
+  });
+  const classes = new Set();
+  const buttons = ['find', 'verify', 'compare', 'improve'].map(goal => {
+    const button = makeElement();
+    button.dataset.compassGoal = goal;
+    return button;
+  });
+  const document = {
+    body: { classList: {
+      toggle(name, enabled) { enabled ? classes.add(name) : classes.delete(name); },
+      contains: name => classes.has(name)
+    } },
+    querySelector(selector) {
+      if (!elements.has(selector)) elements.set(selector, makeElement());
+      return elements.get(selector);
+    },
+    querySelectorAll: () => buttons
+  };
+  const events = {};
+  const location = { hash: '#compass?goal=improve' };
+  const history = { pushState(_state, _title, hash) { location.hash = hash; } };
+  setupPackingCompassShell({ document, location, history, window: {
+    addEventListener(name, fn) { events[name] = fn; }, dispatchEvent() {}
+  } });
+  const toggle = elements.get('#atlas-mode-toggle');
+  toggle.events.click();
+  assert.equal(location.hash, '#map');
+  toggle.events.click();
+  assert.equal(location.hash, '#compass?goal=improve');
+  assert.equal(elements.get('#compass-workspace').hidden, false);
+  const focusedBeforeHistory = [...elements.values()].reduce((sum, el) => sum + el.focusCount, 0);
+  location.hash = '#compass?goal=compare';
+  events.hashchange();
+  location.hash = '#research?record=iso-a60-r1p5';
+  events.hashchange();
+  assert.equal([...elements.values()].reduce((sum, el) => sum + el.focusCount, 0), focusedBeforeHistory);
+  toggle.events.click();
+  assert.equal(location.hash, '#compass?goal=compare');
+  location.hash = '#compass?goal=unknown';
+  events.hashchange();
+  toggle.events.click();
+  toggle.events.click();
+  assert.equal(location.hash, '#compass');
+});
 
 test('mode switch makes its destination focusable and visible before moving focus', () => {
   const calls = [];
