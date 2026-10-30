@@ -240,3 +240,35 @@ retain a nondefault scalene choice and its exact verified answer through mode
 switches; Back/Forward restores the correct surface. Both widths have zero
 horizontal overflow. Combined JS gzip is 56.37 kB (56.25 kB before milestone).
 Both workstreams are implemented; final publication gates are in progress.
+
+**Publication:** Predictable Compass Navigation passed all gates and was
+published and deployed at `460be37` on 2026-10-28.
+
+## Question-Bound Compass Answers
+
+**Value:** Researchers cannot accidentally follow a previous result after
+changing their question, and keyboard/mobile users can see the submitted answer.
+
+**Completion criteria:** Changes to either question control invalidate the old
+answer and remove its links without moving focus; resubmission restores a
+matching verified answer. Submitted answers and empty-result recovery are
+visible and keyboard-accessible at 390px and 1280px. Return navigation remains
+compatible, scientific artifacts stay unchanged, and all release gates pass.
+
+**Risks:** Unexpected removal of an answer; duplicate live announcements;
+focus disruption during edits; unnecessary scrolling after submission.
+
+Exactly two implementation workstreams:
+
+1. **Question-bound answer state:** Invalidate stale results and handoff links,
+   announce the next action politely, and recover through explicit resubmission.
+2. **Visible answer arrival:** Bring submitted results into view with accessible
+   focus, including empty-answer recovery, without animation or focus theft
+   while editing.
+
+**Status (2026-10-29):** Workstream 1 implemented and locally verified; workstream
+2 pending. Production retained an isosceles answer after selecting scalene.
+The built fix hides it and leaves zero stale links, then restores the matching
+scalene result after submission. Tested at 390px and 1280px; 11 focused tests
+pass. Gzip JS grows from 56.37 to 56.52 kB. Production answer arrival begins at
+770px in an 844px viewport and remains to be fixed. No partial publication.

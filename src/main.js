@@ -42,6 +42,7 @@ import { createResearchSession, restoreResearchSession } from './ui/researchSess
 import { registerOfflineCache, requestOfflineCacheStatus } from './ui/offlineCache.js';
 import { runProductionDiagnostics } from './ui/productionDiagnostics.js';
 import { parseCompassHash, setupPackingCompassShell } from './ui/packingCompassShell.js';
+import { invalidateCompassAnswer } from './ui/compassAnswerState.js';
 import { COMPASS_CONTAINER_OPTIONS, COMPASS_TRIANGLE_OPTIONS, compassEvidence, matchCompassQuestion } from './ui/packingCompass.js';
 import { advancedOrientation } from './ui/advancedOrientation.js';
 import { evidenceLadder, recordConclusion } from './ui/evidenceStory.js';
@@ -516,6 +517,7 @@ function syncPackingWorkshopFromLocation() {
 function renderPackingCompassAnswer(question) {
   const answer = matchCompassQuestion(canonicalRelease?.records, question);
   const answerRegion = $('#compass-answer');
+  $('#compass-answer-status').textContent = '';
   const continuation = $('#compass-advanced-link');
   if (!answer.records.length) {
     answerRegion.innerHTML = '<div class="compass-answer-empty" role="alert"><h3>No verified answer is available.</h3><p>Change one choice or open Advanced mode. The Atlas will not substitute modeled or unverified data.</p></div>';
@@ -561,14 +563,18 @@ function renderPackingCompassQuestion(goal) {
     : goal === 'verify'
       ? { triangle: 'right', container: 'tall' }
       : { triangle: 'equilateral', container: 'balanced' };
-  slot.innerHTML = `<form id="compass-question-form">
+  slot.innerHTML = `<form id="compass-question-form" aria-describedby="compass-answer-status">
     <label>What kind of triangle?<select name="triangle">${compassOptionMarkup(COMPASS_TRIANGLE_OPTIONS)}</select></label>
     <label>What kind of rectangle?<select name="container">${compassOptionMarkup(COMPASS_CONTAINER_OPTIONS)}</select></label>
     <button type="submit">${goal === 'compare' ? 'Show two verified results' : 'Show my verified answer'}</button>
   </form><p class="compass-question-note">These choices select an existing Atlas problem. They do not change its coordinates, proof status, or evidence.</p>
+  <p id="compass-answer-status" role="status" aria-live="polite" aria-atomic="true"></p>
   <section id="compass-answer" class="compass-answer" tabindex="-1" aria-label="Packing Compass answer" hidden></section>`;
   slot.querySelector('[name="triangle"]').value = defaults.triangle;
   slot.querySelector('[name="container"]').value = defaults.container;
+  const invalidateAnswer = () => invalidateCompassAnswer($('#compass-answer'), $('#compass-answer-status'));
+  slot.querySelector('form').addEventListener('input', invalidateAnswer);
+  slot.querySelector('form').addEventListener('change', invalidateAnswer);
   slot.querySelector('form').addEventListener('submit', event => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
