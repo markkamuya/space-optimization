@@ -272,3 +272,21 @@ The built fix hides it and leaves zero stale links, then restores the matching
 scalene result after submission. Tested at 390px and 1280px; 11 focused tests
 pass. Gzip JS grows from 56.37 to 56.52 kB. Production answer arrival begins at
 770px in an 844px viewport and remains to be fixed. No partial publication.
+
+**Update (2026-10-30):** Workstream 2 implemented locally. Submission reveals the
+answer before instant scrolling and focus; an Edit this question button returns
+to the existing selector without changing its value. The same arrival and edit
+path applies to empty answers. Thirteen focused tests pass, including empty
+answer arrival and quiet invalidation. Built browser checks place the mobile
+answer at 84px (production keyboard submission measured 1544px on this run),
+and desktop at 200px; both 390px/1280px widths have no horizontal overflow.
+Editing returns focus to the selector, removes stale links, and resubmission
+produces the matching scalene answer. Gzip JS is 56.59 kB, versus 56.37 kB before
+the milestone. Scientific data and legacy URLs are unchanged.
+
+Publication is blocked by the baseline submission CLI test
+`standalone verification rejects stored decision tampering`: the full suite
+received a null child exit status instead of 1 at line 167; an isolated rerun
+failed because bundle.json was not produced. Root cause remains unresolved.
+No failed checks were suppressed; complete final gates and publication remain
+pending. Both workstreams are local only.

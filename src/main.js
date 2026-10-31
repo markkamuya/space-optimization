@@ -42,7 +42,7 @@ import { createResearchSession, restoreResearchSession } from './ui/researchSess
 import { registerOfflineCache, requestOfflineCacheStatus } from './ui/offlineCache.js';
 import { runProductionDiagnostics } from './ui/productionDiagnostics.js';
 import { parseCompassHash, setupPackingCompassShell } from './ui/packingCompassShell.js';
-import { invalidateCompassAnswer } from './ui/compassAnswerState.js';
+import { invalidateCompassAnswer, revealCompassAnswer, returnToCompassQuestion } from './ui/compassAnswerState.js';
 import { COMPASS_CONTAINER_OPTIONS, COMPASS_TRIANGLE_OPTIONS, compassEvidence, matchCompassQuestion } from './ui/packingCompass.js';
 import { advancedOrientation } from './ui/advancedOrientation.js';
 import { evidenceLadder, recordConclusion } from './ui/evidenceStory.js';
@@ -529,8 +529,12 @@ function renderPackingCompassAnswer(question) {
     answerRegion.innerHTML = `<p class="kicker">${answer.records.length === 2 ? 'TWO VERIFIED RESULTS' : 'MATCHING VERIFIED ANSWER'}</p><p class="compass-answer-scope">Your plain-language choices identify a nearby sampled Atlas problem. Evidence statements apply only to each exact triangle and rectangle shown below.</p>${answer.records.map(record => compassRecordMarkup(record, question.goal)).join('')}${pairAction}`;
     if (question.goal === 'improve') continuation.hidden = true;
   }
-  answerRegion.hidden = false;
-  answerRegion.focus({ preventScroll: true });
+  const editQuestion = document.createElement('button');
+  editQuestion.type = 'button';
+  editQuestion.textContent = 'Edit this question';
+  editQuestion.addEventListener('click', () => returnToCompassQuestion($('#compass-question-form')));
+  answerRegion.append(editQuestion);
+  revealCompassAnswer(answerRegion);
 }
 
 let renderedCompassQuestion = null;
