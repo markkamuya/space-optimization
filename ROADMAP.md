@@ -290,3 +290,30 @@ received a null child exit status instead of 1 at line 167; an isolated rerun
 failed because bundle.json was not produced. Root cause remains unresolved.
 No failed checks were suppressed; complete final gates and publication remain
 pending. Both workstreams are local only.
+
+**Update (2026-11-01):** The isolated tampering test first reproduced the null
+status, then passed in 23.6s. Added local child-process diagnostics that reject
+timeouts/signals with the command and elapsed time; no timeout or scientific
+assertion was relaxed. The full suite then passed 389/389 in 114.4s. The earlier
+intermittent failure remains unexplained. Diagnostics remain uncommitted.
+Supply-chain audit (zero vulnerabilities), v2 regeneration, scientific audit,
+archive audit, independent Python verification (304/304), Vercel build, core,
+Atlas and submission benchmarks, and static browser/accessibility/visual gates
+all passed. Regeneration left scientific artifacts unchanged. Submission
+benchmark: 2347.74ms scanned versus 10.43ms indexed for 100 candidates.
+Live built-browser verification at 390px places the focused answer at 84px,
+versus 770px in production; edit returns focus to the selector, changing shape
+removes the answer and its links, and desktop resubmission yields the correct
+scalene answer without horizontal overflow. JS gzip remains 56.59kB.
+These static certifications are not live multi-engine testing. Final clean
+snapshot verification, resolution of the supporting diagnostic change, fresh
+origin comparison, publication and deployment remain pending. No remote
+mutation was performed; unrelated .gitignore changes were preserved.
+
+**Update (2026-11-02):** Re-fetched origin: the two UI workstream commits remain
+fast-forwardable, with no overlapping Atlas process or merge/rebase. Full tests
+passed again (389/389, no skips, 116.1s), including stored-decision tampering.
+The supporting subprocess diagnostics are retained without relaxing any limit
+or assertion. Supply-chain audit passed with zero vulnerabilities. Final release
+gates and publication verification are in progress; the historical intermittent
+termination has not been explained and remains a regression risk.

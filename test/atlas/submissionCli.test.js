@@ -11,7 +11,7 @@ function spawnWithMonotonicTimeout(command, args, {
   timeout = 120_000,
   maxBuffer = 16 * 1024 * 1024
 } = {}) {
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
     const child = spawn(command, args, { cwd, stdio: ['ignore', 'pipe', 'pipe'] });
     const startedAt = process.hrtime.bigint();
     const stdout = [];
@@ -45,6 +45,12 @@ function spawnWithMonotonicTimeout(command, args, {
     });
     child.on('close', (status, signal) => {
       clearInterval(watchdog);
+      if (error || signal) {
+        const failure = error ?? new Error('CHILD_TERMINATED');
+        failure.message += `: ${command} ${args[0]} (status=${status}, signal=${signal}, elapsedMs=${Math.round(Number(process.hrtime.bigint() - startedAt) / 1e6)}). ${Buffer.concat(stderr).toString('utf8').slice(-2000)}`;
+        reject(failure);
+        return;
+      }
       resolve({
         status,
         signal,
