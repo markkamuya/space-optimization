@@ -317,3 +317,32 @@ The supporting subprocess diagnostics are retained without relaxing any limit
 or assertion. Supply-chain audit passed with zero vulnerabilities. Final release
 gates and publication verification are in progress; the historical intermittent
 termination has not been explained and remains a regression risk.
+
+**Completion:** Question-Bound Compass Answers was published and deployed at
+`c74d37a` on 2026-11-02. Both workstreams passed release gates and production
+mobile/desktop keyboard checks; see the conversation for the full gate report.
+
+## Active milestone: Keep Your Place in Research Results
+
+**Value:** Researchers can continue through verified results and inspect evidence
+without skipping newly revealed rows or losing their place.
+
+Exactly two implementation workstreams:
+1. **Stable incremental results:** Append new rows without rebuilding existing
+   records; replace safely on filters, changed ordering, release refresh and recovery.
+2. **Accessible continuation and return:** Focus and reveal the first new record
+   after deliberate paging, announce the added range, and retain the evidence
+   dialog return target. Ordinary filtering must not steal focus.
+
+**Completion criteria:** 24 new rows per ordinary batch, zero replacements of
+existing rows on continuation, no duplicate handlers, correct partial final
+page and empty-filter recovery, visible keyboard focus and dialog return at
+390px/1280px, stable legacy URLs and scientific artifacts, and all release gates.
+**Risks:** Stale rows across data changes, repeated handlers, filter/paging races,
+unexpected focus movement, and screen-reader announcement duplication.
+
+**2026-11-03:** Production keyboard paging leaves focus on the footer button
+after both mobile and desktop batch loads. Baseline passed 389/389. Workstream
+1 implemented; three focused tests cover identity retention, bounded new-row
+creation, partial final pages, repeated calls, changed ordering and reset.
+Workstream 2 remains pending. No partial publication.

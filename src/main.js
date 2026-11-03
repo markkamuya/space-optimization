@@ -43,6 +43,7 @@ import { registerOfflineCache, requestOfflineCacheStatus } from './ui/offlineCac
 import { runProductionDiagnostics } from './ui/productionDiagnostics.js';
 import { parseCompassHash, setupPackingCompassShell } from './ui/packingCompassShell.js';
 import { invalidateCompassAnswer, revealCompassAnswer, returnToCompassQuestion } from './ui/compassAnswerState.js';
+import { renderResearchRows } from './ui/researchResults.js';
 import { COMPASS_CONTAINER_OPTIONS, COMPASS_TRIANGLE_OPTIONS, compassEvidence, matchCompassQuestion } from './ui/packingCompass.js';
 import { advancedOrientation } from './ui/advancedOrientation.js';
 import { evidenceLadder, recordConclusion } from './ui/evidenceStory.js';
@@ -1765,7 +1766,7 @@ function openResearchRecord(record, { preserveContext = false } = {}) {
   renderResearchTrail();
 }
 
-function renderResearchExplorer() {
+function renderResearchExplorer({ append = false } = {}) {
   if (!canonicalRelease) return;
   $('#research-results').setAttribute('aria-busy', 'false');
   const records = filteredResearchRecords();
@@ -1777,17 +1778,14 @@ function renderResearchExplorer() {
     ['Adaptive improvements', canonicalRelease.coverage.adaptivelyImproved ?? 0],
     ['Open compute tasks', canonicalRelease.coverage.openDistributedTasks]
   ].map(([label, value]) => `<div><b>${value}</b><span>${label}</span></div>`).join('');
-  $('#research-results').innerHTML = visible.length ? visible.map(record => `
+  renderResearchRows($('#research-results'), visible, { append, openRecord: openResearchRecord, renderRow: record => `
     <div class="research-result-item" role="listitem"><button type="button" data-record="${escapeHtml(record.id)}">
       <span><b>${escapeHtml(researchRecordLabel(record))}</b><small>${escapeHtml(record.experimentId)}</small></span>
       <span>${escapeHtml(record.pattern)}</span>
       <span><i class="${escapeHtml(record.evidence.state)}">${escapeHtml(evidenceStoryLabel(record))}</i></span>
       <span><b>${percent(record.verification.utilization)}</b><small>gap ${percent(record.bounds.optimalityGap)}</small></span>
-    </button></div>`).join('') : `<div class="research-empty" role="status"><h3>No verified results match these filters.</h3><p>Change the search terms or clear every filter to return to all ${canonicalRelease.coverage.records} records.</p><button type="button" data-clear-research>Clear filters</button></div>`;
-  $('#research-results').querySelectorAll('[data-record]').forEach(button => {
-    button.addEventListener('click', () =>
-      openResearchRecord(canonicalRelease.records.find(record => record.id === button.dataset.record)));
-  });
+    </button></div>` });
+  if (!visible.length) $('#research-results').innerHTML = `<div class="research-empty" role="status"><h3>No verified results match these filters.</h3><p>Change the search terms or clear every filter to return to all ${canonicalRelease.coverage.records} records.</p><button type="button" data-clear-research>Clear filters</button></div>`;
   $('#research-result-count').textContent = `Showing ${visible.length} of ${records.length} matching records`;
   $('#research-more').hidden = visible.length >= records.length;
   $('#research-clear').hidden = !($('#research-search').value || $('#research-family').value !== 'all' || $('#research-evidence').value !== 'all');
@@ -2825,7 +2823,7 @@ $('#comparison-guide-actions').addEventListener('click', event => {
 });
 $('#research-more').addEventListener('click', () => {
   researchLimit += 24;
-  renderResearchExplorer();
+  renderResearchExplorer({ append: true });
 });
 function closeRecordDialog() {
   const dialog = $('#record-dialog');
