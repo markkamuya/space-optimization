@@ -15,3 +15,13 @@ export function renderResearchRows(container, records, { append = false, renderR
   }
   return { retained: start, added: records.length - start, firstAdded: buttons[start] ?? null };
 }
+
+// Called only for an explicit Show more action, never for typing or refresh.
+export function revealResearchContinuation(result, status) {
+  if (!result?.firstAdded || result.added === 0) return false;
+  const end = result.retained + result.added;
+  status.textContent = `Added records ${result.retained + 1}–${end}. Showing ${end} of ${result.total} matching records.`;
+  result.firstAdded.scrollIntoView({ block: 'center', behavior: 'instant' });
+  result.firstAdded.focus({ preventScroll: true });
+  return true;
+}

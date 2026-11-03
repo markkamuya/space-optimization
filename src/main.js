@@ -43,7 +43,7 @@ import { registerOfflineCache, requestOfflineCacheStatus } from './ui/offlineCac
 import { runProductionDiagnostics } from './ui/productionDiagnostics.js';
 import { parseCompassHash, setupPackingCompassShell } from './ui/packingCompassShell.js';
 import { invalidateCompassAnswer, revealCompassAnswer, returnToCompassQuestion } from './ui/compassAnswerState.js';
-import { renderResearchRows } from './ui/researchResults.js';
+import { renderResearchRows, revealResearchContinuation } from './ui/researchResults.js';
 import { COMPASS_CONTAINER_OPTIONS, COMPASS_TRIANGLE_OPTIONS, compassEvidence, matchCompassQuestion } from './ui/packingCompass.js';
 import { advancedOrientation } from './ui/advancedOrientation.js';
 import { evidenceLadder, recordConclusion } from './ui/evidenceStory.js';
@@ -1778,7 +1778,7 @@ function renderResearchExplorer({ append = false } = {}) {
     ['Adaptive improvements', canonicalRelease.coverage.adaptivelyImproved ?? 0],
     ['Open compute tasks', canonicalRelease.coverage.openDistributedTasks]
   ].map(([label, value]) => `<div><b>${value}</b><span>${label}</span></div>`).join('');
-  renderResearchRows($('#research-results'), visible, { append, openRecord: openResearchRecord, renderRow: record => `
+  const rowUpdate = renderResearchRows($('#research-results'), visible, { append, openRecord: openResearchRecord, renderRow: record => `
     <div class="research-result-item" role="listitem"><button type="button" data-record="${escapeHtml(record.id)}">
       <span><b>${escapeHtml(researchRecordLabel(record))}</b><small>${escapeHtml(record.experimentId)}</small></span>
       <span>${escapeHtml(record.pattern)}</span>
@@ -1800,6 +1800,7 @@ function renderResearchExplorer({ append = false } = {}) {
   }
   renderResearchTrail();
   renderNextBestActions();
+  return { ...rowUpdate, total: records.length };
 }
 
 function scheduleResearchExplorerRender() {
@@ -2822,8 +2823,13 @@ $('#comparison-guide-actions').addEventListener('click', event => {
   $('#comparison-summary').focus({ preventScroll: true });
 });
 $('#research-more').addEventListener('click', () => {
+  if (researchRenderFrame != null) {
+    cancelAnimationFrame(researchRenderFrame);
+    researchRenderFrame = null;
+  }
   researchLimit += 24;
-  renderResearchExplorer({ append: true });
+  const result = renderResearchExplorer({ append: true });
+  revealResearchContinuation(result, $('#research-result-count'));
 });
 function closeRecordDialog() {
   const dialog = $('#record-dialog');

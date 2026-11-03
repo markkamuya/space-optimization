@@ -346,3 +346,14 @@ after both mobile and desktop batch loads. Baseline passed 389/389. Workstream
 1 implemented; three focused tests cover identity retention, bounded new-row
 creation, partial final pages, repeated calls, changed ordering and reset.
 Workstream 2 remains pending. No partial publication.
+
+**Workstream 2 implementation:** Deliberate paging announces the exact added
+range and scrolls/focuses its first row without animation. A queued filter render
+is cancelled before paging so it cannot later replace the focused element.
+Built-browser checks: at 390px focus moves to row 25 at y=361px; evidence opens
+and Escape returns to that row. At 1280px the next batch focuses row 49 at
+y=462px. Empty search and clear recover; the last scalene page hides Show more
+while retaining focus on row 25 of 48. No horizontal overflow or console errors.
+Canonical-sized incremental rendering creates 304 row nodes across all pages,
+versus 2176 previously. Gzip JS: 56.92kB versus 56.59kB before this milestone.
+Final release gates and publication remain pending.

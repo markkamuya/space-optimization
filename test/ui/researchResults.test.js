@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { renderResearchRows } from '../../src/ui/researchResults.js';
+import { renderResearchRows, revealResearchContinuation } from '../../src/ui/researchResults.js';
 
 function fixture() {
   let buttons = [];
@@ -20,6 +20,20 @@ function fixture() {
 }
 const records = Array.from({ length: 53 }, (_, index) => ({ id: `record-${index}` }));
 const options = { renderRow: record => `${record.id}|`, openRecord() {} };
+
+test('all 304 canonical-sized results create 304 rows rather than rebuilding 2176', () => {
+  const container = fixture();
+  const data = Array.from({ length: 304 }, (_, index) => ({ id: `sample-${index}` }));
+  let previousCost = 0;
+  for (let limit = 24; limit < data.length + 24; limit += 24) {
+    const visible = data.slice(0, limit);
+    previousCost += visible.length;
+    renderResearchRows(container, visible, { ...options, append: true });
+  }
+  assert.equal(previousCost, 2176);
+  assert.equal(container.created, 304);
+  assert.equal(container.querySelectorAll().length, 304);
+});
 
 test('continuation creates only new rows and preserves previous buttons and handlers', () => {
   const container = fixture();
@@ -62,4 +76,27 @@ test('changed order, filters, and release refresh replace rather than retain sta
   assert.notEqual(container.querySelectorAll()[0], first);
   renderResearchRows(container, [], options);
   assert.equal(container.querySelectorAll().length, 0);
+});
+
+test('deliberate continuation announces its exact range and reveals before focusing', () => {
+  const calls = [];
+  const firstAdded = {
+    scrollIntoView: options => calls.push(['scroll', options]),
+    focus: options => calls.push(['focus', options])
+  };
+  const status = { textContent: '' };
+  assert.equal(revealResearchContinuation({ retained: 48, added: 5, total: 53, firstAdded }, status), true);
+  assert.equal(status.textContent, 'Added records 49–53. Showing 53 of 53 matching records.');
+  assert.deepEqual(calls, [
+    ['scroll', { block: 'center', behavior: 'instant' }],
+    ['focus', { preventScroll: true }]
+  ]);
+});
+
+test('empty, unavailable and exhausted continuations neither move focus nor repeat announcements', () => {
+  const status = { textContent: 'Showing 0 of 0 matching records' };
+  for (const result of [undefined, { added: 0 }, { firstAdded: null, added: 0 }]) {
+    assert.equal(revealResearchContinuation(result, status), false);
+    assert.equal(status.textContent, 'Showing 0 of 0 matching records');
+  }
 });
