@@ -357,3 +357,30 @@ while retaining focus on row 25 of 48. No horizontal overflow or console errors.
 Canonical-sized incremental rendering creates 304 row nodes across all pages,
 versus 2176 previously. Gzip JS: 56.92kB versus 56.59kB before this milestone.
 Final release gates and publication remain pending.
+
+**Completion:** Keep Your Place in Research Results was published and deployed
+at `32d1645`; both workstreams and release gates passed (395 tests).
+
+## Active milestone: Readable Research Results on Every Screen
+
+**Value:** Read complete result identities and understand their evidence without
+needing desktop column headings.
+
+Exactly two implementation workstreams:
+1. **Responsive result cards:** Stretch mobile cards to the available width and
+   wrap identifiers with readable text while preserving incremental paging.
+2. **Self-explanatory evidence:** Give measurements and evidence explicit context
+   on each card without overstating possible improvements.
+
+**Criteria:** Unclipped cards at 320–1280px, keyboard paging and dialog return,
+unchanged scientific artifacts and legacy navigation, and passing release gates.
+**Risks:** Excessive card height, ambiguous bound wording, layout regressions.
+
+**2026-11-03 workstream 1:** Production mobile rows measured 189.6px within a
+390px viewport. Built cards now measure 358px (288px at 320px), with no horizontal
+overflow. Keyboard continuation retains focus on the first new result. Eight
+focused tests pass; production build passes, JS gzip unchanged at 56.92kB.
+Initial baseline failed 1/395 on a 120s submission subprocess timeout; isolated
+retry passed in 3.57s and full retry passed 395/395 in 110s. Cause remains unknown;
+no limits or scientific assertions were relaxed. Workstream 2 and release gates
+remain pending. No partial publication.

@@ -705,6 +705,13 @@ footer { padding:22px 3vw; display:flex; justify-content:space-between; backgrou
 @media(max-width:900px){.contribution-preflight{grid-template-columns:1fr 1fr}.contribution-preflight-results{grid-column:1/-1}}
 @media(max-width:720px){.contribution-preflight{grid-template-columns:1fr;margin-top:20px;padding:20px}.contribution-preflight-results{grid-column:auto}}
 @media(max-width:720px){.contribution-starter-actions{grid-template-columns:1fr}.contribution-handoff{grid-column:auto}.contribution-handoff ol{grid-template-columns:1fr}.contribution-handoff li{border-right:0;border-bottom:1px solid var(--line)}.contribution-handoff li:last-child{border-bottom:0}}
+@media(max-width:720px){
+  .registry-results .research-result-item{display:grid;min-width:0}
+  .registry-results .research-result-item button{width:auto;min-width:0}
+  .registry-results .research-result-item span{font-size:14px}
+  .registry-results .research-result-item b,.registry-results .research-result-item small{overflow:visible;white-space:normal;overflow-wrap:anywhere}
+  .registry-results .research-result-item small{font-size:11px;line-height:1.5}
+}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.record-card,.primary-action,.phase-cell:after{animation:none;transition:none}.primary-action:hover{transform:none}}
 @media(max-width:480px){
   body{min-width:0}
