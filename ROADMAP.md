@@ -384,3 +384,11 @@ Initial baseline failed 1/395 on a 120s submission subprocess timeout; isolated
 retry passed in 3.57s and full retry passed 395/395 in 110s. Cause remains unknown;
 no limits or scientific assertions were relaxed. Workstream 2 and release gates
 remain pending. No partial publication.
+
+**Workstream 2 implementation:** Each result labels Pattern, Evidence, Filled,
+and Gap to upper bound explicitly; the gap is not presented as an achievable
+gain. Nine focused tests pass. Built browser checks at 320px confirm readable
+labels and Enter/Escape evidence return; 1280px keyboard paging retains focus
+and the existing 1126px row width. Neither viewport overflows horizontally.
+JS gzip is 56.95kB (56.92kB before). Full release validation remains pending;
+the historical intermittent baseline timeout remains a risk.

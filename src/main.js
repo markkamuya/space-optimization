@@ -1781,9 +1781,9 @@ function renderResearchExplorer({ append = false } = {}) {
   const rowUpdate = renderResearchRows($('#research-results'), visible, { append, openRecord: openResearchRecord, renderRow: record => `
     <div class="research-result-item" role="listitem"><button type="button" data-record="${escapeHtml(record.id)}">
       <span><b>${escapeHtml(researchRecordLabel(record))}</b><small>${escapeHtml(record.experimentId)}</small></span>
-      <span>${escapeHtml(record.pattern)}</span>
-      <span><i class="${escapeHtml(record.evidence.state)}">${escapeHtml(evidenceStoryLabel(record))}</i></span>
-      <span><b>${percent(record.verification.utilization)}</b><small>gap ${percent(record.bounds.optimalityGap)}</small></span>
+      <span>Pattern: ${escapeHtml(record.pattern)}</span>
+      <span>Evidence: <i class="${escapeHtml(record.evidence.state)}">${escapeHtml(evidenceStoryLabel(record))}</i></span>
+      <span class="research-result-metrics"><b>Filled: ${percent(record.verification.utilization)}</b><small>Gap to upper bound: ${percent(record.bounds.optimalityGap)}</small></span>
     </button></div>` });
   if (!visible.length) $('#research-results').innerHTML = `<div class="research-empty" role="status"><h3>No verified results match these filters.</h3><p>Change the search terms or clear every filter to return to all ${canonicalRelease.coverage.records} records.</p><button type="button" data-clear-research>Clear filters</button></div>`;
   $('#research-result-count').textContent = `Showing ${visible.length} of ${records.length} matching records`;
